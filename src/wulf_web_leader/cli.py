@@ -10,6 +10,7 @@ from wulf_web_leader.models import CanonicalLead, CountryCode
 from wulf_web_leader.verticals import load_all_verticals, find_vertical
 from wulf_web_leader.pipeline import run_scan_pipeline
 from wulf_web_leader.export.writer import export_leads_to_csv, export_leads_to_json, ODBL_ATTRIBUTION
+from wulf_web_leader.audit.cache import AuditCache
 from wulf_web_leader.audit.classifier import classify_website_kind
 from wulf_web_leader.audit.fetch import audit_website
 from wulf_web_leader.score.engine import calculate_lead_score
@@ -70,6 +71,7 @@ def scan(
     min_score: Annotated[int, typer.Option("--min-score", help="Minimalny wynik leada (0-100)")] = 0,
     has_phone: Annotated[bool, typer.Option("--has-phone", help="Uwzględnij tylko firmy z publicznym numerem telefonu")] = False,
     quick: Annotated[bool, typer.Option("--quick", "--no-audit", help="Pomiń audyt sieciowy stron (błyskawiczny skan)")] = False,
+    no_cache: Annotated[bool, typer.Option("--no-cache", "--refresh-audit", help="Pomiń cache dyskowy i wymuś świeży audyt stron www")] = False,
     delimiter: Annotated[str, typer.Option("--delimiter", help="Separator CSV (comma lub semicolon)")] = "comma",
 ):
     """Przeskanuj wybrane miasto i promień w poszukiwaniu firm potrzebujących strony www."""
@@ -110,6 +112,7 @@ def scan(
                 radius_km=radius,
                 lang=target_lang,
                 do_audit=not quick,
+                no_cache=no_cache,
                 min_score=min_score,
                 has_phone_only=has_phone,
                 progress_callback=on_progress,
@@ -164,6 +167,7 @@ def audit(
     file_path: Annotated[Path, typer.Argument(help="Ścieżka do istniejącego pliku leads.json")],
     lang: Annotated[str, typer.Option("--lang", "-l", help="Język hooków (pl, de, en)")] = "pl",
     out: Annotated[Optional[Path], typer.Option("--out", "-o", help="Ścieżka docelowa pliku lub katalogu")] = None,
+    no_cache: Annotated[bool, typer.Option("--no-cache", "--refresh-audit", help="Pomiń cache dyskowy i wymuś świeży audyt stron www")] = False,
 ):
     """Przeprowadź ponowny audyt stron www dla leadów z pliku JSON i zaktualizuj punktację."""
     if not file_path.is_file():
@@ -179,10 +183,17 @@ def audit(
     console.print(f"Audytowanie {len(leads)} leadów z pliku {file_path}...")
 
     async def audit_all():
+        cache = AuditCache()
         for lead in leads:
-            lead.website_kind = classify_website_kind(lead.website)
+            if not lead.website_kind or lead.website_kind in ("none", "other"):
+                lead.website_kind = classify_website_kind(lead.website)
             if lead.website_kind == "own" and lead.website:
-                lead.audit = await audit_website(lead.website)
+                cached_res = None if no_cache else cache.get(lead.website)
+                if cached_res is not None:
+                    lead.audit = cached_res
+                else:
+                    lead.audit = await audit_website(lead.website)
+                    cache.set(lead.website, lead.audit)
                 if not lead.phone and lead.audit.extracted_phones:
                     lead.phone = lead.audit.extracted_phones[0]
             score, verdict = calculate_lead_score(lead)

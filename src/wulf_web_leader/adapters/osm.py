@@ -6,6 +6,7 @@ from typing import Any
 import httpx
 
 from wulf_web_leader.models import CanonicalLead, CountryCode
+from wulf_web_leader.audit.classifier import classify_website_kind
 
 logger = logging.getLogger(__name__)
 
@@ -179,17 +180,44 @@ class OverpassClient:
             )
             phone = normalize_phone_number(raw_phone, country)
 
-            # Website extraction
-            website = (
-                tags.get("contact:website")
-                or tags.get("website")
-                or tags.get("contact:facebook")
-                or tags.get("contact:instagram")
-            )
-            if website:
-                website = website.strip()
-                if not (website.startswith("http://") or website.startswith("https://")):
-                    website = f"https://{website}"
+            # Website and social media extraction
+            raw_website = tags.get("website") or tags.get("contact:website")
+            raw_facebook = tags.get("contact:facebook") or tags.get("facebook")
+            raw_instagram = tags.get("contact:instagram") or tags.get("instagram")
+
+            website = None
+            website_kind = "none"
+
+            if raw_website and raw_website.strip():
+                url = raw_website.strip()
+                if not (url.startswith("http://") or url.startswith("https://")):
+                    url = f"https://{url}"
+                website = url
+                website_kind = classify_website_kind(website)
+
+            # If dedicated facebook tag exists
+            if raw_facebook and raw_facebook.strip():
+                fb = raw_facebook.strip()
+                if not (fb.startswith("http://") or fb.startswith("https://")):
+                    if "facebook.com" in fb:
+                        fb = f"https://{fb}"
+                    else:
+                        fb = f"https://www.facebook.com/{fb.lstrip('@')}"
+                if not website or website_kind in ("none", "other"):
+                    website = fb
+                    website_kind = "facebook"
+
+            # If dedicated instagram tag exists
+            elif raw_instagram and raw_instagram.strip():
+                ig = raw_instagram.strip()
+                if not (ig.startswith("http://") or ig.startswith("https://")):
+                    if "instagram.com" in ig:
+                        ig = f"https://{ig}"
+                    else:
+                        ig = f"https://www.instagram.com/{ig.lstrip('@')}"
+                if not website or website_kind in ("none", "other"):
+                    website = ig
+                    website_kind = "instagram"
 
             # Address extraction
             street = tags.get("addr:street")
@@ -210,7 +238,7 @@ class OverpassClient:
                 postcode=postcode,
                 phone=phone,
                 website=website,
-                website_kind="none" if not website else "other",
+                website_kind=website_kind,
                 source="osm",
                 source_id=source_id,
                 industry_code=industry_code,

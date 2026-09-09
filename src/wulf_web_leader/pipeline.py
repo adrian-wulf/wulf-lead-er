@@ -4,6 +4,7 @@ from typing import Callable
 from wulf_web_leader.models import CanonicalLead, CountryCode, VerticalDefinition
 from wulf_web_leader.adapters.nominatim import NominatimClient, GeocodedLocation
 from wulf_web_leader.adapters.osm import OverpassClient, build_overpass_query
+from wulf_web_leader.audit.cache import AuditCache
 from wulf_web_leader.audit.classifier import classify_website_kind
 from wulf_web_leader.audit.fetch import audit_website
 from wulf_web_leader.score.engine import calculate_lead_score
@@ -21,6 +22,8 @@ async def run_scan_pipeline(
     do_audit: bool = True,
     min_score: int = 0,
     has_phone_only: bool = False,
+    audit_cache: AuditCache | None = None,
+    no_cache: bool = False,
     nominatim_client: NominatimClient | None = None,
     overpass_client: OverpassClient | None = None,
     progress_callback: Callable[[str, str], None] | None = None,
@@ -64,18 +67,26 @@ async def run_scan_pipeline(
 
     # 5. Classify website kinds
     for lead in leads:
-        lead.website_kind = classify_website_kind(lead.website)
+        if not lead.website_kind or lead.website_kind in ("none", "other"):
+            lead.website_kind = classify_website_kind(lead.website)
 
     # 6. Audit websites (if enabled)
     leads_to_audit = [lead for lead in leads if lead.website_kind == "own" and lead.website]
     if do_audit and leads_to_audit:
         notify("audit", f"Auditing {len(leads_to_audit)} business websites...")
+        cache = audit_cache or AuditCache()
         semaphore = asyncio.Semaphore(5)
 
         async def audit_single(lead: CanonicalLead):
             async with semaphore:
                 try:
-                    audit_res = await audit_website(lead.website)
+                    cached_res = None if no_cache else cache.get(lead.website)
+                    if cached_res is not None:
+                        audit_res = cached_res
+                    else:
+                        audit_res = await audit_website(lead.website)
+                        cache.set(lead.website, audit_res)
+
                     lead.audit = audit_res
                     # If phone was missing from OSM, check if phone was found on website
                     if not lead.phone and audit_res.extracted_phones:

@@ -68,10 +68,17 @@ Jeśli chcesz w 2 sekundy sprawdzić liczbę firm bez czekania na audyt sieciowy
 wulf scan --country pl --city Kraków --vertical electricians --radius 20 --quick
 ```
 
-### Tylko firmy z numerem telefonu (`--has-phone`)
-Od razu gotowa lista do obdzwonienia:
+### Tylko gorące leady z numerem telefonu (`--has-phone`, `--min-score`)
+Od razu gotowa lista do obdzwonienia — bez zbędnych wpisów i bez firm bez kontaktu:
 ```bash
-wulf scan --country pl --city Rzeszów --vertical plumbers --radius 15 --has-phone
+wulf scan --country pl --miasto Rzeszów --vertical plumbers --radius 15 --has-phone --min-score 70
+```
+
+### Dyskowe buforowanie audytów stron (Cache)
+Wyniki audytów stron www są automatycznie buforowane na dysku (`~/.cache/wulf-web-leader/audit_cache.json`) z okresem ważności 7 dni. Ponowne skanowanie tego samego rejonu pomija zbędne zapytania sieciowe.
+Aby wymusić świeży audyt wszystkich stron i zaktualizować cache:
+```bash
+wulf scan --country pl --miasto Rzeszów --vertical plumbers --no-cache
 ```
 
 ---
@@ -111,12 +118,13 @@ Opcje:
 - `--lang`, `-l`: Język hooków sprzedażowych (`pl`, `de`, `en`, domyślnie `pl`).
 - `--has-phone`: Filtruje tylko leady z dostępnym publicznym numerem telefonu.
 - `--quick`, `--no-audit`: Pomija audyt HTTP stron (szybki zwiad).
+- `--no-cache`, `--refresh-audit`: Pomija cache dyskowy i wymusza świeży audyt stron www.
 - `--min-score`: Minimalna punktacja leada (od 0 do 100).
 - `--delimiter`: Separator w pliku CSV (`comma` lub `semicolon`).
 - `--out`, `-o`: Własna ścieżka do pliku lub katalogu wyjściowego.
 
 ### `wulf audit`
-Ponownie sprawdza dostępność i jakość stron z wcześniej zapisanego pliku `leads.json`:
+Ponownie sprawdza dostępność i jakość stron z wcześniej zapisanego pliku `leads.json` (obsługuje również flagę `--no-cache` / `--refresh-audit`):
 ```bash
 wulf audit leads.json --lang pl
 ```
