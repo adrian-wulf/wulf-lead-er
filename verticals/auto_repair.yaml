@@ -1,0 +1,19 @@
+id: auto_repair
+name: "Auto Repair"
+aliases:
+  pl: ["mechanik", "mechanik samochodowy", "warsztat samochodowy", "wulkanizacja"]
+  de: ["autowerkstatt", "kfz", "autoreparatur", "kfz-werkstatt"]
+pl:
+  query: "mechanik samochodowy"
+  label: "Warsztat samochodowy / Mechanika pojazdowa"
+  pkd: ["45.20.Z"]
+  osm:
+    - "shop=car_repair"
+    - "craft=car_repair"
+de:
+  query: "Autowerkstatt"
+  label: "KFZ-Werkstatt / Autoreparatur"
+  wz: ["45.20"]
+  osm:
+    - "shop=car_repair"
+    - "craft=car_repair"

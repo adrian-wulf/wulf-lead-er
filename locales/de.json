@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "no_website": "Keine eigene Webpräsenz — potenzielle Kunden in Ihrer Region finden online nur den regionalen Wettbewerb.",
+    "social_only": "Ausschließlich {platform}-Präsenz — Kunden ohne Social-Media-Konto oder über lokale Suchmaschinen erreichen Sie nur schwer.",
+    "directory_only": "Nur Verzeichniseintrag ({platform}) — kein unabhängiger, professioneller Internetauftritt.",
+    "http_only": "Website ohne SSL-Verschlüsselung (HTTP) — moderne Browser warnen Besucher vor unsicherer Verbindung.",
+    "no_viewport": "Website ist nicht für Mobilgeräte optimiert (kein Viewport) — mobile Besucher springen schnell ab.",
+    "outdated_tech": "Veralteter Webauftritt ({generator}) — ein modernes Redesign stärkt Vertrauen und Neukundengewinnung.",
+    "reviews_no_site": "Betrieb hat positive Kundenbewertungen, aber keine eigene Website zur Angebotspräsentation.",
+    "hot_prospect": "Top-Kandidat: Lokales Unternehmen mit Kontaktdaten, das sofort von einer modernen Website profitiert."
+  },
+  "verdicts": {
+    "hot": "Heiß",
+    "warm": "Warm",
+    "skip": "Überspringen"
+  },
+  "messages": {
+    "scanning": "Scanne {city} ({country}) im Umkreis von {radius} km für Branche: {vertical}...",
+    "found_pois": "{count} potenzielle Unternehmen in OpenStreetMap gefunden.",
+    "auditing": "Überprüfe Unternehmens-Websites ({count} URLs)...",
+    "done": "Fertig! Ergebnisse gespeichert in {csv_path} und {json_path}.",
+    "no_leads": "Keine passenden Unternehmen im angegebenen Umkreis gefunden.",
+    "no_leads_tip": "Tipps: 1) Radius vergrößern (--radius 25), 2) Andere Branche prüfen (keinweb list-verticals), 3) Schreibweise der Stadt prüfen."
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "no_website": "Brak strony www — klienci z okolicy szukający usług na telefonie trafiają do firm konkurencyjnych.",
+    "social_only": "Firma polega wyłącznie na profilu {platform} — klienci szukający w Google lub bez konta w mediach mają utrudniony kontakt.",
+    "directory_only": "Tylko wpis w katalogu ({platform}) — brak własnej, profesjonalnej wizytówki online.",
+    "http_only": "Strona bez szyfrowania HTTPS — przeglądarki oznaczają witrynę jako niebezpieczną.",
+    "no_viewport": "Strona nie jest responsywna (brak viewport) — na smartfonach jest nieczytelna i trudna w obsłudze.",
+    "outdated_tech": "Witryna na przestarzałym szablonie ({generator}) — warto odświeżyć wizerunek na nowocześniejszy.",
+    "reviews_no_site": "Firma ma dobre opinie klientów, ale brak jej własnej strony do prezentacji oferty.",
+    "hot_prospect": "Idealny kandydat do kontaktu: lokalny biznes z publicznym kontaktem, który pilnie potrzebuje nowoczesnej witryny."
+  },
+  "verdicts": {
+    "hot": "Gorący",
+    "warm": "Ciepły",
+    "skip": "Pomiń"
+  },
+  "messages": {
+    "scanning": "Skanowanie miasta {city} ({country}) w promieniu {radius} km dla branży: {vertical}...",
+    "found_pois": "Znaleziono {count} potencjalnych firm w OpenStreetMap.",
+    "auditing": "Audytowanie stron internetowych ({count} witryn do sprawdzenia)...",
+    "done": "Zakończono! Wyniki zapisano do {csv_path} oraz {json_path}.",
+    "no_leads": "Nie znaleziono firm spełniających kryteria w wybranym promieniu.",
+    "no_leads_tip": "Wskazówki: 1) Zwiększ promień (--radius 25), 2) Sprawdź inną branżę (brakstrony list-verticals), 3) Upewnij się co do pisowni miasta."
+  }
+}

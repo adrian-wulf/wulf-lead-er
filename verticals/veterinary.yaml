@@ -1,0 +1,17 @@
+id: veterinary
+name: "Veterinary Clinics"
+aliases:
+  pl: ["weterynarz", "lecznica weterynaryjna", "przychodnia weterynaryjna", "weterynaria"]
+  de: ["tierarzt", "tierklinik", "tierarztpraxis"]
+pl:
+  query: "weterynarz"
+  label: "Gabinet weterynaryjny / Weterynarz"
+  pkd: ["75.00.Z"]
+  osm:
+    - "amenity=veterinary"
+de:
+  query: "Tierarzt"
+  label: "Tierarztpraxis / Tierarzt"
+  wz: ["75.00"]
+  osm:
+    - "amenity=veterinary"
