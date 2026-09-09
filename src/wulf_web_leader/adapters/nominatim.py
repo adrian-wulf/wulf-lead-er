@@ -17,7 +17,7 @@ class GeocodedLocation(NamedTuple):
 class NominatimClient:
     """Client for OpenStreetMap Nominatim geocoder complying with usage policies."""
 
-    DEFAULT_USER_AGENT = "brakstrony/0.1.0 (+https://github.com/wulf-org/brakstrony)"
+    DEFAULT_USER_AGENT = "wulf-web-leader/0.1.0 (+https://github.com/wulf-org/wulf-web-leader)"
     DEFAULT_BASE_URL = "https://nominatim.openstreetmap.org"
 
     def __init__(
@@ -28,10 +28,10 @@ class NominatimClient:
         min_interval_seconds: float = 1.0,
     ):
         self.base_url = base_url.rstrip("/")
-        self.email = email or os.getenv("BRAKSTRONY_EMAIL")
+        self.email = email or os.getenv("WULF_EMAIL") or os.getenv("BRAKSTRONY_EMAIL")
         user_agent = self.DEFAULT_USER_AGENT
         if self.email:
-            user_agent = f"brakstrony/0.1.0 ({self.email}; +https://github.com/wulf-org/brakstrony)"
+            user_agent = f"wulf-web-leader/0.1.0 ({self.email}; +https://github.com/wulf-org/wulf-web-leader)"
         self.headers = {
             "User-Agent": user_agent,
             "Accept": "application/json",
@@ -41,7 +41,7 @@ class NominatimClient:
 
         if cache_dir is None:
             home = Path.home()
-            self.cache_dir = home / ".cache" / "brakstrony"
+            self.cache_dir = home / ".cache" / "wulf-web-leader"
         else:
             self.cache_dir = cache_dir
 

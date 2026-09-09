@@ -1,4 +1,4 @@
-from brakstrony.models import CanonicalLead, Verdict
+from wulf_web_leader.models import CanonicalLead, Verdict
 
 
 def calculate_lead_score(lead: CanonicalLead) -> tuple[int, Verdict]:

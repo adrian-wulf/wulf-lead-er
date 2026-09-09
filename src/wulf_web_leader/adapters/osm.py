@@ -5,7 +5,7 @@ import re
 from typing import Any
 import httpx
 
-from brakstrony.models import CanonicalLead, CountryCode
+from wulf_web_leader.models import CanonicalLead, CountryCode
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +82,7 @@ class OverpassClient:
         self,
         endpoints: list[str] | None = None,
         timeout: float = 35.0,
-        user_agent: str = "brakstrony/0.1.0 (+https://github.com/wulf-org/brakstrony)",
+        user_agent: str = "wulf-web-leader/0.1.0 (+https://github.com/wulf-org/wulf-web-leader)",
     ):
         self.endpoints = endpoints or list(DEFAULT_OVERPASS_ENDPOINTS)
         self.timeout = timeout

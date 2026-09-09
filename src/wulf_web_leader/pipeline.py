@@ -1,13 +1,13 @@
 import asyncio
 import logging
 from typing import Callable
-from brakstrony.models import CanonicalLead, CountryCode, VerticalDefinition
-from brakstrony.adapters.nominatim import NominatimClient, GeocodedLocation
-from brakstrony.adapters.osm import OverpassClient, build_overpass_query
-from brakstrony.audit.classifier import classify_website_kind
-from brakstrony.audit.fetch import audit_website
-from brakstrony.score.engine import calculate_lead_score
-from brakstrony.score.hooks import generate_pitch_hooks
+from wulf_web_leader.models import CanonicalLead, CountryCode, VerticalDefinition
+from wulf_web_leader.adapters.nominatim import NominatimClient, GeocodedLocation
+from wulf_web_leader.adapters.osm import OverpassClient, build_overpass_query
+from wulf_web_leader.audit.classifier import classify_website_kind
+from wulf_web_leader.audit.fetch import audit_website
+from wulf_web_leader.score.engine import calculate_lead_score
+from wulf_web_leader.score.hooks import generate_pitch_hooks
 
 logger = logging.getLogger(__name__)
 

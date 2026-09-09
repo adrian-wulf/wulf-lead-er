@@ -1,7 +1,7 @@
 import pytest
-from brakstrony.models import CanonicalLead, AuditResult
-from brakstrony.score.engine import calculate_lead_score
-from brakstrony.score.hooks import generate_pitch_hooks
+from wulf_web_leader.models import CanonicalLead, AuditResult
+from wulf_web_leader.score.engine import calculate_lead_score
+from wulf_web_leader.score.hooks import generate_pitch_hooks
 
 
 def test_scoring_no_website_with_phone():
@@ -27,7 +27,7 @@ def test_scoring_no_website_with_phone():
 
 
 def test_scoring_no_website_without_phone():
-    """No website without phone should be WARM (>=45)."""
+    """No website without phone should be WARM (>=45 and <70)."""
     lead = CanonicalLead(
         country="PL",
         name="Hydraulik Rzeszów",
@@ -44,29 +44,28 @@ def test_scoring_no_website_without_phone():
     assert verdict == "warm"
 
 
-def test_scoring_social_only_with_phone():
-    """Social profile only + phone should be WARM (55)."""
-    lead = CanonicalLead(
-        country="DE",
-        name="Friseur Dresden Meister",
-        city="Dresden",
-        phone="+49 351 987654",
-        website="https://www.facebook.com/friseur.dresden",
-        website_kind="facebook",
-        source="osm",
-        source_id="node/201",
-        industry_label="Friseur",
-    )
-    score, verdict = calculate_lead_score(lead)
-    assert score == 55  # 35 (social) + 20 (phone)
-    assert verdict == "warm"
-
-    hooks_de = generate_pitch_hooks(lead, lang="de")
-    assert any("Facebook" in h for h in hooks_de)
+def test_scoring_social_and_directory_with_phone_not_hot():
+    """Social profiles (facebook, instagram) and directory listings with phone must be WARM (55), NOT HOT."""
+    for kind in ("facebook", "instagram", "directory"):
+        lead = CanonicalLead(
+            country="DE",
+            name=f"Friseur Dresden {kind}",
+            city="Dresden",
+            phone="+49 351 987654",
+            website=f"https://www.{kind}.com/friseur.dresden",
+            website_kind=kind,  # type: ignore
+            source="osm",
+            source_id="node/201",
+            industry_label="Friseur",
+        )
+        score, verdict = calculate_lead_score(lead)
+        assert score == 55  # 35 (social/dir) + 20 (phone)
+        assert verdict == "warm"
+        assert verdict != "hot"
 
 
 def test_scoring_broken_website():
-    """Website exists in OSM but is completely unreachable should be HOT (>=70) if phone present."""
+    """Website exists in OSM but is completely unreachable should be WARM (60) if phone present."""
     lead = CanonicalLead(
         country="PL",
         name="Elektryk Rzeszów Sp. z o.o.",
@@ -82,6 +81,7 @@ def test_scoring_broken_website():
     score, verdict = calculate_lead_score(lead)
     assert score == 60  # 40 (broken) + 20 (phone)
     assert verdict == "warm"
+    assert verdict != "hot"
 
 
 def test_scoring_inactive_business():
@@ -104,7 +104,7 @@ def test_scoring_inactive_business():
 
 
 def test_scoring_healthy_modern_website():
-    """Business with HTTPS, viewport, modern site should be SKIP (<45)."""
+    """Business with HTTPS, viewport, modern site should be SKIP (<45), NOT hot or warm."""
     lead = CanonicalLead(
         country="DE",
         name="Top Modern Friseur GmbH",
@@ -125,3 +125,5 @@ def test_scoring_healthy_modern_website():
     score, verdict = calculate_lead_score(lead)
     assert score == 20  # only 20 from phone, 0 from audit penalties
     assert verdict == "skip"
+    assert verdict != "hot"
+    assert verdict != "warm"

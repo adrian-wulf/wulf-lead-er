@@ -4,7 +4,7 @@ Uses dane.biznes.gov.pl JWT authentication for enrichment.
 Flagged / optional enrichment source.
 """
 
-from brakstrony.models import CanonicalLead
+from wulf_web_leader.models import CanonicalLead
 
 
 class CEIDGAdapter:

@@ -2,7 +2,7 @@ import csv
 import json
 from pathlib import Path
 from typing import Sequence
-from brakstrony.models import CanonicalLead
+from wulf_web_leader.models import CanonicalLead
 
 ODBL_ATTRIBUTION = "Data © OpenStreetMap contributors under ODbL 1.0 (https://www.openstreetmap.org/copyright)"
 

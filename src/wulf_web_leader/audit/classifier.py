@@ -1,5 +1,5 @@
 from urllib.parse import urlparse
-from brakstrony.models import WebsiteKind
+from wulf_web_leader.models import WebsiteKind
 
 FACEBOOK_DOMAINS = {
     "facebook.com",

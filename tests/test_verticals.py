@@ -1,5 +1,5 @@
 import pytest
-from brakstrony.verticals import load_all_verticals, find_vertical
+from wulf_web_leader.verticals import load_all_verticals, find_vertical
 
 
 def test_load_all_verticals():
@@ -49,3 +49,24 @@ def test_find_vertical_by_id_and_alias():
 
     # Unknown
     assert find_vertical("space_rocket", verticals) is None
+
+
+def test_hair_vertical_does_not_contain_beauty_tags():
+    """Verify hair vertical strictly targets hairdressers/barbers and does NOT contain shop=beauty."""
+    verticals = load_all_verticals()
+    hair = verticals.get("hair")
+    assert hair is not None
+
+    # Check PL tags
+    assert "shop=hairdresser" in hair.pl.osm
+    assert "shop=beauty" not in hair.pl.osm
+    for tag in hair.pl.osm:
+        assert "beauty" not in tag.lower(), f"Unexpected beauty tag in hair PL: {tag}"
+        assert "cosmetic" not in tag.lower(), f"Unexpected cosmetic tag in hair PL: {tag}"
+
+    # Check DE tags
+    assert "shop=hairdresser" in hair.de.osm
+    assert "shop=beauty" not in hair.de.osm
+    for tag in hair.de.osm:
+        assert "beauty" not in tag.lower(), f"Unexpected beauty tag in hair DE: {tag}"
+        assert "cosmetic" not in tag.lower(), f"Unexpected cosmetic tag in hair DE: {tag}"

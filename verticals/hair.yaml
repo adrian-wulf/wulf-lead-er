@@ -1,5 +1,5 @@
 id: hair
-name: "Hair & Beauty"
+name: "Hair Salons & Barbers"
 aliases:
   pl: ["fryzjer", "fryzjerstwo", "salon fryzjerski", "barber"]
   de: ["friseur", "friseursalon", "barbier", "hairstylist"]
@@ -9,11 +9,9 @@ pl:
   pkd: ["96.02.Z"]
   osm:
     - "shop=hairdresser"
-    - "shop=beauty"
 de:
   query: "Friseur"
   label: "Friseursalon / Barbier"
   wz: ["96.02"]
   osm:
     - "shop=hairdresser"
-    - "shop=beauty"

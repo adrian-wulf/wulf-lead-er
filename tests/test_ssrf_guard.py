@@ -1,5 +1,5 @@
 import pytest
-from brakstrony.audit.fetch import is_ip_allowed, validate_url_safety
+from wulf_web_leader.audit.fetch import is_ip_allowed, validate_url_safety
 
 
 def test_ip_filtering():

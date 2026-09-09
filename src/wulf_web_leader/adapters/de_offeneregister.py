@@ -3,7 +3,7 @@
 Uses offline SQLite / JSON dumps for enrichment of German commercial entities.
 """
 
-from brakstrony.models import CanonicalLead
+from wulf_web_leader.models import CanonicalLead
 
 
 class OffeneRegisterAdapter:

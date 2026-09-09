@@ -3,8 +3,8 @@ import socket
 from urllib.parse import urlparse
 import httpx
 
-from brakstrony.models import AuditResult
-from brakstrony.audit.parser import SafeWebsiteHTMLParser
+from wulf_web_leader.models import AuditResult
+from wulf_web_leader.audit.parser import SafeWebsiteHTMLParser
 
 FORBIDDEN_NETWORKS = [
     ipaddress.ip_network("0.0.0.0/8"),
@@ -28,7 +28,7 @@ FORBIDDEN_NETWORKS = [
 MAX_BODY_BYTES = 1_048_576  # 1MB
 MAX_REDIRECTS = 5
 AUDIT_TIMEOUT = httpx.Timeout(connect=3.0, read=5.0, write=3.0, pool=3.0)
-AUDIT_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 (compatible; brakstrony-bot/0.1.0)"
+AUDIT_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 (compatible; wulf-bot/0.1.0)"
 
 
 def is_ip_allowed(ip_str: str) -> bool:

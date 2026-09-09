@@ -1,6 +1,6 @@
 from pathlib import Path
 import yaml
-from brakstrony.models import VerticalDefinition
+from wulf_web_leader.models import VerticalDefinition
 
 
 def get_verticals_dir() -> Path:

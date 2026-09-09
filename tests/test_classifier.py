@@ -1,5 +1,5 @@
 import pytest
-from brakstrony.audit.classifier import classify_website_kind
+from wulf_web_leader.audit.classifier import classify_website_kind
 
 
 def test_classify_none():

@@ -1,10 +1,11 @@
+import json
 import pytest
 from pathlib import Path
-from brakstrony.adapters.nominatim import NominatimClient, GeocodedLocation
-from brakstrony.adapters.osm import OverpassClient
-from brakstrony.pipeline import run_scan_pipeline
-from brakstrony.verticals import find_vertical
-from brakstrony.export.writer import export_leads_to_csv, export_leads_to_json
+from wulf_web_leader.adapters.nominatim import NominatimClient, GeocodedLocation
+from wulf_web_leader.adapters.osm import OverpassClient
+from wulf_web_leader.pipeline import run_scan_pipeline
+from wulf_web_leader.verticals import find_vertical
+from wulf_web_leader.export.writer import export_leads_to_csv, export_leads_to_json, ODBL_ATTRIBUTION
 
 
 class MockNominatim(NominatimClient):
@@ -109,3 +110,10 @@ async def test_pipeline_offline(tmp_path: Path):
     assert "Hydraulik 24h Rzeszów" in csv_text
     assert "+48178887766" in csv_text
     assert "hot" in csv_text
+
+    # Verify JSON attribution (ODbL)
+    with open(json_file, "r", encoding="utf-8") as f:
+        json_data = json.load(f)
+    assert "_attribution" in json_data
+    assert "OpenStreetMap" in json_data["_attribution"]
+    assert "ODbL" in json_data["_attribution"]

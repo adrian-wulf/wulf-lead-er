@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from urllib.parse import urlparse
-from brakstrony.models import CanonicalLead
+from wulf_web_leader.models import CanonicalLead
 
 _LOCALES_CACHE: dict[str, dict] = {}
 
