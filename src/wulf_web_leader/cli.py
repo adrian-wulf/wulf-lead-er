@@ -7,9 +7,11 @@ from rich.console import Console
 from rich.table import Table
 
 from wulf_web_leader.models import CanonicalLead, CountryCode
-from wulf_web_leader.verticals import load_all_verticals, find_vertical
+from wulf_web_leader.verticals import load_all_verticals, find_vertical, resolve_or_create_vertical
 from wulf_web_leader.pipeline import run_scan_pipeline
 from wulf_web_leader.export.writer import export_leads_to_csv, export_leads_to_json, ODBL_ATTRIBUTION
+from wulf_web_leader.export.demo import generate_demo_html
+from wulf_web_leader.export.report import generate_html_report
 from wulf_web_leader.audit.cache import AuditCache
 from wulf_web_leader.audit.classifier import classify_website_kind
 from wulf_web_leader.audit.fetch import audit_website
@@ -17,8 +19,8 @@ from wulf_web_leader.score.engine import calculate_lead_score
 from wulf_web_leader.score.hooks import generate_pitch_hooks
 
 app = typer.Typer(
-    name="wulf",
-    help="wulf-web-leader: Lokalny skaner leadów dla web designerów (Polska i Niemcy). Bez spamu, bez konta, local-first.",
+    name="lead.er",
+    help="lead.er (wulf-web-leader): Lokalny skaner leadów dla web designerów (Polska i Niemcy). Bez spamu, bez konta, local-first.",
     add_completion=False,
 )
 console = Console()
@@ -39,6 +41,23 @@ def determine_output_paths(out_arg: Optional[Path], default_stem: str = "leads")
         return out_arg.with_suffix(".csv"), out_arg
 
     return out_arg.with_suffix(".csv"), out_arg.with_suffix(".json")
+
+
+def load_leads_from_file(file_path: Path) -> list[CanonicalLead]:
+    """Wczytaj listę leadów z pliku JSON i dokonaj walidacji modeli Pydantic."""
+    if not file_path.is_file():
+        console.print(f"[bold red]Błąd:[/bold red] Plik wejściowy '{file_path}' nie istnieje.")
+        raise typer.Exit(code=1)
+
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception as e:
+        console.print(f"[bold red]Błąd odczytu pliku JSON:[/bold red] {e}")
+        raise typer.Exit(code=1)
+
+    raw_leads = data.get("leads", []) if isinstance(data, dict) else data
+    return [CanonicalLead.model_validate(item) for item in raw_leads]
 
 
 @app.command(name="list-verticals")
@@ -84,11 +103,11 @@ def scan(
     if target_lang not in ("pl", "de", "en"):
         target_lang = "pl"
 
-    # Znajdź definicję wertykału
-    v_def = find_vertical(vertical)
+    # Znajdź lub stwórz definicję wertykału (obsługa predefiniowanych oraz dowolnych wpisanych z ręki)
+    v_def = resolve_or_create_vertical(vertical, country=country_norm)
     if not v_def:
         console.print(f"[bold red]Błąd:[/bold red] Nieznana branża '{vertical}'.")
-        console.print("Uruchom [cyan]wulf list-verticals[/cyan], aby zobaczyć obsługiwane branże.")
+        console.print("Uruchom [cyan]lead.er list-verticals[/cyan], aby zobaczyć obsługiwane branże.")
         raise typer.Exit(code=1)
 
     delim_char = ";" if delimiter.lower() in ("semicolon", ";") else ","
@@ -96,7 +115,7 @@ def scan(
     csv_path, json_path = determine_output_paths(out, default_stem="leads")
 
     console.print(
-        f"[bold blue]wulf[/bold blue] - Skanowanie [bold cyan]{city}[/bold cyan] ({country_norm}) "
+        f"[bold blue]lead.er[/bold blue] - Skanowanie [bold cyan]{city}[/bold cyan] ({country_norm}) "
         f"dla branży [bold green]{v_def.name}[/bold green] (promień: {radius} km)..."
     )
 
@@ -129,7 +148,7 @@ def scan(
     if not leads:
         console.print(f"\n[yellow]Nie znaleziono firm spełniających kryteria w promieniu {radius} km od {city}.[/yellow]")
         console.print("[dim]Wskazówki: 1) Zwiększ promień (np. --radius 25)[/dim]")
-        console.print("[dim]           2) Sprawdź alternatywne nazwy branży (wulf list-verticals)[/dim]")
+        console.print("[dim]           2) Sprawdź alternatywne nazwy branży (lead.er list-verticals)[/dim]")
         console.print("[dim]           3) Upewnij się co do poprawnej pisowni miasta[/dim]\n")
         return
 
@@ -170,15 +189,7 @@ def audit(
     no_cache: Annotated[bool, typer.Option("--no-cache", "--refresh-audit", help="Pomiń cache dyskowy i wymuś świeży audyt stron www")] = False,
 ):
     """Przeprowadź ponowny audyt stron www dla leadów z pliku JSON i zaktualizuj punktację."""
-    if not file_path.is_file():
-        console.print(f"[bold red]Błąd:[/bold red] Plik '{file_path}' nie istnieje.")
-        raise typer.Exit(code=1)
-
-    with open(file_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    raw_leads = data.get("leads", []) if isinstance(data, dict) else data
-    leads: list[CanonicalLead] = [CanonicalLead.model_validate(item) for item in raw_leads]
+    leads = load_leads_from_file(file_path)
 
     console.print(f"Audytowanie {len(leads)} leadów z pliku {file_path}...")
 
@@ -196,10 +207,13 @@ def audit(
                     cache.set(lead.website, lead.audit)
                 if not lead.phone and lead.audit.extracted_phones:
                     lead.phone = lead.audit.extracted_phones[0]
+                if not lead.email and lead.audit.extracted_emails:
+                    lead.email = lead.audit.extracted_emails[0]
             score, verdict = calculate_lead_score(lead)
             lead.score = score
             lead.verdict = verdict
             lead.hooks = generate_pitch_hooks(lead, lang=lang)
+        cache.flush()
 
     asyncio.run(audit_all())
 
@@ -221,15 +235,7 @@ def export(
     delimiter: Annotated[str, typer.Option("--delimiter", help="Separator CSV (comma lub semicolon)")] = "comma",
 ):
     """Filtruj i eksportuj zapisane leady do pliku CSV lub JSON."""
-    if not file_path.is_file():
-        console.print(f"[bold red]Błąd:[/bold red] Plik wejściowy '{file_path}' nie istnieje.")
-        raise typer.Exit(code=1)
-
-    with open(file_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    raw_leads = data.get("leads", []) if isinstance(data, dict) else data
-    leads: list[CanonicalLead] = [CanonicalLead.model_validate(item) for item in raw_leads]
+    leads = load_leads_from_file(file_path)
 
     # Ponowne przeliczenie języka hooków i filtr po minimalnym wyniku
     filtered = []
@@ -247,6 +253,124 @@ def export(
     else:
         export_leads_to_csv(filtered, csv_path, delimiter=delim_char)
         console.print(f"[bold green]✔ Wyeksportowano {len(filtered)} leadów do CSV:[/bold green] {csv_path}")
+
+
+@app.command(name="filter")
+def filter_leads(
+    file_path: Annotated[Path, typer.Argument(help="Ścieżka do pliku leads.json")] = Path("leads.json"),
+    min_score: Annotated[int, typer.Option("--min-score", help="Minimalny wynik leada")] = 0,
+    has_phone: Annotated[bool, typer.Option("--has-phone", help="Uwzględnij tylko firmy z publicznym numerem telefonu")] = False,
+    out: Annotated[Optional[Path], typer.Option("--out", "-o", help="Ścieżka docelowa")] = None,
+    format: Annotated[str, typer.Option("--format", "-f", help="Format wyjściowy: csv lub json")] = "csv",
+    delimiter: Annotated[str, typer.Option("--delimiter", help="Separator CSV (comma lub semicolon)")] = "comma",
+):
+    """Lokalne filtrowanie i segregacja zapisanych leadów (BEZ odpytywania sieci)."""
+    leads = load_leads_from_file(file_path)
+
+    filtered = []
+    for lead in leads:
+        if lead.score < min_score:
+            continue
+        if has_phone and not lead.phone:
+            continue
+        filtered.append(lead)
+
+    csv_path, json_path = determine_output_paths(out or Path("filtered_leads.csv"))
+    delim_char = ";" if delimiter.lower() in ("semicolon", ";") else ","
+
+    if format.lower() == "json" or (out and out.suffix.lower() == ".json"):
+        export_leads_to_json(filtered, json_path)
+        console.print(f"[bold green]✔ Przefiltrowano {len(filtered)} leadów do JSON:[/bold green] {json_path}")
+    else:
+        export_leads_to_csv(filtered, csv_path, delimiter=delim_char)
+        console.print(f"[bold green]✔ Przefiltrowano {len(filtered)} leadów do CSV:[/bold green] {csv_path}")
+
+
+@app.command(name="demo-template")
+def demo_template_cmd(
+    name: Annotated[str, typer.Option("--name", "-n", help="Nazwa firmy")] = ...,
+    phone: Annotated[str, typer.Option("--phone", "-p", help="Numer telefonu do kontaktu")] = ...,
+    industry: Annotated[str, typer.Option("--industry", "-i", help="Branża")] = "Usługi lokalne",
+    city: Annotated[Optional[str], typer.Option("--city", "--miasto", help="Miasto działalności")] = None,
+    out: Annotated[Path, typer.Option("--out", "-o", help="Ścieżka pliku wyjściowego")] = Path("index.html"),
+):
+    """Wygeneruj lekki, responsywny plik HTML one-pager jako demo dla klienta."""
+    generate_demo_html(
+        name=name,
+        industry=industry,
+        phone=phone,
+        city=city,
+        output_path=out,
+    )
+    console.print(f"[bold green]✔ Wygenerowano szablon demo HTML:[/bold green] {out.resolve()}")
+
+
+@app.command(name="report")
+def report_cmd(
+    file_path: Annotated[Path, typer.Argument(help="Ścieżka do pliku leads.json")] = Path("leads.json"),
+    out: Annotated[Path, typer.Option("--out", "-o", help="Ścieżka do wyjściowego pliku HTML")] = Path("report.html"),
+):
+    """Wygeneruj interaktywny, samodzielny raport HTML z kartami leadów do przeglądarki."""
+    leads = load_leads_from_file(file_path)
+
+    res_path = generate_html_report(leads, out)
+    console.print(f"[bold green]✔ Wygenerowano raport HTML ({len(leads)} leadów):[/bold green] {res_path.resolve()}")
+    console.print(f"[dim]Aby otworzyć w przeglądarce: xdg-open {res_path}  (lub kliknij dwukrotnie w plik)[/dim]")
+
+
+@app.command(name="web")
+def web_cmd(
+    host: Annotated[str, typer.Option("--host", "-h", help="Host do nasłuchiwania serwera Web GUI")] = "127.0.0.1",
+    port: Annotated[int, typer.Option("--port", "-p", help="Port serwera Web GUI")] = 8000,
+    open_browser: Annotated[bool, typer.Option("--open-browser/--no-browser", help="Automatycznie otwórz przeglądarkę internetową")] = True,
+):
+    """Uruchom interaktywny pulpit Web GUI (FastAPI + Uvicorn) w przeglądarce."""
+    try:
+        import uvicorn
+    except ImportError:
+        console.print("[bold red]Błąd:[/bold red] Brakuje pakietu 'uvicorn'. Zainstaluj go przez: pip install uvicorn")
+        raise typer.Exit(code=1)
+
+    def _is_port_available(h: str, p: int) -> bool:
+        import socket
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                s.bind((h, p))
+                return True
+            except OSError:
+                return False
+
+    actual_port = port
+    if not _is_port_available(host, actual_port):
+        for candidate in range(actual_port + 1, actual_port + 100):
+            if _is_port_available(host, candidate):
+                console.print(f"[bold yellow]Uwaga:[/bold yellow] Port {actual_port} jest zajęty przez inny proces. Przełączono na wolny port [bold cyan]{candidate}[/bold cyan].")
+                actual_port = candidate
+                break
+
+    url = f"http://{host}:{actual_port}"
+    console.print(f"[bold cyan]Wulf Web Leader — Uruchamianie Web GUI...[/bold cyan]")
+    console.print(f"[bold green]✔ Adres:[/bold green] [underline]{url}[/underline]")
+    console.print("[dim]Naciśnij Ctrl+C, aby zatrzymać serwer.[/dim]")
+
+    if open_browser:
+        import threading
+        import time
+        import webbrowser
+
+        def _open():
+            time.sleep(1.2)
+            try:
+                webbrowser.open(url)
+            except Exception:
+                pass
+
+        threading.Thread(target=_open, daemon=True).start()
+
+    from wulf_web_leader.web.app import app as fastapi_app
+
+    uvicorn.run(fastapi_app, host=host, port=actual_port, log_level="info")
 
 
 if __name__ == "__main__":

@@ -76,6 +76,68 @@ def normalize_phone_number(raw_phone: str | None, country: CountryCode) -> str |
     return cleaned
 
 
+def is_dead_or_disused_poi(tags: dict[str, str]) -> bool:
+    """Check if OSM tags indicate a closed, disused, or abandoned business."""
+    if not tags:
+        return False
+    if tags.get("disused") in ("yes", "true", "1") or tags.get("abandoned") in ("yes", "true", "1"):
+        return True
+    if tags.get("closed") in ("yes", "true", "1"):
+        return True
+    if tags.get("opening_hours") == "closed" or tags.get("operational_status") in ("closed", "out_of_service", "demolished"):
+        return True
+    for k in tags.keys():
+        lower_k = k.lower()
+        if lower_k.startswith(("disused:", "abandoned:", "demolished:")):
+            return True
+    return False
+
+
+FREEMAIL_DOMAINS = {
+    # Global
+    "gmail.com", "googlemail.com", "yahoo.com", "yahoo.de", "yahoo.pl",
+    "hotmail.com", "hotmail.de", "hotmail.pl", "outlook.com", "live.com",
+    "icloud.com", "aol.com", "mail.com", "zoho.com", "proton.me", "protonmail.com",
+    # DACH
+    "gmx.de", "gmx.net", "gmx.at", "gmx.ch", "web.de", "t-online.de",
+    "freenet.de", "arcor.de", "posteo.de", "mailbox.org", "1und1.de", "online.de",
+    # Poland
+    "wp.pl", "onet.pl", "onet.eu", "interia.pl", "interia.eu", "o2.pl",
+    "tlen.pl", "gazeta.pl", "poczta.fm", "autograf.pl", "vp.pl", "buziaczek.pl",
+}
+
+CORPORATE_ENTITY_REGEX = re.compile(
+    r"(?:^|[\s,.\-(])(gmbh|ag|kg|gbr|ohg|ug|gmbh\s*&\s*co|sp\.\s*z\s*o\.\s*o\.|spółka\s*z\s*o\.\s*o\.|sp\.\s*j\.|sp\.\s*k\.|s\.a\.|spółka\s*akcyjna)(?:$|[\s,.\-)])",
+    re.IGNORECASE,
+)
+
+
+def extract_domain_from_email(raw_email: str | None) -> str | None:
+    """Extract custom business domain from email, ignoring freemail providers."""
+    if not raw_email or "@" not in raw_email:
+        return None
+    cleaned = raw_email.strip().lower()
+    if cleaned.startswith("mailto:"):
+        cleaned = cleaned[7:]
+    parts = cleaned.split("@")
+    if len(parts) != 2:
+        return None
+    domain = parts[1].strip()
+    if not domain or domain in FREEMAIL_DOMAINS:
+        return None
+    # Basic domain sanity check
+    if "." in domain and not domain.startswith(".") and not domain.endswith("."):
+        return domain
+    return None
+
+
+def is_corporate_entity(name: str | None) -> bool:
+    """Determine if company name indicates a commercial corporation (GmbH, Sp. z o.o., etc.)."""
+    if not name:
+        return False
+    return bool(CORPORATE_ENTITY_REGEX.search(name))
+
+
 class OverpassClient:
     """Resilient client for querying OpenStreetMap entities via Overpass API."""
 
@@ -83,7 +145,7 @@ class OverpassClient:
         self,
         endpoints: list[str] | None = None,
         timeout: float = 35.0,
-        user_agent: str = "wulf-web-leader/0.1.0 (+https://github.com/wulf-org/wulf-web-leader)",
+        user_agent: str = "wulf-web-leader/0.3.0 (+https://github.com/wulf-org/wulf-web-leader)",
     ):
         self.endpoints = endpoints or list(DEFAULT_OVERPASS_ENDPOINTS)
         self.timeout = timeout
@@ -120,7 +182,7 @@ class OverpassClient:
                     await asyncio.sleep(0.5)
 
         if last_exception:
-            raise RuntimeError(f"All Overpass API endpoints failed. Last error: {last_exception}")
+            raise RuntimeError(f"Wszystkie serwery Overpass API nie odpowiedziały. Ostatni błąd: {last_exception}")
         return []
 
     def parse_elements_to_leads(
@@ -135,6 +197,7 @@ class OverpassClient:
         leads: list[CanonicalLead] = []
         seen_osm_ids: set[str] = set()
         seen_geo_names: set[tuple[str, float, float]] = set()
+        seen_phone_locations: dict[tuple[str, float, float], int] = {}
 
         for el in elements:
             el_type = el.get("type", "node")
@@ -146,6 +209,10 @@ class OverpassClient:
             seen_osm_ids.add(source_id)
 
             tags: dict[str, str] = el.get("tags", {})
+            if is_dead_or_disused_poi(tags):
+                # Odrzucenie zamkniętych / wygasłych punktów
+                continue
+
             name = tags.get("name") or tags.get("brand") or tags.get("operator")
             if not name:
                 # POI without name is not actionable for lead outreach
@@ -164,13 +231,6 @@ class OverpassClient:
             if lat is None or lon is None:
                 continue
 
-            # Geo-name deduplication (100m grid)
-            norm_name = normalize_business_name(name)
-            geo_key = (norm_name, round(lat, 3), round(lon, 3))
-            if geo_key in seen_geo_names:
-                continue
-            seen_geo_names.add(geo_key)
-
             # Phone extraction
             raw_phone = (
                 tags.get("contact:phone")
@@ -180,13 +240,24 @@ class OverpassClient:
             )
             phone = normalize_phone_number(raw_phone, country)
 
+            # Address extraction
+            street = tags.get("addr:street")
+            housenumber = tags.get("addr:housenumber")
+            address_parts = [p for p in [street, housenumber] if p]
+            address = " ".join(address_parts) if address_parts else None
+
+            city = tags.get("addr:city") or default_city
+            postcode = tags.get("addr:postcode")
+
             # Website and social media extraction
             raw_website = tags.get("website") or tags.get("contact:website")
             raw_facebook = tags.get("contact:facebook") or tags.get("facebook")
             raw_instagram = tags.get("contact:instagram") or tags.get("instagram")
+            raw_email = tags.get("contact:email") or tags.get("email")
 
             website = None
             website_kind = "none"
+            website_source = "none"
 
             if raw_website and raw_website.strip():
                 url = raw_website.strip()
@@ -194,6 +265,7 @@ class OverpassClient:
                     url = f"https://{url}"
                 website = url
                 website_kind = classify_website_kind(website)
+                website_source = "osm_website"
 
             # If dedicated facebook tag exists
             if raw_facebook and raw_facebook.strip():
@@ -206,6 +278,7 @@ class OverpassClient:
                 if not website or website_kind in ("none", "other"):
                     website = fb
                     website_kind = "facebook"
+                    website_source = "osm_website"
 
             # If dedicated instagram tag exists
             elif raw_instagram and raw_instagram.strip():
@@ -218,15 +291,47 @@ class OverpassClient:
                 if not website or website_kind in ("none", "other"):
                     website = ig
                     website_kind = "instagram"
+                    website_source = "osm_website"
 
-            # Address extraction
-            street = tags.get("addr:street")
-            housenumber = tags.get("addr:housenumber")
-            address_parts = [p for p in [street, housenumber] if p]
-            address = " ".join(address_parts) if address_parts else None
+            email = None
+            if raw_email and "@" in raw_email:
+                em = raw_email.strip().lower()
+                if em.startswith("mailto:"):
+                    em = em[7:]
+                email = em.split("?")[0].strip()
 
-            city = tags.get("addr:city") or default_city
-            postcode = tags.get("addr:postcode")
+            # Passive discovery: if no website was found yet, check email for custom company domain
+            if (not website or website_kind in ("none", "other")) and raw_email:
+                custom_domain = extract_domain_from_email(raw_email)
+                if custom_domain:
+                    website = f"https://{custom_domain}"
+                    website_kind = "own"
+                    website_source = "email_domain"
+
+            # Phone + ~100m grid deduplication and merging
+            if phone:
+                phone_key = (phone, round(lat, 3), round(lon, 3))
+                if phone_key in seen_phone_locations:
+                    existing_lead = leads[seen_phone_locations[phone_key]]
+                    if not existing_lead.address and address:
+                        existing_lead.address = address
+                    if not existing_lead.postcode and postcode:
+                        existing_lead.postcode = postcode
+                    if not existing_lead.phone and phone:
+                        existing_lead.phone = phone
+                    if not existing_lead.email and email:
+                        existing_lead.email = email
+                    if not existing_lead.website and website:
+                        existing_lead.website = website
+                        existing_lead.website_kind = website_kind
+                    continue
+
+            # Geo-name deduplication (100m grid)
+            norm_name = normalize_business_name(name)
+            geo_key = (norm_name, round(lat, 3), round(lon, 3))
+            if geo_key in seen_geo_names:
+                continue
+            seen_geo_names.add(geo_key)
 
             lead = CanonicalLead(
                 country=country,
@@ -237,8 +342,10 @@ class OverpassClient:
                 city=city,
                 postcode=postcode,
                 phone=phone,
+                email=email,
                 website=website,
                 website_kind=website_kind,
+                website_source=website_source,
                 source="osm",
                 source_id=source_id,
                 industry_code=industry_code,
@@ -246,5 +353,7 @@ class OverpassClient:
                 registry_status="unknown",
             )
             leads.append(lead)
+            if phone:
+                seen_phone_locations[phone_key] = len(leads) - 1
 
         return leads

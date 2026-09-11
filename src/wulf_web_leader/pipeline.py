@@ -3,10 +3,13 @@ import logging
 from typing import Callable
 from wulf_web_leader.models import CanonicalLead, CountryCode, VerticalDefinition
 from wulf_web_leader.adapters.nominatim import NominatimClient, GeocodedLocation
-from wulf_web_leader.adapters.osm import OverpassClient, build_overpass_query
+from wulf_web_leader.adapters.osm import OverpassClient, build_overpass_query, is_corporate_entity
+from wulf_web_leader.adapters.pl_ceidg import CEIDGAdapter
+from wulf_web_leader.adapters.de_offeneregister import OffeneRegisterAdapter
 from wulf_web_leader.audit.cache import AuditCache
 from wulf_web_leader.audit.classifier import classify_website_kind
 from wulf_web_leader.audit.fetch import audit_website
+from wulf_web_leader.audit.verifier import resolve_and_verify_candidate
 from wulf_web_leader.score.engine import calculate_lead_score
 from wulf_web_leader.score.hooks import generate_pitch_hooks
 
@@ -26,6 +29,8 @@ async def run_scan_pipeline(
     no_cache: bool = False,
     nominatim_client: NominatimClient | None = None,
     overpass_client: OverpassClient | None = None,
+    ceidg_adapter: CEIDGAdapter | None = None,
+    offeneregister_adapter: OffeneRegisterAdapter | None = None,
     progress_callback: Callable[[str, str], None] | None = None,
 ) -> tuple[list[CanonicalLead], GeocodedLocation]:
     """Execute end-to-end lead scanning, auditing, scoring, and hook generation pipeline."""
@@ -39,7 +44,7 @@ async def run_scan_pipeline(
     nom = nominatim_client or NominatimClient()
     location = await nom.geocode(city, country)
     if not location:
-        raise ValueError(f"Could not locate city '{city}' in {country}. Please verify spelling.")
+        raise ValueError(f"Nie znaleziono miasta '{city}' w kraju {country}. Sprawdź poprawność pisowni.")
 
     # 2. Prepare OSM tags for vertical & country
     country_key = country.lower()
@@ -70,33 +75,176 @@ async def run_scan_pipeline(
         if not lead.website_kind or lead.website_kind in ("none", "other"):
             lead.website_kind = classify_website_kind(lead.website)
 
-    # 6. Audit websites (if enabled)
-    leads_to_audit = [lead for lead in leads if lead.website_kind == "own" and lead.website]
+    # 5b. Polish CEIDG enrichment (optional / token-gated)
+    if country == "PL":
+        ceidg = ceidg_adapter or CEIDGAdapter()
+        if ceidg.is_available():
+            notify("ceidg", f"Weryfikacja {len(leads)} podmiotów w rejestrze CEIDG...")
+            await ceidg.enrich_leads(leads)
+
+    # 5c. German OffeneRegister enrichment (optional / local SQLite dump)
+    if country == "DE":
+        offene = offeneregister_adapter or OffeneRegisterAdapter()
+        if offene.is_available():
+            notify("offeneregister", f"Weryfikacja {len(leads)} podmiotów w bazie OffeneRegister...")
+            offene.enrich_leads(leads)
+
+    # 6. Audit websites and run QA Verification gates
+    # Determine vertical keywords for domain candidate generation
+    vertical_keywords: list[str] = []
+    if vertical:
+        v_tokens = [t.lower() for t in vertical.id.split("_") if len(t) > 2]
+        if country == "DE":
+            v_tokens.extend([t.lower() for t in getattr(vertical.de, "query", "").split() if len(t) > 2])
+            if vertical.id == "plumbers":
+                v_tokens.extend(["sanitaer", "heizung", "haustechnik", "klempner"])
+            elif vertical.id == "electricians":
+                v_tokens.extend(["elektro", "elektrik", "installation"])
+            elif vertical.id == "auto_repair":
+                v_tokens.extend(["kfz", "werkstatt", "auto"])
+        else:
+            v_tokens.extend([t.lower() for t in getattr(vertical.pl, "query", "").split() if len(t) > 2])
+            if vertical.id == "plumbers":
+                v_tokens.extend(["hydraulik", "instalacje", "sanitarne", "wod-kan"])
+            elif vertical.id == "electricians":
+                v_tokens.extend(["elektryk", "instalacje"])
+            elif vertical.id == "auto_repair":
+                v_tokens.extend(["warsztat", "mechanika", "auto"])
+        vertical_keywords = list(dict.fromkeys(v_tokens))
+
+    leads_to_audit = [
+        lead for lead in leads
+        if (lead.website_kind == "own" and lead.website) or (lead.website_kind == "none" and is_corporate_entity(lead.name))
+    ]
+
     if do_audit and leads_to_audit:
-        notify("audit", f"Auditing {len(leads_to_audit)} business websites...")
+        notify("audit", f"Auditing & QA verifying {len(leads_to_audit)} businesses...")
         cache = audit_cache or AuditCache()
         semaphore = asyncio.Semaphore(5)
 
         async def audit_single(lead: CanonicalLead):
             async with semaphore:
                 try:
-                    cached_res = None if no_cache else cache.get(lead.website)
-                    if cached_res is not None:
-                        audit_res = cached_res
-                    else:
-                        audit_res = await audit_website(lead.website)
-                        cache.set(lead.website, audit_res)
+                    if lead.website:
+                        cached_res = None if no_cache else cache.get(lead.website)
+                        if cached_res is not None:
+                            audit_res = cached_res
+                        else:
+                            audit_res = await audit_website(
+                                lead.website,
+                                lead_name=lead.name,
+                                city=lead.city,
+                                phone=lead.phone,
+                                address=lead.address or lead.street,
+                            )
+                            cache.set(lead.website, audit_res)
 
-                    lead.audit = audit_res
-                    # If phone was missing from OSM, check if phone was found on website
-                    if not lead.phone and audit_res.extracted_phones:
-                        lead.phone = audit_res.extracted_phones[0]
+                        lead.audit = audit_res
+                        if not lead.phone and audit_res.extracted_phones:
+                            lead.phone = audit_res.extracted_phones[0]
+                        if not lead.email and audit_res.extracted_emails:
+                            lead.email = audit_res.extracted_emails[0]
+
+                        # QA Verification Gate on audited website
+                        if audit_res.reachable:
+                            is_bad_domain = audit_res.is_placeholder or (
+                                lead.website_source == "email_domain"
+                                and (not audit_res.entity_match or audit_res.entity_match_score < 30)
+                            )
+                            if is_bad_domain:
+                                # Trigger QA Candidate Resolution
+                                candidate = await resolve_and_verify_candidate(
+                                    lead=lead,
+                                    vertical_keywords=vertical_keywords,
+                                )
+                                if candidate:
+                                    cand_url, cand_audit, method = candidate
+                                    old_url = lead.website
+                                    lead.website = cand_url
+                                    lead.website_kind = "own"
+                                    lead.website_source = "candidate_discovery"
+                                    lead.audit = cand_audit
+                                    if not lead.phone and cand_audit.extracted_phones:
+                                        lead.phone = cand_audit.extracted_phones[0]
+                                    if not lead.email and cand_audit.extracted_emails:
+                                        lead.email = cand_audit.extracted_emails[0]
+                                    lead.qa_status = "verified"
+                                    lead.qa_notes = f"Wykryto i zweryfikowano rzeczywistą witrynę (zastąpiono {old_url})"
+                                    lead.confidence = "high"
+                                else:
+                                    if audit_res.is_placeholder:
+                                        lead.qa_status = "placeholder"
+                                        lead.qa_notes = audit_res.placeholder_reason or "Zaślepka serwera / domena zaparkowana"
+                                        lead.opportunity_type = "broken_website"
+                                        lead.primary_issue = "Domena to nieaktywna zaślepka serwera / parking"
+                                    else:
+                                        lead.qa_status = "mismatch"
+                                        lead.qa_notes = "Domena z emaila nie zawiera danych firmy"
+                                        lead.opportunity_type = "suspect_unverified"
+                                        lead.confidence = "low"
+                            else:
+                                lead.qa_status = "verified"
+                                sigs = f", {', '.join(audit_res.matched_signals)}" if audit_res.matched_signals else ""
+                                lead.qa_notes = f"Zweryfikowano tożsamość ({audit_res.entity_match_score}%{sigs})"
+                        else:
+                            # Website not reachable (4xx, 5xx, SSL, timeout)
+                            candidate = await resolve_and_verify_candidate(
+                                lead=lead,
+                                vertical_keywords=vertical_keywords,
+                            )
+                            if candidate:
+                                cand_url, cand_audit, method = candidate
+                                old_url = lead.website
+                                lead.website = cand_url
+                                lead.audit = cand_audit
+                                if not lead.phone and cand_audit.extracted_phones:
+                                    lead.phone = cand_audit.extracted_phones[0]
+                                if not lead.email and cand_audit.extracted_emails:
+                                    lead.email = cand_audit.extracted_emails[0]
+                                lead.qa_status = "verified"
+                                lead.qa_notes = f"Zastąpiono niedziałającą domenę {old_url} nową witryną"
+                                lead.confidence = "high"
+                            else:
+                                lead.qa_status = "verified"
+                                lead.opportunity_type = "broken_website"
+                                lead.primary_issue = audit_res.error_message or "Błąd połączenia ze stroną www"
+                                lead.qa_notes = f"Potwierdzono awarię witryny: {lead.primary_issue}"
+
+                    else:
+                        # Corporate lead without website in OSM/email
+                        candidate = await resolve_and_verify_candidate(
+                            lead=lead,
+                            vertical_keywords=vertical_keywords,
+                        )
+                        if candidate:
+                            cand_url, cand_audit, method = candidate
+                            lead.website = cand_url
+                            lead.website_kind = "own"
+                            lead.audit = cand_audit
+                            if not lead.phone and cand_audit.extracted_phones:
+                                lead.phone = cand_audit.extracted_phones[0]
+                            if not lead.email and cand_audit.extracted_emails:
+                                lead.email = cand_audit.extracted_emails[0]
+                            lead.qa_status = "verified"
+                            lead.qa_notes = f"Wykryto i zweryfikowano witrynę przez {method} (brakowało w OSM)"
+                            lead.confidence = "high"
+                        else:
+                            lead.qa_status = "unverified"
+                            lead.opportunity_type = "suspect_unverified"
+                            lead.primary_issue = "Spółka kapitałowa bez strony w OSM (wymaga weryfikacji)"
+                            lead.qa_notes = "Spółka bez strony w OSM — brak aktywnej witryny pod nazwą"
+                            lead.confidence = "low"
+
                 except Exception as e:
-                    logger.debug("Failed auditing %s: %s", lead.website, e)
+                    logger.debug("Failed auditing/verifying %s: %s", lead.name, e)
 
         await asyncio.gather(*[audit_single(l) for l in leads_to_audit])
+        if audit_cache:
+            audit_cache.flush()
+        else:
+            cache.flush()
     else:
-        notify("audit", "Skipping website audits (quick mode or no own websites to check).")
+        notify("audit", "Skipping website audits (quick mode or no businesses to check).")
 
     # 7. Score and generate hooks
     notify("score", "Scoring leads and generating pitch hooks...")

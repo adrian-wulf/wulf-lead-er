@@ -39,6 +39,7 @@ class AuditCache:
         self.cache_file = self.cache_dir / "audit_cache.json"
         self.ttl_seconds = ttl_seconds
         self._cache: dict[str, dict] = {}
+        self._dirty = False
         self._load_cache()
 
     def _load_cache(self) -> None:
@@ -94,7 +95,7 @@ class AuditCache:
             return None
 
     def set(self, url: str | None, result: AuditResult) -> None:
-        """Store audit result into cache and persist to disk."""
+        """Store audit result into cache and mark dirty."""
         if not url:
             return
 
@@ -103,11 +104,18 @@ class AuditCache:
             "timestamp": time.time(),
             "result": result.model_dump(mode="json"),
         }
-        self._save_cache()
+        self._dirty = True
+
+    def flush(self) -> None:
+        """Flush cache to disk if marked dirty."""
+        if self._dirty:
+            self._save_cache()
+            self._dirty = False
 
     def clear(self) -> None:
         """Clear cache in memory and on disk."""
         self._cache = {}
+        self._dirty = False
         try:
             if self.cache_file.is_file():
                 self.cache_file.unlink()

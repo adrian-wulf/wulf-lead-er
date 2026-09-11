@@ -17,6 +17,12 @@ INSTAGRAM_DOMAINS = {
 }
 
 DIRECTORY_DOMAINS = {
+    # Platform / landing sites
+    "business.site",
+    "olx.pl",
+    "www.olx.pl",
+    "allegro.pl",
+    "www.allegro.pl",
     # Polish directories
     "panoramafirm.pl",
     "www.panoramafirm.pl",

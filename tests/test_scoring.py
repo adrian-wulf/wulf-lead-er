@@ -44,9 +44,9 @@ def test_scoring_no_website_without_phone():
     assert verdict == "warm"
 
 
-def test_scoring_social_and_directory_with_phone_not_hot():
-    """Social profiles (facebook, instagram) and directory listings with phone must be WARM (55), NOT HOT."""
-    for kind in ("facebook", "instagram", "directory"):
+def test_scoring_social_and_directory_archetypes():
+    """Social profiles (facebook, instagram) with phone are HOT (70); directory listings are WARM (65)."""
+    for kind in ("facebook", "instagram"):
         lead = CanonicalLead(
             country="DE",
             name=f"Friseur Dresden {kind}",
@@ -59,13 +59,29 @@ def test_scoring_social_and_directory_with_phone_not_hot():
             industry_label="Friseur",
         )
         score, verdict = calculate_lead_score(lead)
-        assert score == 55  # 35 (social/dir) + 20 (phone)
-        assert verdict == "warm"
-        assert verdict != "hot"
+        assert score == 70  # 50 (social) + 20 (phone)
+        assert verdict == "hot"
+        assert lead.opportunity_type == "social_only"
+
+    dir_lead = CanonicalLead(
+        country="DE",
+        name="Friseur Dresden Directory",
+        city="Dresden",
+        phone="+49 351 987654",
+        website="https://www.gelbeseiten.de/friseur.dresden",
+        website_kind="directory",
+        source="osm",
+        source_id="node/202",
+        industry_label="Friseur",
+    )
+    score_d, verdict_d = calculate_lead_score(dir_lead)
+    assert score_d == 65  # 45 (directory) + 20 (phone)
+    assert verdict_d == "warm"
+    assert dir_lead.opportunity_type == "directory_only"
 
 
 def test_scoring_broken_website():
-    """Website exists in OSM but is completely unreachable should be WARM (60) if phone present."""
+    """Broken or unreachable website is a prime sales opportunity: HOT (85) with phone."""
     lead = CanonicalLead(
         country="PL",
         name="Elektryk Rzeszów Sp. z o.o.",
@@ -79,9 +95,39 @@ def test_scoring_broken_website():
         audit=AuditResult(reachable=False, error_message="DNS resolution error"),
     )
     score, verdict = calculate_lead_score(lead)
-    assert score == 60  # 40 (broken) + 20 (phone)
-    assert verdict == "warm"
-    assert verdict != "hot"
+    assert score == 85  # 65 (broken) + 20 (phone)
+    assert verdict == "hot"
+    assert lead.opportunity_type == "broken_website"
+
+    hooks = generate_pitch_hooks(lead, lang="pl")
+    assert any("nie działa" in h or "błąd" in h for h in hooks)
+
+
+def test_scoring_critical_redesign():
+    """Outdated website without viewport and without HTTPS is a critical redesign: HOT (70) with phone."""
+    lead = CanonicalLead(
+        country="PL",
+        name="Hydraulik Rzeszów",
+        city="Rzeszów",
+        phone="+48 600 222 333",
+        website="http://hydraulik-rzeszow-stara-strona.pl",
+        website_kind="own",
+        source="osm",
+        source_id="node/302",
+        industry_label="Hydraulik",
+        audit=AuditResult(
+            reachable=True,
+            is_https=False,
+            has_viewport=False,
+            has_impressum=False,
+            generator="FrontPage 4.0",
+        ),
+    )
+    score, verdict = calculate_lead_score(lead)
+    # 35 (no viewport) + 15 (no https) + 15 (frontpage) = 65 flaws + 20 phone = 85
+    assert score == 85
+    assert verdict == "hot"
+    assert lead.opportunity_type == "critical_redesign"
 
 
 def test_scoring_inactive_business():
@@ -119,6 +165,7 @@ def test_scoring_healthy_modern_website():
             reachable=True,
             is_https=True,
             has_viewport=True,
+            has_impressum=True,
             generator="Next.js",
         ),
     )

@@ -1,12 +1,15 @@
 {
   "hooks": {
-    "no_website": "Keine eigene Webpräsenz — potenzielle Kunden in Ihrer Region finden online nur den regionalen Wettbewerb.",
+    "no_website": "Kein aktiver Webauftritt in Kartendiensten — Sondierungsfrage: Basiert Ihr Geschäft nur auf Empfehlungen oder möchten Sie gezielt Kunden aus der Region gewinnen?",
+    "suspect_corporate": "Kapitalgesellschaft ohne Website in OSM — Website existiert wahrscheinlich außerhalb der OSM-Daten (vorab Google-Check empfohlen).",
+    "broken_website": "Website der Firma ({url}) ist nicht erreichbar ({issue}) — Interessenten aus der Region können Sie online nicht kontaktieren.",
     "social_only": "Ausschließlich {platform}-Präsenz — Kunden ohne Social-Media-Konto oder über lokale Suchmaschinen erreichen Sie nur schwer.",
     "directory_only": "Nur Verzeichniseintrag ({platform}) — kein unabhängiger, professioneller Internetauftritt.",
     "http_only": "Website ohne SSL-Verschlüsselung (HTTP) — moderne Browser warnen Besucher vor unsicherer Verbindung.",
     "no_viewport": "Website ist nicht für Mobilgeräte optimiert (kein Viewport) — mobile Besucher springen schnell ab.",
     "outdated_tech": "Veralteter Webauftritt ({generator}) — ein modernes Redesign stärkt Vertrauen und Neukundengewinnung.",
-    "reviews_no_site": "Betrieb hat positive Kundenbewertungen, aber keine eigene Website zur Angebotspräsentation.",
+    "missing_impressum": "Fehlendes Impressum oder unvollständige Kontaktdaten — eine transparente Anbieterkennzeichnung schafft Vertrauen bei Neukunden.",
+    "reviews_no_site": "Betrieb hat positive Kundenbewertungen, ale keine eigene Website zur Angebotspräsentation.",
     "hot_prospect": "Top-Kandidat: Lokales Unternehmen mit Kontaktdaten, das sofort von einer modernen Website profitiert."
   },
   "verdicts": {

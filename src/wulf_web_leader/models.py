@@ -9,6 +9,16 @@ Verdict = Literal["hot", "warm", "skip"]
 CountryCode = Literal["PL", "DE"]
 
 
+OpportunityType = Literal[
+    "broken_website",      # Awaria / błąd strony (4xx/5xx/timeout/SSL)
+    "critical_redesign",   # Pilny redesign (brak RWD / HTTP / stary CMS)
+    "social_only",         # Tylko profil w mediach społecznościowych
+    "directory_only",      # Tylko wizytówka w katalogu
+    "no_website",          # Prawdopodobny brak strony w rejestrach/OSM
+    "suspect_unverified",  # Spółka kapitałowa (GmbH/Sp. z o.o.) bez strony w OSM (wymaga weryfikacji)
+    "modern_active",       # Posiada działającą, nowoczesną stronę
+]
+
 class AuditResult(BaseModel):
     """Result of auditing a website URL."""
     reachable: bool = False
@@ -23,6 +33,11 @@ class AuditResult(BaseModel):
     extracted_phones: list[str] = Field(default_factory=list)
     extracted_emails: list[str] = Field(default_factory=list)
     error_message: str | None = None
+    is_placeholder: bool = False
+    placeholder_reason: str | None = None
+    entity_match: bool = False
+    entity_match_score: int = 0
+    matched_signals: list[str] = Field(default_factory=list)
 
 
 class CanonicalLead(BaseModel):
@@ -32,11 +47,19 @@ class CanonicalLead(BaseModel):
     lat: float | None = None
     lon: float | None = None
     address: str | None = None
+    street: str | None = None
     city: str | None = None
     postcode: str | None = None
     phone: str | None = None
+    email: str | None = None
     website: str | None = None
     website_kind: WebsiteKind = "none"
+    website_source: Literal["osm_website", "email_domain", "candidate_discovery", "none"] = "none"
+    opportunity_type: OpportunityType = "no_website"
+    primary_issue: str | None = None
+    confidence: Literal["high", "medium", "low"] = "high"
+    qa_status: Literal["verified", "placeholder", "mismatch", "unverified"] = "unverified"
+    qa_notes: str | None = None
     source: LeadSource = "osm"
     source_id: str
     industry_code: str | None = None  # PKD or WZ
@@ -45,6 +68,9 @@ class CanonicalLead(BaseModel):
     score: int = Field(default=0, ge=0, le=100)
     verdict: Verdict = "skip"
     hooks: list[str] = Field(default_factory=list)
+    status_kontaktu: str | None = None
+    notatki: str | None = None
+    data_kontaktu: str | None = None
     audit: AuditResult | None = None
 
 

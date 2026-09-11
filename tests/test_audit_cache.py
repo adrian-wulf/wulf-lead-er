@@ -111,3 +111,36 @@ async def test_pipeline_uses_audit_cache(tmp_path: Path):
         assert leads[0].audit.generator == "OldJoomla"
         # Verify network fetcher was never called!
         mock_fetch.assert_not_called()
+
+
+def test_audit_cache_dirty_flag_and_flush(tmp_path: Path):
+    cache = AuditCache(cache_dir=tmp_path, ttl_seconds=60)
+    assert cache._dirty is False
+    assert not cache.cache_file.exists()
+
+    url = "https://dirty-flag-test.pl"
+    res = AuditResult(reachable=True, status_code=200, final_url=url)
+
+    # Calling set() marks cache dirty but does not immediately write to disk
+    cache.set(url, res)
+    assert cache._dirty is True
+    assert not cache.cache_file.exists()
+
+    # In-memory access works before flush
+    cached = cache.get(url)
+    assert cached is not None
+    assert cached.final_url == url
+
+    # flush() writes to disk and clears _dirty
+    cache.flush()
+    assert cache._dirty is False
+    assert cache.cache_file.exists()
+
+    # Re-instantiating reads the persisted data from disk
+    new_cache = AuditCache(cache_dir=tmp_path, ttl_seconds=60)
+    assert new_cache.get(url) is not None
+    assert new_cache._dirty is False
+
+    # Calling flush() when not dirty does not re-write
+    new_cache.flush()
+    assert new_cache._dirty is False

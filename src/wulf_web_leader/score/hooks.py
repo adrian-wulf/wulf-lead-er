@@ -72,34 +72,52 @@ def generate_pitch_hooks(lead: CanonicalLead, lang: str = "pl") -> list[str]:
     hooks_dict = locale.get("hooks", {})
     results: list[str] = []
 
-    # 1. No website hook
-    if lead.website_kind == "none":
+    # 1. Broken website
+    if lead.opportunity_type == "broken_website":
+        hook_tpl = hooks_dict.get("broken_website", "")
+        url = lead.website or "firmowa strona"
+        issue = lead.primary_issue or "błąd serwera"
+        if hook_tpl:
+            results.append(hook_tpl.format(url=url, issue=issue))
+
+    # 2. Corporate suspect (unverified)
+    elif lead.opportunity_type == "suspect_unverified":
+        hook = hooks_dict.get("suspect_corporate")
+        if hook:
+            results.append(hook)
+
+    # 3. No website hook
+    elif lead.website_kind == "none" or lead.opportunity_type == "no_website":
         hook = hooks_dict.get("no_website")
         if hook:
             results.append(hook)
 
-    # 2. Social-only hook
+    # 4. Social-only hook
     elif lead.website_kind in ("facebook", "instagram"):
         hook_tpl = hooks_dict.get("social_only", "")
         platform = extract_platform_name(lead.website)
         if hook_tpl:
             results.append(hook_tpl.format(platform=platform))
 
-    # 3. Directory hook
+    # 5. Directory hook
     elif lead.website_kind == "directory":
         hook_tpl = hooks_dict.get("directory_only", "")
         platform = extract_platform_name(lead.website)
         if hook_tpl:
             results.append(hook_tpl.format(platform=platform))
 
-    # 4. Audit-derived hooks
+    # 6. Audit-derived hooks
     if lead.audit and lead.audit.reachable:
+        if not lead.audit.has_viewport:
+            hook = hooks_dict.get("no_viewport")
+            if hook:
+                results.append(hook)
         if not lead.audit.is_https:
             hook = hooks_dict.get("http_only")
             if hook:
                 results.append(hook)
-        if not lead.audit.has_viewport:
-            hook = hooks_dict.get("no_viewport")
+        if not lead.audit.has_impressum and lead.country == "DE":
+            hook = hooks_dict.get("missing_impressum")
             if hook:
                 results.append(hook)
         if lead.audit.generator:
@@ -107,7 +125,7 @@ def generate_pitch_hooks(lead: CanonicalLead, lang: str = "pl") -> list[str]:
             if hook_tpl:
                 results.append(hook_tpl.format(generator=lead.audit.generator))
 
-    # 5. Hot prospect summary hook
+    # 7. Hot prospect summary hook
     if lead.score >= 70 and lead.phone:
         hook = hooks_dict.get("hot_prospect")
         if hook and hook not in results:

@@ -1,11 +1,14 @@
 {
   "hooks": {
-    "no_website": "Brak strony www — klienci z okolicy szukający usług na telefonie trafiają do firm konkurencyjnych.",
+    "no_website": "Brak strony www w rejestrach map — pytanie sondujące: czy firma bazuje wyłącznie na poleceniach, czy szuka nowych klientów z internetu?",
+    "suspect_corporate": "Spółka kapitałowa bez strony w OSM — prawdopodobna witryna poza rejestrem map (zweryfikuj w Google przed rozmową).",
+    "broken_website": "Strona firmy ({url}) nie działa lub wyświetla błąd ({issue}) — klienci z okolicy trafiają na niedziałający adres i rezygnują z kontaktu.",
     "social_only": "Firma polega wyłącznie na profilu {platform} — klienci szukający w Google lub bez konta w mediach mają utrudniony kontakt.",
     "directory_only": "Tylko wpis w katalogu ({platform}) — brak własnej, profesjonalnej wizytówki online.",
     "http_only": "Strona bez szyfrowania HTTPS — przeglądarki oznaczają witrynę jako niebezpieczną.",
     "no_viewport": "Strona nie jest responsywna (brak viewport) — na smartfonach jest nieczytelna i trudna w obsłudze.",
     "outdated_tech": "Witryna na przestarzałym szablonie ({generator}) — warto odświeżyć wizerunek na nowocześniejszy.",
+    "missing_impressum": "Brak zakładki z pełnymi danymi firmy (Impressum) — czytelna stopka z danymi podnosi wiarygodność u klientów.",
     "reviews_no_site": "Firma ma dobre opinie klientów, ale brak jej własnej strony do prezentacji oferty.",
     "hot_prospect": "Idealny kandydat do kontaktu: lokalny biznes z publicznym kontaktem, który pilnie potrzebuje nowoczesnej witryny."
   },

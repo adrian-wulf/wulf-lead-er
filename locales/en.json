@@ -1,11 +1,14 @@
 {
   "hooks": {
-    "no_website": "No website found — prospective local customers searching on mobile are going to competitors.",
+    "no_website": "No active website listed in map directories — exploratory query: does the business rely on word-of-mouth or seek new local clients?",
+    "suspect_corporate": "Corporate entity without website in OSM — website likely exists outside map directory (verify online prior to calling).",
+    "broken_website": "Company website ({url}) is unreachable or returning an error ({issue}) — prospective local customers cannot reach them.",
     "social_only": "Only relies on a {platform} page — customers without an account or via Google search struggle to reach them.",
     "directory_only": "Only listed in a directory ({platform}) — lacks a dedicated online presence.",
     "http_only": "Website lacks HTTPS — modern browsers flag the site as insecure.",
     "no_viewport": "Website is not mobile-responsive (missing viewport) — unreadable on modern phones.",
     "outdated_tech": "Outdated site technology ({generator}) — would benefit from modern redesign.",
+    "missing_impressum": "Missing owner details / Impressum — clear company info builds trust with prospective customers.",
     "reviews_no_site": "Has public customer reviews but lacks a dedicated website to showcase offerings.",
     "hot_prospect": "High-priority lead: local business with contact info needing a modern website."
   },

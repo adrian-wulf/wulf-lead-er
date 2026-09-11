@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import time
@@ -17,7 +18,7 @@ class GeocodedLocation(NamedTuple):
 class NominatimClient:
     """Client for OpenStreetMap Nominatim geocoder complying with usage policies."""
 
-    DEFAULT_USER_AGENT = "wulf-web-leader/0.1.0 (+https://github.com/wulf-org/wulf-web-leader)"
+    DEFAULT_USER_AGENT = "wulf-web-leader/0.3.0 (+https://github.com/wulf-org/wulf-web-leader)"
     DEFAULT_BASE_URL = "https://nominatim.openstreetmap.org"
 
     def __init__(
@@ -31,7 +32,7 @@ class NominatimClient:
         self.email = email or os.getenv("WULF_EMAIL") or os.getenv("BRAKSTRONY_EMAIL")
         user_agent = self.DEFAULT_USER_AGENT
         if self.email:
-            user_agent = f"wulf-web-leader/0.1.0 ({self.email}; +https://github.com/wulf-org/wulf-web-leader)"
+            user_agent = f"wulf-web-leader/0.3.0 ({self.email}; +https://github.com/wulf-org/wulf-web-leader)"
         self.headers = {
             "User-Agent": user_agent,
             "Accept": "application/json",
@@ -68,12 +69,12 @@ class NominatimClient:
         except Exception:
             pass
 
-    def _rate_limit(self) -> None:
+    async def _rate_limit(self) -> None:
         """Enforce strict 1 req/sec policy for Nominatim."""
         now = time.time()
         elapsed = now - self._last_request_time
         if elapsed < self.min_interval:
-            time.sleep(self.min_interval - elapsed)
+            await asyncio.sleep(self.min_interval - elapsed)
         self._last_request_time = time.time()
 
     async def geocode(self, city: str, country: str) -> GeocodedLocation | None:
@@ -89,7 +90,7 @@ class NominatimClient:
                 postcode=entry.get("postcode"),
             )
 
-        self._rate_limit()
+        await self._rate_limit()
 
         params = {
             "city": city,

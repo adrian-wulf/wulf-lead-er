@@ -88,11 +88,12 @@ async def test_pipeline_offline(tmp_path: Path):
     assert leads[0].verdict == "hot"
     assert "Brak strony www" in leads[0].hooks[0]
 
-    # Second lead has facebook + phone -> score = 55 (warm)
+    # Second lead has facebook + phone -> score = 70 (hot, social_only)
     assert leads[1].name == "Pogotowie Wod-Kan"
     assert leads[1].website_kind == "facebook"
-    assert leads[1].score == 55
-    assert leads[1].verdict == "warm"
+    assert leads[1].score == 70
+    assert leads[1].verdict == "hot"
+    assert leads[1].opportunity_type == "social_only"
 
     # Export to CSV and JSON
     csv_file = tmp_path / "leads.csv"
@@ -106,7 +107,8 @@ async def test_pipeline_offline(tmp_path: Path):
 
     # Verify CSV content
     csv_text = csv_file.read_text(encoding="utf-8-sig")
-    assert "name,city,country,phone,website,website_kind,score,verdict,hook,source,lat,lon" in csv_text
+    from wulf_web_leader.export.writer import CSV_COLUMNS
+    assert ",".join(CSV_COLUMNS) in csv_text
     assert "Hydraulik 24h Rzeszów" in csv_text
     assert "+48178887766" in csv_text
     assert "hot" in csv_text

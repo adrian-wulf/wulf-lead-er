@@ -27,6 +27,10 @@ def test_classify_directory():
     assert classify_website_kind("https://znanylekarz.pl/lekarz-weterynarii") == "directory"
     assert classify_website_kind("https://booksy.com/pl-pl/1234_barber") == "directory"
     assert classify_website_kind("https://oferteo.pl/hydraulik/rzeszow") == "directory"
+    assert classify_website_kind("https://fryzjer-rzeszow.business.site") == "directory"
+    assert classify_website_kind("https://jan-kowalski.business.site/") == "directory"
+    assert classify_website_kind("https://olx.pl/d/oferta/hydraulik-24h-CID619-ID123.html") == "directory"
+    assert classify_website_kind("https://allegro.pl/uzytkownik/warsztat_auto") == "directory"
 
     # German directories
     assert classify_website_kind("https://www.gelbeseiten.de/branche/klempner/dresden") == "directory"

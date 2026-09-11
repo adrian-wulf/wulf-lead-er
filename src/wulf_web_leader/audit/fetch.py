@@ -1,10 +1,12 @@
 import ipaddress
+import re
 import socket
 from urllib.parse import urlparse
 import httpx
 
 from wulf_web_leader.models import AuditResult
 from wulf_web_leader.audit.parser import SafeWebsiteHTMLParser
+from wulf_web_leader.audit.verifier import check_is_placeholder, verify_entity_match
 
 FORBIDDEN_NETWORKS = [
     ipaddress.ip_network("0.0.0.0/8"),
@@ -28,7 +30,7 @@ FORBIDDEN_NETWORKS = [
 MAX_BODY_BYTES = 1_048_576  # 1MB
 MAX_REDIRECTS = 5
 AUDIT_TIMEOUT = httpx.Timeout(connect=3.0, read=5.0, write=3.0, pool=3.0)
-AUDIT_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 (compatible; wulf-bot/0.1.0)"
+AUDIT_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 (compatible; wulf-bot/0.3.0)"
 
 
 def is_ip_allowed(ip_str: str) -> bool:
@@ -72,7 +74,13 @@ def validate_url_safety(url: str) -> tuple[bool, str | None]:
         return False, str(e)
 
 
-async def audit_website(url: str | None) -> AuditResult:
+async def audit_website(
+    url: str | None,
+    lead_name: str | None = None,
+    city: str | None = None,
+    phone: str | None = None,
+    address: str | None = None,
+) -> AuditResult:
     """Safely fetch and audit a business homepage."""
     if not url or not url.strip():
         return AuditResult(reachable=False, error_message="Empty URL")
@@ -93,6 +101,9 @@ async def audit_website(url: str | None) -> AuditResult:
     }
 
     try:
+        # verify=False is intentional: many SMB target sites have expired, self-signed, or
+        # untrusted SSL certificates. The audit engine specifically evaluates SSL health as a
+        # scoring criterion (flagging HTTPS issues) rather than aborting the connection.
         async with httpx.AsyncClient(timeout=AUDIT_TIMEOUT, verify=False, follow_redirects=False) as client:
             while redirect_count <= MAX_REDIRECTS:
                 # SSRF guard on every hop
@@ -118,6 +129,15 @@ async def audit_website(url: str | None) -> AuditResult:
                         current_url = str(httpx.URL(current_url).join(location))
                         continue
 
+                    is_success = (last_status is not None and 200 <= last_status < 400)
+                    if not is_success:
+                        return AuditResult(
+                            reachable=False,
+                            status_code=last_status,
+                            final_url=final_url,
+                            error_message=f"HTTP {last_status}",
+                        )
+
                     # Read streamed body up to MAX_BODY_BYTES
                     content_bytes = bytearray()
                     async for chunk in response.aiter_bytes():
@@ -139,6 +159,33 @@ async def audit_website(url: str | None) -> AuditResult:
                     if not detected_generator and parser.cms_hints:
                         detected_generator = ", ".join(sorted(parser.cms_hints))
 
+                    # QA Verification: check placeholder and entity match
+                    is_placeholder, placeholder_reason = check_is_placeholder(content_text, parser.title)
+
+                    entity_match = False
+                    entity_match_score = 0
+                    matched_signals = []
+
+                    if lead_name:
+                        match_score, signals, _ = verify_entity_match(
+                            lead_name=lead_name,
+                            city=city,
+                            phone=phone,
+                            address=address,
+                            html_text=content_text,
+                        )
+                        entity_match_score = match_score
+                        matched_signals = signals
+                        entity_match = (match_score >= 35)
+
+                    emails = set(parser.extracted_emails)
+                    if not emails:
+                        raw_matches = re.findall(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b", content_text)
+                        for em in raw_matches:
+                            em_low = em.lower()
+                            if not any(em_low.endswith(ext) for ext in (".png", ".jpg", ".jpeg", ".webp", ".svg", ".gif", ".css", ".js")):
+                                emails.add(em_low)
+
                     return AuditResult(
                         reachable=True,
                         status_code=last_status,
@@ -150,7 +197,12 @@ async def audit_website(url: str | None) -> AuditResult:
                         has_viewport=parser.has_viewport,
                         has_impressum=parser.has_impressum,
                         extracted_phones=sorted(parser.extracted_phones),
-                        extracted_emails=sorted(parser.extracted_emails),
+                        extracted_emails=sorted(emails),
+                        is_placeholder=is_placeholder,
+                        placeholder_reason=placeholder_reason,
+                        entity_match=entity_match,
+                        entity_match_score=entity_match_score,
+                        matched_signals=matched_signals,
                     )
 
             # Exceeded redirect loop
