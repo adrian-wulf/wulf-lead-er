@@ -1,7 +1,7 @@
 """
 Gemini API Verifier with live Google Search Grounding for WULF LEAD.ER.
 
-Uses Google AI Studio Free Tier (gemini-2.0-flash) with built-in google_search tool
+Uses Google AI Studio Free Tier (gemini-3.6-flash) with built-in google_search tool
 to perform live web & Google Maps intelligence, extract reputation signals (ratings/reviews),
 detect missing/found websites, and compose hyper-personalized web design sales hooks.
 """
@@ -18,7 +18,7 @@ from wulf_web_leader.models import CanonicalLead, GeminiIntel
 logger = logging.getLogger(__name__)
 
 GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models"
-DEFAULT_MODEL = "gemini-2.0-flash"
+DEFAULT_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
 
 
 def is_gemini_available(api_key: str | None = None) -> bool:

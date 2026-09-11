@@ -267,10 +267,10 @@ async def export_leads(
 @app.get("/api/gemini/status")
 async def get_gemini_status():
     """Check if Gemini API key is configured and return status."""
-    from wulf_web_leader.audit.gemini_verifier import is_gemini_available
+    from wulf_web_leader.audit.gemini_verifier import is_gemini_available, DEFAULT_MODEL
     return {
         "available": is_gemini_available(),
-        "model": "gemini-2.0-flash",
+        "model": DEFAULT_MODEL,
     }
 
 

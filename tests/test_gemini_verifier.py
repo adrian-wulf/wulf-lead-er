@@ -115,7 +115,7 @@ def test_api_gemini_endpoints():
     assert res.status_code == 200
     data = res.json()
     assert "available" in data
-    assert data["model"] == "gemini-2.0-flash"
+    assert data["model"] == "gemini-3.6-flash"
 
     # 2. Add a dummy lead to scan_manager in-memory
     lead = CanonicalLead(

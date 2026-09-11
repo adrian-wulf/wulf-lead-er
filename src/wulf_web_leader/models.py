@@ -52,7 +52,7 @@ class GeminiIntel(BaseModel):
     ai_pitch: str | None = None
     search_queries: list[str] = Field(default_factory=list)
     grounding_sources: list[dict[str, str]] = Field(default_factory=list)
-    model: str = "gemini-2.0-flash"
+    model: str = "gemini-3.6-flash"
     error: str | None = None
 
 
