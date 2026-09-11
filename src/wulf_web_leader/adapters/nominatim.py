@@ -92,7 +92,7 @@ class NominatimClient:
 
         await self._rate_limit()
 
-        params = {
+        params_structured = {
             "city": city,
             "countrycodes": country.lower(),
             "format": "jsonv2",
@@ -100,14 +100,30 @@ class NominatimClient:
             "limit": "1",
         }
 
-        async with httpx.AsyncClient(timeout=10.0, headers=self.headers) as client:
+        async with httpx.AsyncClient(timeout=8.0, headers=self.headers) as client:
             try:
-                response = await client.get(f"{self.base_url}/search", params=params)
+                response = await client.get(f"{self.base_url}/search", params=params_structured)
                 response.raise_for_status()
                 data = response.json()
-                if not data or not isinstance(data, list):
-                    return None
+            except Exception:
+                data = []
 
+            # If structured query didn't return matches, try free-form query
+            if not data or not isinstance(data, list):
+                try:
+                    params_freeform = {
+                        "q": f"{city}, {country}",
+                        "format": "jsonv2",
+                        "addressdetails": "1",
+                        "limit": "1",
+                    }
+                    response = await client.get(f"{self.base_url}/search", params=params_freeform)
+                    response.raise_for_status()
+                    data = response.json()
+                except Exception:
+                    data = []
+
+            if data and isinstance(data, list):
                 first = data[0]
                 lat = float(first["lat"])
                 lon = float(first["lon"])
@@ -116,7 +132,6 @@ class NominatimClient:
                 detected_city = addr.get("city") or addr.get("town") or addr.get("village") or city
                 postcode = addr.get("postcode")
 
-                # Update cache
                 self._cache[cache_key] = {
                     "lat": lat,
                     "lon": lon,
@@ -133,6 +148,50 @@ class NominatimClient:
                     city=detected_city,
                     postcode=postcode,
                 )
-            except Exception as e:
-                # Log or return None on failure
-                return None
+
+        # Fallback to Photon (OSM-based Komoot geocoder, high-speed, no key needed)
+        photon_loc = await self._photon_fallback(city, country)
+        if photon_loc:
+            self._cache[cache_key] = {
+                "lat": photon_loc.lat,
+                "lon": photon_loc.lon,
+                "display_name": photon_loc.display_name,
+                "city": photon_loc.city,
+                "postcode": photon_loc.postcode,
+            }
+            self._save_cache()
+            return photon_loc
+
+        return None
+
+    async def _photon_fallback(self, city: str, country: str) -> GeocodedLocation | None:
+        """Fast fallback geocoder backed by OpenStreetMap data via Photon / Komoot."""
+        try:
+            url = f"https://photon.komoot.io/api/?q={city}&limit=5"
+            async with httpx.AsyncClient(timeout=6.0, headers=self.headers) as client:
+                res = await client.get(url)
+                if res.status_code != 200:
+                    return None
+                data = res.json()
+                features = data.get("features", [])
+                for f in features:
+                    props = f.get("properties", {})
+                    coords = f.get("geometry", {}).get("coordinates", [])
+                    if len(coords) < 2:
+                        continue
+                    cc = props.get("countrycode", "").upper()
+                    if not country or cc == country.upper():
+                        name = props.get("name", city)
+                        state = props.get("state", "")
+                        c_name = props.get("country", country)
+                        disp = f"{name}, {state}, {c_name}".replace(", ,", ",")
+                        return GeocodedLocation(
+                            lat=float(coords[1]),
+                            lon=float(coords[0]),
+                            display_name=disp,
+                            city=name,
+                            postcode=props.get("postcode"),
+                        )
+        except Exception:
+            pass
+        return None

@@ -185,3 +185,76 @@ async def test_scan_manager_duplicate_start_prevented(tmp_path: Path):
         vertical_id="plumbers",
     )
     assert started is False
+
+
+def test_scan_manager_state_persistence_and_multiworker_sync(tmp_path: Path):
+    mgr1 = ScanManager(workspace_dir=tmp_path)
+    mgr1.status = "running"
+    mgr1.stage = "overpass"
+    mgr1.progress = 35
+    mgr1.message = "Test fetching OSM"
+    mgr1._persist_state()
+
+    state_file = tmp_path / ".scan_state.json"
+    assert state_file.is_file()
+
+    mgr2 = ScanManager(workspace_dir=tmp_path)
+    # mgr2 starts as idle
+    assert mgr2.status == "idle"
+    # Calling get_status_data reads the persisted state from mgr1
+    status_data = mgr2.get_status_data()
+    assert status_data["status"] == "running"
+    assert status_data["stage"] == "overpass"
+    assert status_data["progress"] == 35
+    assert status_data["message"] == "Test fetching OSM"
+
+
+def test_scan_manager_auto_loads_leads_from_disk_if_empty(tmp_path: Path, sample_leads):
+    from wulf_web_leader.export.writer import export_leads_to_json
+    leads_file = tmp_path / "leads.json"
+    export_leads_to_json(sample_leads, leads_file)
+
+    # Worker has empty in-memory state
+    mgr = ScanManager(workspace_dir=tmp_path)
+    mgr.leads = []
+
+    # Calling get_leads should auto-read from disk
+    leads = mgr.get_leads(verdict="hot")
+    assert len(leads) == 1
+    assert leads[0].name == "Hydraulik 24h Rzeszów"
+    assert len(mgr.leads) == 3
+
+
+@pytest.mark.asyncio
+async def test_scan_manager_stop_scan_terminates_subprocess(tmp_path: Path):
+    from unittest.mock import MagicMock
+    mgr = ScanManager(workspace_dir=tmp_path)
+    mgr.status = "running"
+    
+    mock_proc = MagicMock()
+    mock_proc.poll.return_value = None
+    mock_proc.pid = 99999999
+    mgr.scan_proc = mock_proc
+
+    with patch("os.kill") as mock_kill:
+        stopped = await mgr.stop_scan()
+        assert stopped is True
+        assert mgr.status == "stopped"
+
+
+def test_runner_atomic_persist_state(tmp_path: Path):
+    from wulf_web_leader.web.runner import atomic_persist_state
+    test_state = {
+        "status": "running",
+        "stage": "audit",
+        "progress": 55,
+        "message": "Auditing test",
+    }
+    atomic_persist_state(tmp_path, test_state)
+    state_file = tmp_path / ".scan_state.json"
+    assert state_file.is_file()
+    with open(state_file, "r", encoding="utf-8") as f:
+        loaded = json.load(f)
+    assert loaded["stage"] == "audit"
+    assert loaded["progress"] == 55
+    assert "pid" in loaded

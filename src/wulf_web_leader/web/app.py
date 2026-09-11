@@ -34,6 +34,7 @@ class StartScanRequest(BaseModel):
     city: str = Field(..., description="Nazwa miasta")
     vertical: str = Field(..., description="ID branży")
     radius: float = Field(default=15.0, ge=1.0, le=100.0, description="Promień w km")
+    radius_km: Optional[float] = Field(default=None, ge=1.0, le=100.0, description="Alias dla promienia w km")
     lang: str = Field(default="pl", description="Język hooków: pl, de, en")
     min_score: int = Field(default=0, ge=0, le=100, description="Minimalny wynik leada")
     has_phone: bool = Field(default=False, description="Tylko firmy z telefonem")
@@ -129,11 +130,12 @@ async def start_scan(req: StartScanRequest):
     if country_norm not in ("PL", "DE"):
         raise HTTPException(status_code=400, detail="Kod kraju musi wynosić 'PL' lub 'DE'.")
 
+    effective_radius = req.radius_km if req.radius_km is not None else req.radius
     started = await scan_manager.start_scan(
         country=country_norm,
         city=req.city,
         vertical_id=req.vertical,
-        radius_km=req.radius,
+        radius_km=effective_radius,
         lang=req.lang,
         min_score=req.min_score,
         has_phone_only=req.has_phone,
@@ -162,15 +164,7 @@ async def stop_scan():
 @app.get("/api/scan/status")
 async def get_scan_status():
     """Get current scan state, progress, logs, and counts."""
-    return {
-        "status": scan_manager.status,
-        "stage": scan_manager.stage,
-        "progress": scan_manager.progress,
-        "message": scan_manager.message,
-        "counts": scan_manager.counts,
-        "current_params": scan_manager.current_params,
-        "logs": scan_manager.logs,
-    }
+    return scan_manager.get_status_data()
 
 
 @app.get("/api/scan/events")

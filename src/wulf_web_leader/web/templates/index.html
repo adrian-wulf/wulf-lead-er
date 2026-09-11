@@ -113,7 +113,7 @@
       min-height: 100vh;
     }
 
-    /* TOP HEADER BAR (POSTHOG CONSOLE STYLE) */
+    /* TOP HEADER BAR (WULF INTELLIGENCE CONSOLE) */
     .header {
       background-color: var(--bg-surface);
       border-bottom: 1px solid var(--border-default);
@@ -302,7 +302,7 @@
       gap: 20px;
     }
 
-    /* TELEMETRY ROW (POSTHOG DENSITY METRICS) */
+    /* TELEMETRY ROW (HIGH DENSITY METRICS) */
     .telemetry-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -440,7 +440,7 @@
       justify-content: space-between;
     }
 
-    /* POSTHOG SEGMENTED BUTTONS */
+    /* SEGMENTED BUTTONS */
     .segmented-control {
       display: flex;
       background: var(--bg-input);
@@ -727,7 +727,7 @@
     .log-time { color: var(--text-dim); }
     .log-stage { color: var(--gold); }
 
-    /* TOOLBAR & FILTERS (POSTHOG DATA TOOLBAR) */
+    /* TOOLBAR & FILTERS (DATA TOOLBAR) */
     .data-toolbar {
       display: flex;
       align-items: center;
@@ -992,7 +992,7 @@
       margin-top: auto;
     }
 
-    /* TABLE VIEW (POSTHOG DENSITY) */
+    /* TABLE VIEW (HIGH DENSITY) */
     .lead-table-container {
       display: none;
       background: var(--bg-surface);
@@ -1064,7 +1064,7 @@
       max-width: 380px;
     }
 
-    /* SLIDE-OVER LEAD INSPECTOR DRAWER (POSTHOG SIGNATURE COMPONENT) */
+    /* SLIDE-OVER LEAD INSPECTOR DRAWER */
     .drawer-backdrop {
       display: none;
       position: fixed;
@@ -1468,7 +1468,7 @@
           <span>/</span>
           <span>Radar B2B</span>
           <span>/</span>
-          <span style="color: var(--text-white);">PostHog Console</span>
+          <span style="color: var(--text-white);">Intelligence Console</span>
           <span style="font-size: 10px; font-family: var(--font-mono); color: var(--gold); border: 1px solid var(--border-default); padding: 1px 5px; border-radius: 4px;">v0.3.0</span>
         </div>
         <div class="telemetry-status-pill" id="system-status-indicator">
@@ -1518,7 +1518,7 @@
     <!-- MAIN BODY -->
     <main class="main-content">
 
-      <!-- TELEMETRY METRIC CARDS (POSTHOG HIGH DENSITY) -->
+      <!-- TELEMETRY METRIC CARDS (HIGH DENSITY) -->
       <section class="telemetry-grid">
         <div class="telemetry-card">
           <div class="telemetry-header">
@@ -1565,7 +1565,7 @@
         </div>
       </section>
 
-      <!-- CRITERIA CONTROL PANEL (BALANCED 4-COLUMN POSTHOG INTERFACE) -->
+      <!-- CRITERIA CONTROL PANEL (BALANCED 4-COLUMN INTERFACE) -->
       <section class="console-panel">
         <div class="panel-top-row">
           <div class="panel-headline">
@@ -1765,7 +1765,7 @@
     </main>
   </div>
 
-  <!-- SLIDE-OVER LEAD INSPECTOR DRAWER (POSTHOG SIGNATURE COMPONENT) -->
+  <!-- SLIDE-OVER LEAD INSPECTOR DRAWER -->
   <div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
   <aside class="lead-drawer" id="lead-drawer">
     <div class="drawer-header">
@@ -2058,9 +2058,39 @@
       document.getElementById('count-filter-skip').innerText = counts.skip || 0;
     }
 
-    // SSE STREAMING WITH POLLING FALLBACK FOR SHARED HOSTING
+    let renderedLogCount = 0;
+
+    function renderPollLogs(logs) {
+      if (!logs || !Array.isArray(logs)) return;
+      if (logs.length < renderedLogCount) {
+        renderedLogCount = 0;
+      }
+      if (logs.length > renderedLogCount) {
+        const newLogs = logs.slice(renderedLogCount);
+        newLogs.forEach(log => appendTerminalLog(log));
+        renderedLogCount = logs.length;
+      }
+    }
+
+    function startPolling() {
+      if (!pollInterval) {
+        pollInterval = setInterval(fetchPollStatus, 1000);
+      }
+      fetchPollStatus();
+    }
+
+    function stopPolling() {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+      }
+    }
+
+    // SSE STREAMING WITH ACTIVE POLLING BACKBONE FOR MAXIMUM RELIABILITY
     function initSSE() {
-      if (sseSource) sseSource.close();
+      if (sseSource) {
+        try { sseSource.close(); } catch (e) {}
+      }
 
       try {
         sseSource = new EventSource('/api/scan/events');
@@ -2071,14 +2101,14 @@
           } catch (err) {}
         };
         sseSource.onerror = () => {
-          // If SSE is buffered by shared hosting proxy, start polling
+          // Keep polling active if SSE connection fails or gets proxy-buffered
           if (!pollInterval) {
-            pollInterval = setInterval(fetchPollStatus, 2000);
+            startPolling();
           }
         };
       } catch (err) {
         if (!pollInterval) {
-          pollInterval = setInterval(fetchPollStatus, 2000);
+          startPolling();
         }
       }
     }
@@ -2088,12 +2118,20 @@
         const res = await fetch('/api/scan/status');
         if (res.ok) {
           const data = await res.json();
-          updateTelemetry(data.counts);
+          if (data.counts) updateTelemetry(data.counts);
+          if (data.logs) renderPollLogs(data.logs);
           if (data.status === 'running') {
             setScanningUI(true);
+            updateScanProgress(data);
+            startPolling();
+          } else {
+            updateScanProgress(data);
+            fetchLeads();
           }
         }
-      } catch (e) {}
+      } catch (e) {
+        fetchLeads();
+      }
     }
 
     async function fetchPollStatus() {
@@ -2101,16 +2139,30 @@
         const res = await fetch('/api/scan/status');
         if (res.ok) {
           const data = await res.json();
-          handleSSEEvent({ type: 'status', ...data });
-          if (data.status === 'completed' || data.status === 'stopped' || data.status === 'error') {
-            if (pollInterval) {
-              clearInterval(pollInterval);
-              pollInterval = null;
-            }
+          updateScanProgress(data);
+          if (data.counts) updateTelemetry(data.counts);
+          if (data.logs) renderPollLogs(data.logs);
+
+          if (data.status === 'completed') {
+            stopPolling();
+            setScanningUI(false);
+            showToast('Skanowanie zakończone sukcesem!');
+            fetchLeads();
+          } else if (data.status === 'stopped') {
+            stopPolling();
+            setScanningUI(false);
+            showToast('Skanowanie zatrzymane.');
+            fetchLeads();
+          } else if (data.status === 'error') {
+            stopPolling();
+            setScanningUI(false);
+            showToast('Błąd: ' + (data.message || 'Niepowodzenie skanowania'));
             fetchLeads();
           }
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error("Poll error:", e);
+      }
     }
 
     function handleSSEEvent(event) {
@@ -2123,12 +2175,15 @@
         renderDataView();
         if (event.counts) updateTelemetry(event.counts);
       } else if (event.type === 'done') {
+        stopPolling();
         setScanningUI(false);
         showToast('Skanowanie zakończone sukcesem!');
         fetchLeads();
       } else if (event.type === 'error') {
+        stopPolling();
         setScanningUI(false);
-        showToast('Wystąpił błąd podczas skanowania');
+        showToast('Wystąpił błąd: ' + (event.message || 'Błąd skanowania'));
+        fetchLeads();
       }
     }
 
@@ -2154,8 +2209,11 @@
     }
 
     function updateScanProgress(data) {
-      if (data.status === 'running') setScanningUI(true);
-      if (data.status === 'completed' || data.status === 'stopped') setScanningUI(false);
+      if (data.status === 'running') {
+        setScanningUI(true);
+      } else if (data.status === 'completed' || data.status === 'stopped' || data.status === 'error') {
+        setScanningUI(false);
+      }
 
       if (data.stage) {
         document.getElementById('current-stage-text').innerText = 'ETAP: ' + data.stage.toUpperCase();
@@ -2204,9 +2262,11 @@
       }
 
       allLeads = [];
+      renderedLogCount = 0;
       renderDataView();
       document.getElementById('terminal-log-output').innerHTML = '';
       setScanningUI(true);
+      startPolling();
 
       try {
         const res = await fetch('/api/scan/start', {
@@ -2228,10 +2288,12 @@
         if (!res.ok) {
           const err = await res.json();
           showToast('Błąd: ' + (err.detail || 'Niepowodzenie skanu'));
+          stopPolling();
           setScanningUI(false);
         }
       } catch (err) {
         showToast('Błąd połączenia z serwerem');
+        stopPolling();
         setScanningUI(false);
       }
     }
@@ -2240,7 +2302,10 @@
       try {
         await fetch('/api/scan/stop', { method: 'POST' });
         showToast('Wysłano sygnał zatrzymania skanera');
-      } catch (err) {}
+        fetchPollStatus();
+      } catch (err) {
+        showToast('Błąd zatrzymywania skanera');
+      }
     }
 
     async function fetchLeads() {
@@ -2414,7 +2479,7 @@
       });
     }
 
-    // POSTHOG SLIDE-OVER LEAD INSPECTOR DRAWER
+    // SLIDE-OVER LEAD INSPECTOR DRAWER
     function openDrawer(leadIndex) {
       selectedLeadIndex = leadIndex;
       const lead = allLeads[leadIndex];

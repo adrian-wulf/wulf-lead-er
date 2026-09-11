@@ -125,6 +125,9 @@ async def run_scan_pipeline(
         cache = audit_cache or AuditCache()
         semaphore = asyncio.Semaphore(5)
 
+        audited_count = 0
+        audit_lock = asyncio.Lock()
+
         async def audit_single(lead: CanonicalLead):
             async with semaphore:
                 try:
@@ -240,6 +243,12 @@ async def run_scan_pipeline(
 
                 except Exception as e:
                     logger.debug("Failed auditing/verifying %s: %s", lead.name, e)
+                finally:
+                    async with audit_lock:
+                        nonlocal audited_count
+                        audited_count += 1
+                        display_name = (lead.name[:25] + "...") if len(lead.name) > 25 else lead.name
+                        notify("audit", f"Audyt witryn ({audited_count}/{len(leads_to_audit)}): {display_name}")
 
         await asyncio.gather(*[audit_single(l) for l in leads_to_audit])
         if audit_cache:

@@ -4,6 +4,11 @@ import asyncio
 import io
 import json
 import logging
+import os
+import signal
+import subprocess
+import sys
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -18,13 +23,15 @@ logger = logging.getLogger(__name__)
 
 STAGE_PROGRESS = {
     "idle": 0,
+    "init": 5,
     "geocode": 15,
     "overpass": 35,
-    "ceidg": 50,
-    "offeneregister": 50,
-    "audit": 70,
-    "score": 85,
-    "gemini": 95,
+    "parse": 40,
+    "ceidg": 45,
+    "offeneregister": 45,
+    "audit": 60,
+    "score": 88,
+    "gemini": 94,
     "done": 100,
     "error": 100,
     "stopped": 100,
@@ -44,17 +51,101 @@ class ScanManager:
         self.leads: list[CanonicalLead] = []
         self.current_params: dict[str, Any] = {}
         self.scan_task: asyncio.Task | None = None
+        self.scan_proc: subprocess.Popen | None = None
         self._subscribers: set[asyncio.Queue] = set()
         self._lock = asyncio.Lock()
+        self._state_mtime: float = 0.0
+        self._leads_mtime: float = 0.0
 
         # Attempt to load existing leads.json on startup if present
         default_leads_file = self.workspace_dir / "leads.json"
         if default_leads_file.is_file():
             try:
                 self.load_scan_file(default_leads_file)
+                self._leads_mtime = default_leads_file.stat().st_mtime
                 self.message = f"Wczytano {len(self.leads)} leadów z {default_leads_file.name}"
             except Exception as e:
                 logger.debug("Could not auto-load %s: %s", default_leads_file, e)
+
+    @staticmethod
+    def _is_pid_alive(pid: int) -> bool:
+        if pid <= 0:
+            return False
+        try:
+            os.kill(pid, 0)
+            return True
+        except (OSError, ProcessLookupError):
+            return False
+
+    def _persist_state(self, pid: int | None = None) -> None:
+        """Persist runtime scan state to disk for multi-worker synchronization."""
+        try:
+            state_file = self.workspace_dir / ".scan_state.json"
+            tmp_file = self.workspace_dir / f".scan_state.tmp.{os.getpid()}"
+            active_pid = pid or (self.scan_proc.pid if self.scan_proc else os.getpid())
+            payload = {
+                "status": self.status,
+                "stage": self.stage,
+                "progress": self.progress,
+                "message": self.message,
+                "counts": self.counts,
+                "current_params": self.current_params,
+                "logs": self.logs[-200:],
+                "pid": active_pid,
+                "updated_at": time.time(),
+            }
+            with open(tmp_file, "w", encoding="utf-8") as f:
+                json.dump(payload, f, ensure_ascii=False)
+            tmp_file.replace(state_file)
+            self._state_mtime = state_file.stat().st_mtime
+        except Exception as e:
+            logger.debug("Failed to persist scan state: %s", e)
+
+    def get_status_data(self) -> dict[str, Any]:
+        """Return scan status, loading latest disk state if multi-worker synced."""
+        state_file = self.workspace_dir / ".scan_state.json"
+        if state_file.is_file():
+            try:
+                mtime = state_file.stat().st_mtime
+                if mtime > self._state_mtime or self.status in ("idle", "running"):
+                    with open(state_file, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                    self._state_mtime = mtime
+                    self.status = data.get("status", self.status)
+                    self.stage = data.get("stage", self.stage)
+                    self.progress = data.get("progress", self.progress)
+                    self.message = data.get("message", self.message)
+                    self.logs = data.get("logs", self.logs)
+                    self.current_params = data.get("current_params", self.current_params)
+
+                    # Auto-detect died background processes
+                    if self.status == "running":
+                        pid = data.get("pid")
+                        updated_at = data.get("updated_at", 0)
+                        if pid and (time.time() - updated_at > 45) and not self._is_pid_alive(pid):
+                            self.status = "error"
+                            self.stage = "error"
+                            self.progress = 100
+                            self.message = "Proces skanera został przerwany przez serwer."
+                            data["status"] = self.status
+                            data["stage"] = self.stage
+                            data["progress"] = self.progress
+                            data["message"] = self.message
+                            self._persist_state()
+
+                    return data
+            except Exception:
+                pass
+
+        return {
+            "status": self.status,
+            "stage": self.stage,
+            "progress": self.progress,
+            "message": self.message,
+            "counts": self.counts,
+            "current_params": self.current_params,
+            "logs": self.logs,
+        }
 
     @property
     def counts(self) -> dict[str, int]:
@@ -107,7 +198,25 @@ class ScanManager:
     ) -> bool:
         """Start a new background scan if no scan is currently active."""
         async with self._lock:
-            if self.status == "running":
+            # Refresh local status from disk state first
+            self.get_status_data()
+
+            # Check cross-process state file & process liveness
+            state_file = self.workspace_dir / ".scan_state.json"
+            if state_file.is_file():
+                try:
+                    with open(state_file, "r", encoding="utf-8") as f:
+                        disk_state = json.load(f)
+                    if disk_state.get("status") == "running":
+                        pid = disk_state.get("pid")
+                        updated_at = disk_state.get("updated_at", 0)
+                        now = time.time()
+                        # If updated within the last 45 seconds and PID is alive, scan is active
+                        if (now - updated_at < 45) and pid and self._is_pid_alive(pid):
+                            return False
+                except Exception:
+                    pass
+            elif self.status == "running" and self.scan_task and not self.scan_task.done():
                 return False
 
             self.status = "running"
@@ -130,6 +239,7 @@ class ScanManager:
             }
 
             log_entry = self._append_log("init", self.message)
+            self._persist_state()
             await self.broadcast({"type": "log", **log_entry})
             await self.broadcast({
                 "type": "status",
@@ -140,6 +250,49 @@ class ScanManager:
                 "counts": self.counts,
             })
 
+            # Check if subprocess runner is enabled (default True in production/WSGI)
+            use_subprocess = not getattr(self, "_force_in_process", False)
+            if use_subprocess:
+                try:
+                    cmd = [
+                        sys.executable,
+                        "-m", "wulf_web_leader.web.runner",
+                        "--workspace", str(self.workspace_dir),
+                        "--country", country.upper(),
+                        "--city", city.strip(),
+                        "--vertical", vertical_id.strip(),
+                        "--radius", str(radius_km),
+                        "--lang", lang.lower(),
+                        "--min-score", str(min_score),
+                    ]
+                    if has_phone_only:
+                        cmd.append("--has-phone-only")
+                    if do_audit:
+                        cmd.append("--do-audit")
+                    if use_gemini:
+                        cmd.append("--use-gemini")
+                    if gemini_api_key:
+                        cmd.extend(["--gemini-api-key", gemini_api_key])
+
+                    env = dict(os.environ)
+                    src_dir = str(Path(__file__).resolve().parent.parent.parent)
+                    env["PYTHONPATH"] = f"{src_dir}:{env.get('PYTHONPATH', '')}"
+
+                    proc = subprocess.Popen(
+                        cmd,
+                        cwd=str(self.workspace_dir),
+                        env=env,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        start_new_session=True,
+                    )
+                    self.scan_proc = proc
+                    self._persist_state(pid=proc.pid)
+                    return True
+                except Exception as e:
+                    logger.warning("Could not launch subprocess runner, falling back to in-process task: %s", e)
+
+            # In-process task fallback
             self.scan_task = asyncio.create_task(
                 self._run_scan_task(
                     country=country.upper(),  # type: ignore
@@ -159,16 +312,36 @@ class ScanManager:
     async def stop_scan(self) -> bool:
         """Gracefully cancel current running scan."""
         async with self._lock:
-            if self.status != "running" or not self.scan_task:
-                return False
+            # 1. Cancel in-process asyncio task if running
+            if self.scan_task and not self.scan_task.done():
+                self.scan_task.cancel()
 
-            self.scan_task.cancel()
+            # 2. Terminate subprocess if running
+            target_pid = None
+            if self.scan_proc and self.scan_proc.poll() is None:
+                target_pid = self.scan_proc.pid
+            else:
+                state_file = self.workspace_dir / ".scan_state.json"
+                if state_file.is_file():
+                    try:
+                        with open(state_file, "r", encoding="utf-8") as f:
+                            target_pid = json.load(f).get("pid")
+                    except Exception:
+                        pass
+
+            if target_pid and target_pid != os.getpid() and self._is_pid_alive(target_pid):
+                try:
+                    os.kill(target_pid, signal.SIGTERM)
+                except Exception:
+                    pass
+
             self.status = "stopped"
             self.stage = "stopped"
             self.progress = 100
             self.message = "Skanowanie zostało przerwane przez użytkownika."
 
             log_entry = self._append_log("stopped", self.message)
+            self._persist_state()
             await self.broadcast({"type": "log", **log_entry})
             await self.broadcast({
                 "type": "status",
@@ -202,25 +375,71 @@ class ScanManager:
             loop = asyncio.get_running_loop()
 
             def pipeline_progress_cb(stage: str, msg: str):
+                # Check for external stop request via state file
+                state_file = self.workspace_dir / ".scan_state.json"
+                if state_file.is_file():
+                    try:
+                        with open(state_file, "r", encoding="utf-8") as f:
+                            if json.load(f).get("status") == "stopped":
+                                raise asyncio.CancelledError("Scan stopped by user")
+                    except asyncio.CancelledError:
+                        raise
+                    except Exception:
+                        pass
+
                 self.stage = stage
-                self.progress = STAGE_PROGRESS.get(stage, self.progress)
+                if stage == "audit":
+                    import re
+                    m = re.search(r"\((\d+)/(\d+)\)", msg)
+                    if m:
+                        curr, total = int(m.group(1)), int(m.group(2))
+                        total = max(total, 1)
+                        progress = 40 + int((curr / total) * 45)
+                        self.progress = min(progress, 85)
+                    else:
+                        self.progress = 50
+                else:
+                    self.progress = STAGE_PROGRESS.get(stage, self.progress)
+
                 self.message = msg
                 log_entry = self._append_log(stage, msg)
-                # Dispatch async broadcasts from thread/callback safely
-                asyncio.run_coroutine_threadsafe(
-                    self.broadcast({"type": "log", **log_entry}), loop
-                )
-                asyncio.run_coroutine_threadsafe(
-                    self.broadcast({
-                        "type": "status",
-                        "status": self.status,
-                        "stage": self.stage,
-                        "progress": self.progress,
-                        "message": self.message,
-                        "counts": self.counts,
-                    }),
-                    loop,
-                )
+                self._persist_state()
+
+                # Dispatch async broadcasts safely
+                try:
+                    current_loop = None
+                    try:
+                        current_loop = asyncio.get_running_loop()
+                    except RuntimeError:
+                        pass
+
+                    if current_loop is loop:
+                        loop.create_task(self.broadcast({"type": "log", **log_entry}))
+                        loop.create_task(self.broadcast({
+                            "type": "status",
+                            "status": self.status,
+                            "stage": self.stage,
+                            "progress": self.progress,
+                            "message": self.message,
+                            "counts": self.counts,
+                        }))
+                    else:
+                        asyncio.run_coroutine_threadsafe(
+                            self.broadcast({"type": "log", **log_entry}), loop
+                        )
+                        asyncio.run_coroutine_threadsafe(
+                            self.broadcast({
+                                "type": "status",
+                                "status": self.status,
+                                "stage": self.stage,
+                                "progress": self.progress,
+                                "message": self.message,
+                                "counts": self.counts,
+                            }),
+                            loop,
+                        )
+                except Exception:
+                    pass
 
             leads, location = await run_scan_pipeline(
                 country=country,  # type: ignore
@@ -242,6 +461,13 @@ class ScanManager:
             self.progress = 100
             self.message = f"Zakończono skanowanie. Znaleziono {len(leads)} kwalifikujących się firm."
 
+            # Auto-persist to leads.json in workspace
+            output_json = self.workspace_dir / "leads.json"
+            export_leads_to_json(self.leads, output_json)
+
+            log_entry = self._append_log("done", self.message)
+            self._persist_state()
+
             # Broadcast leads to clients
             for lead in leads:
                 await self.broadcast({
@@ -250,11 +476,6 @@ class ScanManager:
                     "counts": self.counts,
                 })
 
-            # Auto-persist to leads.json in workspace
-            output_json = self.workspace_dir / "leads.json"
-            export_leads_to_json(self.leads, output_json)
-
-            log_entry = self._append_log("done", self.message)
             await self.broadcast({"type": "log", **log_entry})
             await self.broadcast({
                 "type": "done",
@@ -278,6 +499,7 @@ class ScanManager:
             self.progress = 100
             self.message = "Skanowanie zostało przerwane."
             log_entry = self._append_log("stopped", self.message)
+            self._persist_state()
             await self.broadcast({"type": "log", **log_entry})
             await self.broadcast({
                 "type": "status",
@@ -295,6 +517,7 @@ class ScanManager:
             self.progress = 100
             self.message = f"Błąd skanowania: {e}"
             log_entry = self._append_log("error", self.message)
+            self._persist_state()
             await self.broadcast({"type": "log", **log_entry})
             await self.broadcast({"type": "error", "message": str(e)})
             await self.broadcast({
@@ -313,7 +536,17 @@ class ScanManager:
         has_phone: bool | None = None,
         min_score: int | None = None,
     ) -> list[CanonicalLead]:
-        """Filter leads currently in memory."""
+        """Filter leads currently in memory (auto-reloading from disk if empty or updated)."""
+        default_leads_file = self.workspace_dir / "leads.json"
+        if default_leads_file.is_file():
+            try:
+                mtime = default_leads_file.stat().st_mtime
+                if not self.leads or mtime > getattr(self, "_leads_mtime", 0.0):
+                    self.load_scan_file(default_leads_file)
+                    self._leads_mtime = mtime
+            except Exception:
+                pass
+
         results = []
         q_norm = query.strip().lower() if query else None
         v_norm = verdict.strip().lower() if verdict and verdict.lower() != "all" else None
@@ -334,7 +567,15 @@ class ScanManager:
         return results
 
     def get_lead_by_source_id(self, source_id: str) -> CanonicalLead | None:
-        """Find a single lead in memory by its unique source_id."""
+        """Find a single lead in memory by its unique source_id (auto-reloading if empty)."""
+        if not self.leads:
+            default_leads_file = self.workspace_dir / "leads.json"
+            if default_leads_file.is_file():
+                try:
+                    self.load_scan_file(default_leads_file)
+                except Exception:
+                    pass
+
         for lead in self.leads:
             if lead.source_id == source_id:
                 return lead
