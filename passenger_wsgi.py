@@ -32,12 +32,28 @@ for sp in site_packages_candidates:
         sys.path.insert(0, sp)
 
 # Convert ASGI -> WSGI callable
+import threading
+
+_middleware = None
+_pid = None
+_lock = threading.Lock()
+
 try:
     from a2wsgi import ASGIMiddleware
     from wulf_web_leader.web.app import app as fastapi_app
 
-    # Phusion Passenger looks for `application`
-    application = ASGIMiddleware(fastapi_app)
+    def get_middleware():
+        global _middleware, _pid
+        current_pid = os.getpid()
+        if _middleware is None or _pid != current_pid:
+            with _lock:
+                if _middleware is None or _pid != current_pid:
+                    _pid = current_pid
+                    _middleware = ASGIMiddleware(fastapi_app)
+        return _middleware
+
+    def application(environ, start_response):
+        return get_middleware()(environ, start_response)
 
 except Exception as exc:
     # Fail-safe error page for shared hosting debugging

@@ -7,3 +7,4 @@ pydantic>=2.7.0
 pyyaml>=6.0.1
 rich>=13.7.0
 typer>=0.12.0
+a2wsgi>=1.10.0
