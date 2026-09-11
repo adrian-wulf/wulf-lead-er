@@ -38,6 +38,12 @@ class StartScanRequest(BaseModel):
     min_score: int = Field(default=0, ge=0, le=100, description="Minimalny wynik leada")
     has_phone: bool = Field(default=False, description="Tylko firmy z telefonem")
     do_audit: bool = Field(default=True, description="Wykonaj audyt techniczny stron")
+    use_gemini: bool = Field(default=False, description="Weryfikuj w Google przez Gemini AI")
+    gemini_api_key: Optional[str] = Field(default=None, description="Klucz API Gemini (opcjonalny)")
+
+
+class GeminiVerifyRequest(BaseModel):
+    api_key: Optional[str] = None
 
 
 class LoadScanRequest(BaseModel):
@@ -132,6 +138,8 @@ async def start_scan(req: StartScanRequest):
         min_score=req.min_score,
         has_phone_only=req.has_phone,
         do_audit=req.do_audit,
+        use_gemini=req.use_gemini,
+        gemini_api_key=req.gemini_api_key,
     )
 
     if not started:
@@ -254,3 +262,36 @@ async def export_leads(
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/gemini/status")
+async def get_gemini_status():
+    """Check if Gemini API key is configured and return status."""
+    from wulf_web_leader.audit.gemini_verifier import is_gemini_available
+    return {
+        "available": is_gemini_available(),
+        "model": "gemini-2.0-flash",
+    }
+
+
+@app.post("/api/leads/{source_id}/gemini-verify")
+async def verify_lead_gemini_endpoint(
+    source_id: str,
+    req: Optional[GeminiVerifyRequest] = None,
+    request: Request = None,
+):
+    """Verify an individual lead in Google via Gemini API with live Search Grounding."""
+    api_key = req.api_key if req else None
+    if not api_key and request:
+        api_key = request.headers.get("X-Gemini-Api-Key")
+
+    lead = await scan_manager.verify_lead_gemini(source_id=source_id, api_key=api_key)
+    if not lead:
+        raise HTTPException(status_code=404, detail=f"Lead o ID '{source_id}' nie został odnaleziony w pamięci.")
+
+    return {
+        "status": "ok",
+        "lead": lead.model_dump(mode="json"),
+        "gemini_intel": lead.gemini_intel.model_dump(mode="json") if lead.gemini_intel else None,
+    }
+

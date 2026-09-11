@@ -40,6 +40,22 @@ class AuditResult(BaseModel):
     matched_signals: list[str] = Field(default_factory=list)
 
 
+class GeminiIntel(BaseModel):
+    """Structured intelligence retrieved from Google Search via Gemini API."""
+    checked: bool = False
+    found_in_google: bool = False
+    google_rating: float | None = None
+    google_reviews_count: int | None = None
+    discovered_website: str | None = None
+    social_profiles: list[str] = Field(default_factory=list)
+    summary: str | None = None
+    ai_pitch: str | None = None
+    search_queries: list[str] = Field(default_factory=list)
+    grounding_sources: list[dict[str, str]] = Field(default_factory=list)
+    model: str = "gemini-2.0-flash"
+    error: str | None = None
+
+
 class CanonicalLead(BaseModel):
     """Canonical lead data model used across all country adapters and pipeline stages."""
     country: CountryCode
@@ -72,6 +88,7 @@ class CanonicalLead(BaseModel):
     notatki: str | None = None
     data_kontaktu: str | None = None
     audit: AuditResult | None = None
+    gemini_intel: GeminiIntel | None = None
 
 
 class CountryVerticalConfig(BaseModel):

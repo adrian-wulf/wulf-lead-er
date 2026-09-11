@@ -1298,6 +1298,122 @@
       transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       pointer-events: none;
     }
+
+    /* MODAL DIALOG (GEMINI SETTINGS) */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity var(--tr-smooth);
+    }
+    .modal-backdrop.show {
+      display: block;
+      opacity: 1;
+    }
+    .modal-dialog {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.95);
+      width: min(92vw, 500px);
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(212, 164, 24, 0.1);
+      z-index: 1001;
+      opacity: 0;
+      transition: all var(--tr-smooth);
+    }
+    .modal-dialog.show {
+      display: block;
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    .modal-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-surface);
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+    .modal-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .modal-footer {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      background: var(--bg-surface);
+      border-bottom-left-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
+
+    /* GEMINI DRAWER & GROUNDING COMPONENTS */
+    .gemini-intel-box {
+      background: linear-gradient(145deg, rgba(212, 164, 24, 0.06) 0%, rgba(24, 24, 24, 0.6) 100%);
+      border: 1px solid var(--border-default);
+      border-left: 3px solid var(--gold);
+      border-radius: 6px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .gemini-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(212, 164, 24, 0.12);
+      border: 1px solid rgba(212, 164, 24, 0.3);
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+    }
+    .grounding-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--bg-root);
+      border: 1px solid var(--border-subtle);
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all var(--tr-fast);
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .grounding-chip:hover {
+      border-color: var(--gold);
+      color: var(--gold-soft);
+      background: var(--bg-card-hover);
+    }
+    .btn-spin {
+      animation: rotate-spin 1s linear infinite;
+    }
+    @keyframes rotate-spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
     .toast-pill.show {
       transform: translateX(-50%) translateY(0);
     }
@@ -1385,6 +1501,11 @@
         <button class="btn-header" onclick="openSavedScansModal()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
           <span>Zapisane skany</span>
+        </button>
+
+        <button class="btn-header" onclick="openGeminiModal()" title="Ustawienia Google AI Studio (Gemini API)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+          <span style="color: var(--gold-soft); font-weight: 600;">✨ Gemini AI</span>
         </button>
 
         <a href="/docs" target="_blank" class="btn-header">
@@ -1521,11 +1642,15 @@
             <div class="toggle-row">
               <label class="checkbox-label">
                 <input type="checkbox" id="scan-has-phone">
-                <span>Tylko firmy ze zweryfikowanym telefonem</span>
+                <span>Tylko firmy z telefonem</span>
               </label>
               <label class="checkbox-label">
                 <input type="checkbox" id="scan-do-audit" checked>
-                <span>Głęboki audyt techniczny (SSL, RWD, CMS)</span>
+                <span>Audyt stron WWW (SSL, RWD, CMS)</span>
+              </label>
+              <label class="checkbox-label" style="color: var(--gold-soft);">
+                <input type="checkbox" id="scan-use-gemini">
+                <span>✨ Wywiad Google AI (Search Grounding)</span>
               </label>
             </div>
           </div>
@@ -1651,6 +1776,10 @@
         </div>
         <div class="drawer-company" id="drawer-company-name">Nazwa Firmy</div>
         <div style="font-size: 11px; color: var(--text-muted);" id="drawer-sublocation">Rzeszów, Polska</div>
+        <button class="btn-drawer-action" id="drawer-btn-quick-gemini" onclick="triggerDrawerGeminiVerify()" style="margin-top: 8px; width: 100%; border-color: var(--gold); color: var(--gold-soft); background: rgba(212, 164, 24, 0.08); font-size: 11px; padding: 6px 10px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="drawer-quick-gemini-icon"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+          <span id="drawer-quick-gemini-text">✨ Sprawdź w Google przez Gemini AI</span>
+        </button>
       </div>
       <button class="drawer-close" onclick="closeDrawer()" title="Zamknij (Esc)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1659,6 +1788,7 @@
 
     <div class="drawer-tabs">
       <button class="drawer-tab active" onclick="switchDrawerTab('audit', this)">Audyt WWW</button>
+      <button class="drawer-tab" onclick="switchDrawerTab('gemini', this)" id="drawer-tab-gemini-btn">✨ Google AI</button>
       <button class="drawer-tab" onclick="switchDrawerTab('pitch', this)">Gotowe Hooki & Pitch</button>
       <button class="drawer-tab" onclick="switchDrawerTab('contact', this)">Kontakt & Rejestr</button>
       <button class="drawer-tab" onclick="switchDrawerTab('json', this)">JSON</button>
@@ -1745,6 +1875,13 @@
         </div>
       </div>
 
+      <!-- TAB 5: GOOGLE SEARCH GROUNDING INTEL (GEMINI) -->
+      <div class="drawer-tab-content" id="tab-content-gemini" style="display: none;">
+        <div id="drawer-gemini-content-area">
+          <!-- Populated dynamically via renderDrawerGeminiTab(lead) -->
+        </div>
+      </div>
+
       <!-- TAB 4: SUROWY JSON -->
       <div class="drawer-tab-content" id="tab-content-json" style="display: none;">
         <pre style="background: var(--bg-root); border: 1px solid var(--border-subtle); padding: 12px; border-radius: 6px; font-family: var(--font-mono); font-size: 11px; overflow-x: auto; color: var(--gold-soft);" id="drawer-raw-json"></pre>
@@ -1766,6 +1903,52 @@
       </a>
     </div>
   </aside>
+
+  <!-- GEMINI SETTINGS MODAL -->
+  <div class="modal-backdrop" id="gemini-modal-backdrop" onclick="closeGeminiModal()"></div>
+  <div class="modal-dialog" id="gemini-modal-dialog">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="color: var(--gold); font-size: 16px;">✨</span>
+        <span style="font-weight: 700; font-size: 13px; color: var(--text-white); text-transform: uppercase; letter-spacing: 0.5px;">Google AI Studio & Search Grounding</span>
+      </div>
+      <button class="drawer-close" onclick="closeGeminiModal()" title="Zamknij (Esc)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size: 12px; line-height: 1.5; color: var(--text-muted);">
+        Integracja wykorzystuje bezpłatny model <strong style="color: var(--text-white);">Gemini 2.0 Flash</strong> z narzędziem <strong style="color: var(--gold);">Google Search Grounding</strong>.
+        Silnik przeszukuje Google i Mapy Google na żywo, sprawdza reputację (gwiazdki/opinie), weryfikuje istnienie biznesu i tworzy spersonalizowany pitch.
+      </div>
+      <div style="background: var(--bg-root); border: 1px solid var(--border-subtle); padding: 10px 14px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-dim); letter-spacing: 0.5px;">Status Klucza na Serwerze</div>
+          <div id="gemini-server-status-text" style="font-size: 12px; font-weight: 600; color: var(--text-white); margin-top: 2px;">Sprawdzanie połączenia...</div>
+        </div>
+        <span id="gemini-server-status-badge" class="gemini-pill">Sprawdzanie...</span>
+      </div>
+      <div>
+        <label style="display: block; font-size: 11px; font-weight: 600; color: var(--text-white); margin-bottom: 6px;">
+          Twój prywatny klucz Google AI Studio (zapisywany w przeglądarce):
+        </label>
+        <div style="position: relative;">
+          <input type="password" id="gemini-api-key-input" placeholder="Wklej klucz AIzaSy..." class="input-field" style="width: 100%; padding-right: 36px; font-family: var(--font-mono); font-size: 12px;">
+          <button type="button" onclick="toggleGeminiKeyVisibility()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 13px;" title="Pokaż / Ukryj klucz">
+            👁️
+          </button>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+          <span style="font-size: 11px; color: var(--text-dim);">Darmowy limit: 15 zapytań / min</span>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" style="font-size: 11px; color: var(--gold); text-decoration: underline;">Pobierz darmowy klucz w AI Studio ↗</a>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-drawer-action" onclick="closeGeminiModal()">Anuluj</button>
+      <button class="btn-drawer-action primary" onclick="saveGeminiSettings()">Zapisz klucz</button>
+    </div>
+  </div>
 
   <!-- TOAST FEEDBACK NOTIFICATION -->
   <div class="toast-pill" id="toast-pill">Skopiowano do schowka!</div>
@@ -1792,6 +1975,7 @@
       renderCityChips('PL');
       initSSE();
       fetchInitialStatus();
+      checkGeminiStatus();
 
       // Keyboard shortcuts
       document.addEventListener('keydown', (e) => {
@@ -1802,6 +1986,7 @@
         if (e.key === 'Escape') {
           closeDrawer();
           closeExportMenu();
+          closeGeminiModal();
         }
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
           startScan();
@@ -2006,6 +2191,8 @@
       const lang = document.getElementById('scan-lang').value;
       const hasPhone = document.getElementById('scan-has-phone').checked;
       const doAudit = document.getElementById('scan-do-audit').checked;
+      const useGemini = document.getElementById('scan-use-gemini').checked;
+      const geminiApiKey = getStoredGeminiKey() || null;
 
       if (!city) {
         showToast('Podaj miasto docelowe');
@@ -2032,7 +2219,9 @@
             radius,
             lang,
             has_phone: hasPhone,
-            do_audit: doAudit
+            do_audit: doAudit,
+            use_gemini: useGemini,
+            gemini_api_key: geminiApiKey
           })
         });
 
@@ -2146,6 +2335,13 @@
         const vLabel = v === 'hot' ? '🔥 GORĄCY' : (v === 'warm' ? '⚡ CIEPŁY' : '🚫 POMIŃ');
 
         let techBadges = '';
+        if (lead.gemini_intel && lead.gemini_intel.checked) {
+          if (lead.gemini_intel.google_rating) {
+            techBadges += `<span class="tech-tag" style="border-color: var(--gold); color: var(--gold-soft); background: rgba(212, 164, 24, 0.1);">⭐ ${lead.gemini_intel.google_rating.toFixed(1)} (${lead.gemini_intel.google_reviews_count || 0})</span>`;
+          } else {
+            techBadges += `<span class="tech-tag" style="border-color: var(--gold); color: var(--gold-soft);">✨ Google AI</span>`;
+          }
+        }
         if (lead.audit) {
           techBadges += lead.audit.is_https ? '<span class="tech-tag good">HTTPS</span>' : '<span class="tech-tag bad">Brak SSL</span>';
           techBadges += lead.audit.has_viewport ? '<span class="tech-tag good">RWD OK</span>' : '<span class="tech-tag bad">Brak RWD</span>';
@@ -2153,7 +2349,7 @@
             techBadges += '<span class="tech-tag">' + escapeHtml(lead.audit.generator) + '</span>';
           }
         } else {
-          techBadges = '<span class="tech-tag bad">Brak strony www</span>';
+          techBadges += '<span class="tech-tag bad">Brak strony www</span>';
         }
 
         const hook = (lead.hooks && lead.hooks[0]) ? lead.hooks[0] : (lead.primary_issue || 'Brak zidentyfikowanych problemów');
@@ -2198,10 +2394,16 @@
           techSummary = (lead.audit.is_https ? 'SSL✓ ' : 'Brak SSL! ') + (lead.audit.has_viewport ? 'RWD✓' : 'Brak RWD!');
         }
 
+        let nameHtml = `<div style="font-weight: 700;">${escapeHtml(lead.name)}</div>`;
+        if (lead.gemini_intel && lead.gemini_intel.checked) {
+          const ratingStr = lead.gemini_intel.google_rating ? `⭐ ${lead.gemini_intel.google_rating.toFixed(1)} (${lead.gemini_intel.google_reviews_count || 0})` : '✨ Google AI';
+          nameHtml += `<div style="font-size: 10px; color: var(--gold); font-family: var(--font-mono); margin-top: 2px;">${ratingStr}</div>`;
+        }
+
         tr.innerHTML = 
           '<td><span class="status-badge ' + v + '">' + vLabel + '</span></td>' +
           '<td style="font-family: var(--font-mono); font-weight: 700; color: var(--gold);">' + lead.score + '/100</td>' +
-          '<td style="font-weight: 700;">' + escapeHtml(lead.name) + '</td>' +
+          '<td>' + nameHtml + '</td>' +
           '<td style="color: var(--text-muted);">' + escapeHtml(lead.city || '—') + '</td>' +
           '<td style="font-family: var(--font-mono);">' + (lead.phone ? escapeHtml(lead.phone) : '—') + '</td>' +
           '<td>' + (lead.website ? '<a href="' + escapeHtml(lead.website) + '" target="_blank" onclick="event.stopPropagation()">' + escapeHtml(lead.website.replace(/^https?:\/\//, '').slice(0, 22)) + '</a>' : '—') + '</td>' +
@@ -2293,6 +2495,9 @@
         btnCall.style.display = 'none';
       }
 
+      // Render Gemini Tab
+      renderDrawerGeminiTab(lead);
+
       // Slide in
       document.getElementById('drawer-backdrop').classList.add('show');
       document.getElementById('lead-drawer').classList.add('open');
@@ -2310,6 +2515,7 @@
       btn.classList.add('active');
 
       document.getElementById('tab-content-audit').style.display = tabName === 'audit' ? 'block' : 'none';
+      document.getElementById('tab-content-gemini').style.display = tabName === 'gemini' ? 'block' : 'none';
       document.getElementById('tab-content-pitch').style.display = tabName === 'pitch' ? 'block' : 'none';
       document.getElementById('tab-content-contact').style.display = tabName === 'contact' ? 'block' : 'none';
       document.getElementById('tab-content-json').style.display = tabName === 'json' ? 'block' : 'none';
@@ -2320,6 +2526,252 @@
       if (!lead) return;
       const text = (lead.hooks && lead.hooks[0]) ? lead.hooks[0] : (lead.primary_issue || '');
       copyText(text);
+    }
+
+    // GEMINI & GOOGLE SEARCH GROUNDING LOGIC
+    function getStoredGeminiKey() {
+      return localStorage.getItem('wulf_gemini_api_key') || '';
+    }
+
+    function openGeminiModal() {
+      const input = document.getElementById('gemini-api-key-input');
+      if (input) input.value = getStoredGeminiKey();
+      document.getElementById('gemini-modal-backdrop').classList.add('show');
+      document.getElementById('gemini-modal-dialog').classList.add('show');
+      checkGeminiStatus();
+    }
+
+    function closeGeminiModal() {
+      document.getElementById('gemini-modal-backdrop').classList.remove('show');
+      document.getElementById('gemini-modal-dialog').classList.remove('show');
+    }
+
+    function toggleGeminiKeyVisibility() {
+      const input = document.getElementById('gemini-api-key-input');
+      if (input) {
+        input.type = input.type === 'password' ? 'text' : 'password';
+      }
+    }
+
+    function saveGeminiSettings() {
+      const input = document.getElementById('gemini-api-key-input');
+      const val = input ? input.value.trim() : '';
+      if (val) {
+        localStorage.setItem('wulf_gemini_api_key', val);
+        showToast('Zapisano klucz Gemini w pamięci podręcznej');
+      } else {
+        localStorage.removeItem('wulf_gemini_api_key');
+        showToast('Wyczyszczono klucz lokalny (używany klucz serwera)');
+      }
+      closeGeminiModal();
+      checkGeminiStatus();
+    }
+
+    async function checkGeminiStatus() {
+      const statusText = document.getElementById('gemini-server-status-text');
+      const badge = document.getElementById('gemini-server-status-badge');
+      const localKey = getStoredGeminiKey();
+
+      try {
+        const res = await fetch('/api/gemini/status');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.available || localKey) {
+            if (statusText) statusText.innerText = localKey ? 'Aktywny własny klucz API' : 'Aktywny klucz na serwerze (.env)';
+            if (badge) {
+              badge.innerText = 'Gotowy ✓';
+              badge.style.color = 'var(--status-live)';
+              badge.style.borderColor = 'rgba(78, 201, 176, 0.4)';
+              badge.style.background = 'rgba(78, 201, 176, 0.1)';
+            }
+          } else {
+            if (statusText) statusText.innerText = 'Brak klucza API (wprowadź darmowy klucz poniżej)';
+            if (badge) {
+              badge.innerText = 'Brak klucza';
+              badge.style.color = 'var(--status-hot)';
+              badge.style.borderColor = 'rgba(255, 77, 77, 0.4)';
+              badge.style.background = 'rgba(255, 77, 77, 0.1)';
+            }
+          }
+        }
+      } catch (e) {}
+    }
+
+    function renderDrawerGeminiTab(lead) {
+      const container = document.getElementById('drawer-gemini-content-area');
+      const quickBtnText = document.getElementById('drawer-quick-gemini-text');
+      const intel = lead.gemini_intel;
+
+      if (!intel || !intel.checked) {
+        if (quickBtnText) quickBtnText.innerText = '✨ Sprawdź w Google przez Gemini AI';
+        container.innerHTML = `
+          <div class="drawer-section">
+            <div class="section-title">Weryfikacja w Google & AI Studio</div>
+            <div class="gemini-intel-box">
+              <div style="font-size: 13px; font-weight: 600; color: var(--text-white);">
+                Firma nie była jeszcze weryfikowana na żywo w Google.
+              </div>
+              <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+                Uruchom darmowy model <strong>Gemini 2.0 Flash</strong> z technologią <strong>Google Search Grounding</strong>.
+                Sztuczna inteligencja odpyta Google i Mapy Google w czasie rzeczywistym, odczyta opinie i gwiazdki oraz przygotuje unikalny cold pitch.
+              </div>
+              <button class="btn-drawer-action primary" onclick="triggerDrawerGeminiVerify()" style="margin-top: 6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                <span>✨ Uruchom wywiad Google AI teraz</span>
+              </button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (quickBtnText) quickBtnText.innerText = '✓ Zweryfikowano w Google (Odśwież)';
+
+      let ratingHtml = '<span style="color: var(--text-dim);">Brak ocen</span>';
+      if (intel.google_rating) {
+        ratingHtml = `<span style="color: var(--gold); font-weight: 700; font-size: 15px;">⭐ ${intel.google_rating.toFixed(1)}</span> <span style="font-size: 11px; color: var(--text-muted);">/ 5.0</span>`;
+      }
+      const reviewsHtml = intel.google_reviews_count ? `${intel.google_reviews_count} recenzji` : 'Brak danych';
+
+      let groundingSourcesHtml = '';
+      if (intel.grounding_sources && intel.grounding_sources.length > 0) {
+        groundingSourcesHtml = `
+          <div class="drawer-section" style="margin-top: 14px;">
+            <div class="section-title">Źródła Wyszukiwania Google (Grounding Sources)</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              ${intel.grounding_sources.map(src => `
+                <a href="${escapeHtml(src.url)}" target="_blank" class="grounding-chip" title="${escapeHtml(src.title || src.url)}">
+                  <span>🌐</span>
+                  <span>${escapeHtml(src.title ? src.title.slice(0, 32) : src.url.replace(/^https?:\/\//, '').slice(0, 26))}</span>
+                  <span style="font-size: 9px; opacity: 0.7;">↗</span>
+                </a>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      let socialsHtml = '';
+      if (intel.social_profiles && intel.social_profiles.length > 0) {
+        socialsHtml = `
+          <div style="margin-top: 8px; font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span style="font-weight: 600; color: var(--text-dim); text-transform: uppercase;">Profile:</span>
+            ${intel.social_profiles.map(soc => `<a href="${escapeHtml(soc)}" target="_blank" style="color: var(--gold); text-decoration: underline;">${escapeHtml(soc.replace(/^https?:\/\/(www\.)?/, '').split('/')[0])} ↗</a>`).join(' • ')}
+          </div>
+        `;
+      }
+
+      container.innerHTML = `
+        <div class="drawer-section">
+          <div class="section-title">Wizytówka Google Maps & Reputacja</div>
+          <div class="audit-grid">
+            <div class="audit-metric-box">
+              <span class="metric-label">Ocena w Google Maps</span>
+              <span class="metric-value">${ratingHtml}</span>
+            </div>
+            <div class="audit-metric-box">
+              <span class="metric-label">Liczba Recenzji</span>
+              <span class="metric-value" style="font-size: 13px;">${escapeHtml(reviewsHtml)}</span>
+            </div>
+            <div class="audit-metric-box" style="grid-column: span 2;">
+              <span class="metric-label">Status w Google</span>
+              <span class="metric-value" style="font-size: 12px; color: ${intel.found_in_google ? 'var(--status-live)' : 'var(--status-hot)'};">
+                ${intel.found_in_google ? '✓ Aktywna wizytówka / obecność w sieci' : '⚠ Brak wyraźnego profilu'}
+              </span>
+              ${intel.discovered_website ? `<div style="font-size: 11px; margin-top: 6px; color: var(--text-muted);">Oficjalna strona z Google: <a href="${escapeHtml(intel.discovered_website)}" target="_blank" style="color: var(--gold);">${escapeHtml(intel.discovered_website)}</a></div>` : ''}
+              ${socialsHtml}
+            </div>
+          </div>
+        </div>
+
+        <div class="drawer-section" style="margin-top: 14px;">
+          <div class="section-title">Podsumowanie Wywiadu Google AI</div>
+          <div class="gemini-intel-box">
+            <div style="font-size: 12px; line-height: 1.5; color: var(--text-white);">
+              ${escapeHtml(intel.summary || 'Brak opisu.')}
+            </div>
+          </div>
+        </div>
+
+        <div class="drawer-section" style="margin-top: 14px;">
+          <div class="section-title">Cold Pitch Sprzedażowy (Gemini AI)</div>
+          <div class="hook-box-large" style="border-left-color: var(--gold);">
+            <div style="font-size: 10px; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 0.5px;">Gotowy pitch do rozmowy lub wiadomości:</div>
+            <div class="hook-text" id="drawer-gemini-pitch-text" style="white-space: pre-line;">${escapeHtml(intel.ai_pitch || 'Brak wygenerowanego pitchu.')}</div>
+            <button class="btn-drawer-action primary" onclick="copyText(document.getElementById('drawer-gemini-pitch-text').innerText)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span>Kopiuj pitch Gemini AI</span>
+            </button>
+          </div>
+        </div>
+
+        ${groundingSourcesHtml}
+
+        <div style="margin-top: 16px;">
+          <button class="btn-drawer-action" onclick="triggerDrawerGeminiVerify()" style="width: 100%;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <span>Odśwież dane z Google AI</span>
+          </button>
+        </div>
+      `;
+    }
+
+    async function triggerDrawerGeminiVerify() {
+      const lead = allLeads[selectedLeadIndex];
+      if (!lead) return;
+
+      const quickBtn = document.getElementById('drawer-btn-quick-gemini');
+      const quickBtnText = document.getElementById('drawer-quick-gemini-text');
+      const icon = document.getElementById('drawer-quick-gemini-icon');
+
+      const originalText = quickBtnText ? quickBtnText.innerText : 'Sprawdź w Google';
+      if (quickBtnText) quickBtnText.innerText = 'Przeszukiwanie Google przez Gemini...';
+      if (icon) icon.classList.add('btn-spin');
+      if (quickBtn) quickBtn.disabled = true;
+
+      // Switch to Gemini tab so user sees progress
+      const geminiTabBtn = document.getElementById('drawer-tab-gemini-btn');
+      if (geminiTabBtn) switchDrawerTab('gemini', geminiTabBtn);
+
+      document.getElementById('drawer-gemini-content-area').innerHTML = `
+        <div class="drawer-section">
+          <div class="gemini-intel-box" style="text-align: center; padding: 24px;">
+            <svg class="btn-spin" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin: 0 auto 12px; color: var(--gold);"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            <div style="font-size: 13px; font-weight: 600; color: var(--text-white);">Gemini 2.0 Flash przeszukuje Google...</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Pobieranie opinii Google Maps, weryfikacja firmy i tworzenie unikalnego pitchu.</div>
+          </div>
+        </div>
+      `;
+
+      try {
+        const apiKey = getStoredGeminiKey() || undefined;
+        const res = await fetch('/api/leads/' + encodeURIComponent(lead.source_id) + '/gemini-verify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(apiKey ? { 'X-Gemini-Api-Key': apiKey } : {})
+          },
+          body: JSON.stringify({ api_key: apiKey })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Błąd weryfikacji Google AI');
+        }
+
+        const updatedLead = await res.json();
+        allLeads[selectedLeadIndex] = updatedLead;
+        renderDataView();
+        renderDrawerGeminiTab(updatedLead);
+        showToast('Pomyślnie zweryfikowano w Google!');
+      } catch (err) {
+        showToast('Błąd Google AI: ' + err.message);
+        renderDrawerGeminiTab(lead);
+      } finally {
+        if (icon) icon.classList.remove('btn-spin');
+        if (quickBtn) quickBtn.disabled = false;
+        if (quickBtnText) quickBtnText.innerText = originalText;
+      }
     }
 
     // EXPORT & TOAST UTILS

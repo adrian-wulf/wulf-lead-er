@@ -22,8 +22,9 @@ STAGE_PROGRESS = {
     "overpass": 35,
     "ceidg": 50,
     "offeneregister": 50,
-    "audit": 75,
-    "score": 90,
+    "audit": 70,
+    "score": 85,
+    "gemini": 95,
     "done": 100,
     "error": 100,
     "stopped": 100,
@@ -101,6 +102,8 @@ class ScanManager:
         min_score: int = 0,
         has_phone_only: bool = False,
         do_audit: bool = True,
+        use_gemini: bool = False,
+        gemini_api_key: str | None = None,
     ) -> bool:
         """Start a new background scan if no scan is currently active."""
         async with self._lock:
@@ -122,6 +125,7 @@ class ScanManager:
                 "min_score": min_score,
                 "has_phone_only": has_phone_only,
                 "do_audit": do_audit,
+                "use_gemini": use_gemini,
                 "started_at": datetime.now().isoformat(),
             }
 
@@ -146,6 +150,8 @@ class ScanManager:
                     min_score=min_score,
                     has_phone_only=has_phone_only,
                     do_audit=do_audit,
+                    use_gemini=use_gemini,
+                    gemini_api_key=gemini_api_key,
                 )
             )
             return True
@@ -184,6 +190,8 @@ class ScanManager:
         min_score: int,
         has_phone_only: bool,
         do_audit: bool,
+        use_gemini: bool = False,
+        gemini_api_key: str | None = None,
     ) -> None:
         """Execute scan pipeline in background and report events."""
         try:
@@ -223,6 +231,8 @@ class ScanManager:
                 do_audit=do_audit,
                 min_score=min_score,
                 has_phone_only=has_phone_only,
+                use_gemini=use_gemini,
+                gemini_api_key=gemini_api_key,
                 progress_callback=pipeline_progress_cb,
             )
 
@@ -322,6 +332,50 @@ class ScanManager:
             results.append(lead)
 
         return results
+
+    def get_lead_by_source_id(self, source_id: str) -> CanonicalLead | None:
+        """Find a single lead in memory by its unique source_id."""
+        for lead in self.leads:
+            if lead.source_id == source_id:
+                return lead
+        return None
+
+    async def verify_lead_gemini(
+        self,
+        source_id: str,
+        api_key: str | None = None,
+    ) -> CanonicalLead | None:
+        """Verify an individual lead using Gemini API with live Google Search Grounding."""
+        lead = self.get_lead_by_source_id(source_id)
+        if not lead:
+            return None
+
+        from wulf_web_leader.audit.gemini_verifier import verify_lead_with_gemini
+        intel = await verify_lead_with_gemini(lead, api_key=api_key)
+        lead.gemini_intel = intel
+
+        # If Gemini found an official website and the lead previously had none
+        if not lead.website and intel.discovered_website:
+            lead.website = intel.discovered_website
+            lead.website_kind = "own"
+            lead.website_source = "candidate_discovery"
+
+        # If Gemini generated an AI pitch, make it the top primary hook
+        if intel.ai_pitch and intel.ai_pitch not in lead.hooks:
+            lead.hooks.insert(0, f"✨ [AI Google Pitch]: {intel.ai_pitch}")
+
+        self._persist_current_leads()
+        return lead
+
+    def _persist_current_leads(self) -> None:
+        """Persist in-memory leads to workspace leads.json if leads are present."""
+        if not self.leads:
+            return
+        output_json = self.workspace_dir / "leads.json"
+        try:
+            export_leads_to_json(self.leads, output_json)
+        except Exception as e:
+            logger.warning("Could not auto-persist leads to %s: %s", output_json, e)
 
     def list_saved_scans(self) -> list[dict[str, Any]]:
         """List historical leads*.json files in workspace directory."""

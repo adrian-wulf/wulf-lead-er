@@ -31,6 +31,9 @@ async def run_scan_pipeline(
     overpass_client: OverpassClient | None = None,
     ceidg_adapter: CEIDGAdapter | None = None,
     offeneregister_adapter: OffeneRegisterAdapter | None = None,
+    use_gemini: bool = False,
+    gemini_api_key: str | None = None,
+    gemini_max_leads: int = 5,
     progress_callback: Callable[[str, str], None] | None = None,
 ) -> tuple[list[CanonicalLead], GeocodedLocation]:
     """Execute end-to-end lead scanning, auditing, scoring, and hook generation pipeline."""
@@ -264,6 +267,29 @@ async def run_scan_pipeline(
     # Filter by phone presence if requested
     if has_phone_only:
         leads = [l for l in leads if l.phone]
+
+    # 7b. Optional Google AI Studio (Gemini) Search Grounding enrichment
+    if use_gemini:
+        from wulf_web_leader.audit.gemini_verifier import verify_lead_with_gemini, is_gemini_available
+        if is_gemini_available(gemini_api_key):
+            candidates = [l for l in leads if l.verdict in ("hot", "warm") or l.score >= 50][:gemini_max_leads]
+            if not candidates and leads:
+                candidates = leads[:gemini_max_leads]
+            if candidates:
+                notify("gemini", f"Weryfikacja {len(candidates)} kluczowych firm w Google przez Gemini AI...")
+                for c in candidates:
+                    try:
+                        intel = await verify_lead_with_gemini(c, api_key=gemini_api_key)
+                        c.gemini_intel = intel
+                        if not c.website and intel.discovered_website:
+                            c.website = intel.discovered_website
+                            c.website_kind = "own"
+                            c.website_source = "candidate_discovery"
+                        if intel.ai_pitch and intel.ai_pitch not in c.hooks:
+                            c.hooks.insert(0, f"✨ [AI Google Pitch]: {intel.ai_pitch}")
+                        await asyncio.sleep(0.5)
+                    except Exception as err:
+                        logger.debug("Gemini enrichment failed for %s: %s", c.name, err)
 
     notify("done", f"Pipeline completed with {len(leads)} qualified leads.")
     return leads, location
