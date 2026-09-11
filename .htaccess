@@ -1,0 +1,45 @@
+# ==============================================================================
+# WULF LEAD.ER — Shared Hosting Configuration (.htaccess)
+# Compatible with cPanel / LiteSpeed / CloudLinux / Phusion Passenger
+# ==============================================================================
+
+# Enable Passenger WSGI engine
+<IfModule mod_passenger.c>
+    PassengerEngine On
+    PassengerAppType wsgi
+    PassengerStartupFile passenger_wsgi.py
+    PassengerFriendlyErrorPages off
+    
+    # Optional performance tuning for shared hosting memory limits
+    PassengerMinInstances 1
+    PassengerMaxPreloaderIdleTime 0
+</IfModule>
+
+# Force HTTPS & clean URLs
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Uncomment to force HTTPS if not already handled by Cloudflare / Hosting panel
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Allow access to static assets directly if placed in public/
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # Route all requests to Passenger WSGI
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.*)$ passenger_wsgi.py/$1 [QSA,L]
+</IfModule>
+
+# Disable directory browsing and protect sensitive files
+Options -Indexes
+<FilesMatch "(\.env|\.git|\.venv|pyproject\.toml|uv\.lock)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
