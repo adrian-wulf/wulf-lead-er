@@ -1,6 +1,6 @@
 # Zasady współtworzenia (Contributing Guidelines) — wulf-web-leader
 
-Dziękujemy za chęć rozwoju projektu `wulf-web-leader` (CLI: `wulf`, aliasy: `brakstrony`, `keinweb`).  
+Dziękujemy za chęć rozwoju projektu `wulf-web-leader` (CLI: `lead.er`, aliasy: `leader`, `brakstrony`, `keinweb`).  
 Projekt powstał jako narzędzie typu **Robin Hood dla lokalnych twórców stron www** — w 100% lokalne, otwarte (MIT), zorientowane na jakość i szacunek dla prywatności oraz prawa.
 
 Aby projekt zachował swoją tożsamość i lekkość, każdy Pull Request musi spełniać poniższe reguły architektoniczne.

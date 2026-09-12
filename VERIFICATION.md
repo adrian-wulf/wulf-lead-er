@@ -122,7 +122,7 @@ Około 30-35% wpisów w wertykale `hair` to gabinety kosmetyczne i spa, poniewa�
 - **Obecna nazwa w kodzie i konfiguracji:** `brakstrony` (alias `keinweb`).
 - **Planowana nazwa w Fazie 2:**
   - Paczka i projekt: `wulf-web-leader`
-  - Główna binarka CLI: `wulf`
+  - Główna binarka CLI: `lead.er` (alias `leader`)
   - Aliasy wstecznej kompatybilności: `brakstrony`, `keinweb`
   - Pakiet Pythona: `wulf_web_leader` (zostaną zaktualizowane wszystkie importy i skrypty).
 

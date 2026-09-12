@@ -146,7 +146,7 @@ Wszystkie szablony branżowe zdefiniowane są w przejrzystych plikach YAML w kat
 
 ## 🖥️ Komendy konsolowe (CLI Reference)
 
-Główna binarka aplikacji to `lead.er` (dostępna także pod aliasami `leader` oraz `wulf`):
+Główna binarka aplikacji to `lead.er` (dostępna także pod aliasem `leader` oraz wstecznie kompatybilnymi `brakstrony` i `keinweb`):
 
 * **`lead.er scan`** — Skanuje obszar, geokoduje Nominatim, audytuje serwisy i tworzy pliki wyjściowe.
 * **`lead.er web`** — Uruchamia interaktywny pulpit Web GUI z podglądem SSE na żywo.

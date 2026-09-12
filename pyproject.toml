@@ -35,7 +35,6 @@ dev = [
 [project.scripts]
 "lead.er" = "wulf_web_leader.cli:app"
 leader = "wulf_web_leader.cli:app"
-wulf = "wulf_web_leader.cli:app"
 brakstrony = "wulf_web_leader.cli:app"
 keinweb = "wulf_web_leader.cli:app"
 
