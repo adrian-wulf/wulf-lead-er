@@ -1,0 +1,17 @@
+# WULF HUB HIGH PERFORMANCE & SECURITY CONFIGURATION
+AddDefaultCharset UTF-8
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-XSS-Protection "1; mode=block"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+  <FilesMatch "\.(ico|jpe?g|png|gif|svg|woff2?|ttf|otf)$">
+    Header set Cache-Control "max-age=2592000, public"
+  </FilesMatch>
+</IfModule>
+
+DirectoryIndex index.html
