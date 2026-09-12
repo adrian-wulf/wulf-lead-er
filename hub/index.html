@@ -329,6 +329,87 @@
       box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 24px rgba(212, 164, 24, 0.1);
     }
 
+    /* GRID SPANS & STATUS BADGES */
+    .bento-card.col-12 { grid-column: span 12; }
+    .bento-card.col-6 { grid-column: span 6; }
+    .bento-card.col-4 { grid-column: span 4; }
+    .bento-card.is-hidden { display: none !important; }
+
+    .status-badge.go {
+      background: rgba(0, 172, 215, 0.12);
+      border: 1px solid rgba(0, 172, 215, 0.4);
+      color: #00add8;
+    }
+    .status-badge.python {
+      background: rgba(255, 212, 59, 0.12);
+      border: 1px solid rgba(255, 212, 59, 0.4);
+      color: #ffd43b;
+    }
+    .status-badge.linux {
+      background: rgba(56, 217, 169, 0.12);
+      border: 1px solid rgba(56, 217, 169, 0.4);
+      color: #38d9a9;
+    }
+    .status-badge.redteam {
+      background: rgba(240, 62, 62, 0.12);
+      border: 1px solid rgba(240, 62, 62, 0.4);
+      color: #ff6b6b;
+    }
+
+    /* FILTER RIBBON */
+    .filter-ribbon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px auto 30px;
+      max-width: 900px;
+      position: relative;
+      z-index: 5;
+    }
+    .filter-chip {
+      background: rgba(18, 18, 18, 0.85);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 7px 15px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font-main);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+    }
+    .filter-chip:hover {
+      border-color: var(--gold);
+      color: var(--white);
+      background: rgba(30, 30, 30, 0.95);
+    }
+    .filter-chip.active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #000;
+      font-weight: 700;
+      box-shadow: 0 0 16px var(--gold-glow);
+    }
+    .filter-chip .count-badge {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      background: rgba(255, 255, 255, 0.1);
+      padding: 1px 6px;
+      border-radius: 10px;
+      color: inherit;
+    }
+    .filter-chip.active .count-badge {
+      background: rgba(0, 0, 0, 0.25);
+      color: #000;
+      font-weight: 800;
+    }
+
     /* HERO APP CARD - FULL (12 cols) */
     .bento-card.hero-app {
       grid-column: span 12;
@@ -741,6 +822,8 @@
     @media (max-width: 1024px) {
       .bento-card.hero-app { grid-column: span 12; }
       .features-mini-grid { grid-template-columns: repeat(2, 1fr); }
+      .bento-card.col-4 { grid-column: span 6; }
+      .bento-card.col-6 { grid-column: span 12; }
     }
     @media (max-width: 768px) {
       .viewport-wrapper { padding: 12px; }
@@ -799,8 +882,21 @@
         padding: 16px;
       }
       .bento-card.hero-app,
-      .bento-card.docker-open-source {
+      .bento-card.docker-open-source,
+      .bento-card.col-12,
+      .bento-card.col-6,
+      .bento-card.col-4 {
         grid-column: span 1;
+      }
+      .filter-ribbon {
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding-bottom: 6px;
+        -webkit-overflow-scrolling: touch;
+      }
+      .filter-chip {
+        white-space: nowrap;
+        flex-shrink: 0;
       }
       .features-mini-grid {
         grid-template-columns: 1fr !important;
@@ -864,20 +960,20 @@
 
     <!-- HEADER NAVIGATION -->
     <header>
-      <a href="https://wulf-code.it" target="_blank" class="brand-identity" title="Wulf Code — Oficjalna strona główna">
+      <a href="https://wulf-code.it" target="_blank" class="brand-identity" title="Wulf Code — Oficjalna strona software house'u">
         <div class="logo-mark">
           <span>W</span>
         </div>
         <div class="brand-titles">
-          <h1>WULF // ECOSYSTEM <span class="tag">HUB v1.0</span></h1>
-          <p>COMMAND CENTER & DEVELOPER LAUNCHPAD</p>
+          <h1>WULF // OPEN SOURCE <span class="tag">LABS v1.0</span></h1>
+          <p>AUTORSKIE NARZĘDZIA, BOTY & OPROGRAMOWANIE</p>
         </div>
       </a>
 
       <div class="nav-actions">
         <div class="telemetry-pill">
           <span class="pulse-dot"></span>
-          <span>SYSTEM ONLINE</span>
+          <span>OPEN SOURCE SUITE</span>
         </div>
 
         <button class="btn-nav" onclick="openCmdPalette()" title="Otwórz Command Palette (Ctrl+K)">
@@ -891,10 +987,11 @@
           <span id="audio-label">FX</span>
         </button>
 
-        <button class="btn-nav" onclick="openSelfHostModal()" title="Instrukcja Self-Host & GitHub">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-          <span>Self-Host</span>
-        </button>
+        <a href="https://github.com/adrian-wulf" target="_blank" class="btn-nav" title="Profil twórcy na GitHub">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          <span>adrian-wulf</span>
+          <span>↗</span>
+        </a>
 
         <a href="https://wulf-code.it" target="_blank" class="btn-nav" style="border-color: var(--gold); color: var(--gold-soft);" title="Przejdź do strony Wulf Code">
           <span>wulf-code.it</span>
@@ -906,21 +1003,45 @@
     <!-- HERO INTRO -->
     <section class="hero-section">
       <div class="hero-badge">
-        <span>⚡ Autorskie Silniki & Narzędzia B2B</span>
+        <span>⚡ OFICJALNY PORTAL PROJEKTÓW OPEN-SOURCE</span>
       </div>
       <h2 class="hero-title">
-        EKOSYSTEM NARZĘDZI <span class="gold-gradient">B2B & WYWIADU</span>
+        AUTORSKIE NARZĘDZIA <span class="gold-gradient">& OPEN SOURCE</span>
       </h2>
       <p class="hero-desc">
-        Dedykowane narzędzia do pozyskiwania leadów, audytu technicznego i geolokalizacji firm. Uruchom online lub wdróż własną instancję w modelu Self-Hosted.
+        Kolekcja produkcyjnych narzędzi, bibliotek i eksperymentów o otwartym kodzie źródłowym. Od wywiadu gospodarczego B2B i audytu stron WWW, przez skanery bezpieczeństwa kodu (SAST) i silniki second brain, po zaawansowane narzędzia dla środowiska Linux. Uruchamiaj w chmurze lub wdrażaj na własnym serwerze.
       </p>
     </section>
+
+    <!-- CATEGORY FILTER RIBBON -->
+    <div class="filter-ribbon">
+      <button class="filter-chip active" onclick="filterCategory('all', this)">
+        <span>Wszystkie</span>
+        <span class="count-badge">6</span>
+      </button>
+      <button class="filter-chip" onclick="filterCategory('web', this)">
+        <span>🌐 Web Apps & B2B</span>
+        <span class="count-badge">1</span>
+      </button>
+      <button class="filter-chip" onclick="filterCategory('security', this)">
+        <span>🛡️ Cybersecurity</span>
+        <span class="count-badge">2</span>
+      </button>
+      <button class="filter-chip" onclick="filterCategory('brain', this)">
+        <span>🧠 Second Brain</span>
+        <span class="count-badge">1</span>
+      </button>
+      <button class="filter-chip" onclick="filterCategory('linux', this)">
+        <span>🐧 Linux & CLI</span>
+        <span class="count-badge">2</span>
+      </button>
+    </div>
 
     <!-- BENTO GRID SYSTEM -->
     <main class="bento-grid">
 
       <!-- CARD 1: HERO APP (LEAD.ER) -->
-      <article class="bento-card hero-app" onmousemove="handleTilt(event, this)" onmouseleave="resetTilt(this)">
+      <article class="bento-card hero-app col-12" data-category="web" onmousemove="handleTilt(event, this)" onmouseleave="resetTilt(this)">
         <div class="card-top">
           <div class="card-header-meta">
             <div class="card-icon-box">
@@ -934,7 +1055,7 @@
 
           <h3 class="card-title">WULF LEAD.ER // RADAR B2B</h3>
           <p class="card-subtitle">
-            Autonomiczny silnik wywiadu gospodarczego i geolokalizacji firm w Europie (Polska & Niemcy). Pozyskuje dane z OpenStreetMap, wykonuje kompleksowy audyt techniczny (SSL, Core Web Vitals TTFB, technologie, responsywność), ekstrahuje dane kontaktowe (e-mail, telefon) i wspiera bezpośredni cold calling (Focus Dialer, 1-Click WhatsApp) oraz automatyczne zapytania Google OSINT z modelem Gemini 3.6 Flash.
+            Autonomiczny silnik wywiadu gospodarczego i geolokalizacji firm w Europie (Polska & Niemcy). Pozyskuje dane z OpenStreetMap, wykonuje rygorystyczny audyt techniczny (SSL, TTFB, technologie, responsywność), ekstrahuje dane kontaktowe (e-mail, telefon) i wspiera bezpośredni cold calling (Focus Dialer, 1-Click WhatsApp) oraz automatyczne zapytania Google OSINT z modelem Gemini 3.6 Flash.
           </p>
 
           <div class="features-mini-grid">
@@ -994,23 +1115,189 @@
         </div>
       </article>
 
-      <!-- CARD 4: DOCKER & SELF-HOST OPEN SOURCE -->
-      <article class="bento-card docker-open-source" onmousemove="handleTilt(event, this)" onmouseleave="resetTilt(this)">
-        <div class="card-top" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+      <!-- CARD 2: RAVEN (AI SECURITY SCANNER) -->
+      <article class="bento-card col-6" data-category="security" onmousemove="handleTilt(event, this)" onmouseleave="resetTilt(this)">
+        <div class="card-top">
+          <div class="card-header-meta">
+            <div class="card-icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+            </div>
+            <span class="status-badge go">GO // SAST SCANNER</span>
+          </div>
+
+          <h3 class="card-title">RAVEN // AI SECURITY SCANNER</h3>
+          <p class="card-subtitle">
+            Lekki i bezkompromisowy skaner statyczny (SAST) dedykowany dla programistów tworzących oprogramowanie z pomocą modeli AI (vibe coders). Wykrywa błędy logiczne, wycieki kluczy API, podatności XSS, SQLi i luki wstrzykiwane przez asystentów AI zanim kod trafi do repozytorium.
+          </p>
+
+          <div class="tag-cloud">
+            <span class="pill-tag">Go</span>
+            <span class="pill-tag">SAST</span>
+            <span class="pill-tag">Security Scanner</span>
+            <span class="pill-tag">Vibe Coding</span>
+            <span class="pill-tag">Static Analysis</span>
+            <span class="pill-tag">AI Code Safety</span>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <a href="https://github.com/adrian-wulf/raven" target="_blank" class="btn-launch">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            <span>GitHub Repo ↗</span>
+          </a>
+          <button class="btn-secondary" onclick="copyText('go install github.com/adrian-wulf/raven@latest')">
+            <span>Kopiuj go install</span>
+          </button>
+        </div>
+      </article>
+
+      <!-- CARD 3: HOWLFORGE (SECOND BRAIN) -->
+      <article class="bento-card col-6" data-category="brain" onmousemove="handleTilt(event, this)" onmouseleave="resetTilt(this)">
+        <div class="card-top">
+          <div class="card-header-meta">
+            <div class="card-icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            </div>
+            <span class="status-badge python">PYTHON // SELF-HOST</span>
+          </div>
+
+          <h3 class="card-title">HOWLFORGE // SECOND BRAIN</h3>
+          <p class="card-subtitle">
+            Suwerenny, samohostowany system zarządzania wiedzą (PKM). Przechwytuj myśli, linki i notatki z dowolnego miejsca (w tym przez bota Telegram), a silnik AI automatycznie kategoryzuje i synchronizuje treść w prywatnym skarbcu Markdown kompatybilnym z Obsidianem.
+          </p>
+
+          <div class="tag-cloud">
+            <span class="pill-tag">Python</span>
+            <span class="pill-tag">FastAPI</span>
+            <span class="pill-tag">Obsidian Vault</span>
+            <span class="pill-tag">Telegram Bot</span>
+            <span class="pill-tag">Second Brain</span>
+            <span class="pill-tag">Markdown PKM</span>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <a href="https://github.com/adrian-wulf/howlforge" target="_blank" class="btn-launch">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            <span>GitHub Repo ↗</span>
+          </a>
+          <button class="btn-secondary" onclick="copyText('git clone https://github.com/adrian-wulf/howlforge.git')">
+            <span>Kopiuj git clone</span>
+          </button>
+        </div>
+      </article>
+
+      <!-- CARD 4: T3MP3ST (RED TEAM HARNESS) -->
+      <article class="bento-card col-4" data-category="security" onmousemove="handleTilt(event, this)" onmouseleave="resetTilt(this)">
+        <div class="card-top">
+          <div class="card-header-meta">
+            <div class="card-icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <span class="status-badge redteam">OFFSEC // RED TEAM</span>
+          </div>
+
+          <h3 class="card-title">T3MP3ST // META-HARNESS</h3>
+          <p class="card-subtitle">
+            Autonomiczna platforma red-teamingowa. Wielomodelowy meta-harness dla ofensywnych agentów cyberbezpieczeństwa, orkiestracji symulacji wektorów ataku i automatyzacji testów penetracyjnych.
+          </p>
+
+          <div class="tag-cloud">
+            <span class="pill-tag">Red Teaming</span>
+            <span class="pill-tag">OffSec</span>
+            <span class="pill-tag">Multi-Agent</span>
+            <span class="pill-tag">Exploit Harness</span>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <a href="https://github.com/adrian-wulf/T3MP3ST" target="_blank" class="btn-launch" style="width: 100%; justify-content: center;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            <span>GitHub Repo ↗</span>
+          </a>
+        </div>
+      </article>
+
+      <!-- CARD 5: CLAUDE WAYBAR INFO (LINUX TOOL) -->
+      <article class="bento-card col-4" data-category="linux" onmousemove="handleTilt(event, this)" onmouseleave="resetTilt(this)">
+        <div class="card-top">
+          <div class="card-header-meta">
+            <div class="card-icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <span class="status-badge linux">LINUX // WAYBAR</span>
+          </div>
+
+          <h3 class="card-title">CLAUDE WAYBAR INFO</h3>
+          <p class="card-subtitle">
+            Wskaźnik statusu aktywnych sesji Claude Code w czasie rzeczywistym dla paska Waybar (środowiska kafelkowe Hyprland i Sway). Dynamicznie animowane pigułki oznaczone nazwami katalogów projektowych.
+          </p>
+
+          <div class="tag-cloud">
+            <span class="pill-tag">Waybar</span>
+            <span class="pill-tag">Hyprland</span>
+            <span class="pill-tag">Sway</span>
+            <span class="pill-tag">Bash / Shell</span>
+            <span class="pill-tag">Claude Code</span>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <a href="https://github.com/adrian-wulf/claude-waybar-info" target="_blank" class="btn-launch" style="width: 100%; justify-content: center;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            <span>GitHub Repo ↗</span>
+          </a>
+        </div>
+      </article>
+
+      <!-- CARD 6: INSTAGRAM CONTENT EXTRACTOR (PYTHON CLI) -->
+      <article class="bento-card col-4" data-category="linux" onmousemove="handleTilt(event, this)" onmouseleave="resetTilt(this)">
+        <div class="card-top">
+          <div class="card-header-meta">
+            <div class="card-icon-box">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </div>
+            <span class="status-badge python">PYTHON // CLI</span>
+          </div>
+
+          <h3 class="card-title">INSTAGRAM EXTRACTOR</h3>
+          <p class="card-subtitle">
+            Profesjonalne narzędzie konsolowe do bezpiecznego pobierania zawartości z profili Instagram z obsługą logowania, uwierzytelniania 2FA, szyfrowaniem sesji AES oraz filtrowaniem mediów.
+          </p>
+
+          <div class="tag-cloud">
+            <span class="pill-tag">Python</span>
+            <span class="pill-tag">Media Scraping</span>
+            <span class="pill-tag">AES Crypto</span>
+            <span class="pill-tag">CLI Utility</span>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <a href="https://github.com/adrian-wulf/instagram-content-downloader" target="_blank" class="btn-launch" style="width: 100%; justify-content: center;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            <span>GitHub Repo ↗</span>
+          </a>
+        </div>
+      </article>
+
+      <!-- CARD 7: DOCKER & SELF-HOST OPEN SOURCE -->
+      <article class="bento-card docker-open-source col-12" data-category="all" onmousemove="handleTilt(event, this)" onmouseleave="resetTilt(this)">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; margin-bottom: 20px;">
           <div style="max-width: 600px;">
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
               <span style="color: var(--gold); font-size: 20px;">📦</span>
-              <h3 class="card-title" style="margin-bottom: 0;">SELF-HOSTING & ARCHITEKTURA OPEN SOURCE</h3>
+              <h3 class="card-title" style="margin-bottom: 0;">EKOSYSTEM GITHUB & ARCHITEKTURA SELF-HOSTING</h3>
             </div>
             <p class="card-subtitle" style="margin-bottom: 0;">
-              Pełna suwerenność danych. Wszystkie nasze narzędzia możesz uruchomić na własnym serwerze VPS, lokalnej maszynie deweloperskiej lub klastrze Docker w 60 sekund.
+              Pełna suwerenność kodu i danych. Wszystkie projekty publikowane są na otwartej licencji na profilu GitHub <strong>adrian-wulf</strong>. Możesz uruchomić je na własnym serwerze VPS, lokalnej maszynie deweloperskiej lub klastrze Docker.
             </p>
           </div>
 
-          <div style="display: flex; gap: 12px; align-items: center;">
-            <a href="https://github.com/adrian-wulf/wulf-lead-er" target="_blank" class="btn-launch" style="background: #1F242C; color: #FFF; border: 1px solid #3A4250;">
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <a href="https://github.com/adrian-wulf" target="_blank" class="btn-launch" style="background: #1F242C; color: #FFF; border: 1px solid #3A4250;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-              <span>GitHub Repo</span>
+              <span>GitHub: adrian-wulf ↗</span>
             </a>
             <button class="btn-secondary" onclick="openSelfHostModal()">
               <span>Zobacz instrukcję</span>
@@ -1033,14 +1320,14 @@
     <!-- FOOTER -->
     <footer>
       <div>
-        <span>© 2026 WULF CODE // ECOSYSTEM</span>
+        <span>© 2026 WULF LABS // ADRIAN WULF</span>
         <span style="margin: 0 8px; color: var(--border);">|</span>
-        <span>Autorskie oprogramowanie dla wymagających</span>
+        <span>Autorskie oprogramowanie open-source</span>
       </div>
       <div>
         <a href="https://wulf-code.it" target="_blank">wulf-code.it</a>
         <span style="margin: 0 8px; color: var(--border);">•</span>
-        <a href="https://github.com/adrian-wulf/wulf-lead-er" target="_blank">GitHub</a>
+        <a href="https://github.com/adrian-wulf" target="_blank">GitHub @adrian-wulf</a>
         <span style="margin: 0 8px; color: var(--border);">•</span>
         <a href="https://lead.social-wulf.eu">Radar Lead.er</a>
       </div>
@@ -1102,10 +1389,50 @@ python3 -m wulf_web_leader.web.run --port 8000</pre>
     <div class="cmd-item-list" id="cmd-list">
       <a href="https://lead.social-wulf.eu" class="cmd-item" onclick="playLaunchSound()">
         <div>
-          <div class="cmd-item-title">Wulf Lead.er — Radar B2B</div>
-          <div style="font-size: 11px; color: var(--muted);">Uruchom silnik wywiadu rynkowego i audytu</div>
+          <div class="cmd-item-title">Wulf Lead.er — Radar B2B & Audyt</div>
+          <div style="font-size: 11px; color: var(--muted);">Geolokalizacja OSM, audyt stron WWW, Focus Dialer i Google OSINT</div>
         </div>
         <span class="cmd-item-badge">APP ↗</span>
+      </a>
+
+      <a href="https://github.com/adrian-wulf/raven" target="_blank" class="cmd-item">
+        <div>
+          <div class="cmd-item-title">Raven — AI Code Security Scanner</div>
+          <div style="font-size: 11px; color: var(--muted);">Lekki skaner SAST w Go dla vibe coderów, wykrywanie luk AI</div>
+        </div>
+        <span class="cmd-item-badge">GO SAST</span>
+      </a>
+
+      <a href="https://github.com/adrian-wulf/howlforge" target="_blank" class="cmd-item">
+        <div>
+          <div class="cmd-item-title">Howlforge — Second Brain PKM</div>
+          <div style="font-size: 11px; color: var(--muted);">Samohostowany skarbiec Markdown, Telegram bot, FastAPI i Obsidian</div>
+        </div>
+        <span class="cmd-item-badge">PKM VAULT</span>
+      </a>
+
+      <a href="https://github.com/adrian-wulf/T3MP3ST" target="_blank" class="cmd-item">
+        <div>
+          <div class="cmd-item-title">T3MP3ST — Red Team Meta-Harness</div>
+          <div style="font-size: 11px; color: var(--muted);">Autonomiczna platforma ofensywnego bezpieczeństwa i multi-agentów</div>
+        </div>
+        <span class="cmd-item-badge">OFFSEC</span>
+      </a>
+
+      <a href="https://github.com/adrian-wulf/claude-waybar-info" target="_blank" class="cmd-item">
+        <div>
+          <div class="cmd-item-title">Claude Waybar Info — Linux Desktop</div>
+          <div style="font-size: 11px; color: var(--muted);">Monitor aktywnych sesji Claude Code dla paska Waybar (Hyprland / Sway)</div>
+        </div>
+        <span class="cmd-item-badge">LINUX</span>
+      </a>
+
+      <a href="https://github.com/adrian-wulf/instagram-content-downloader" target="_blank" class="cmd-item">
+        <div>
+          <div class="cmd-item-title">Instagram Content Extractor</div>
+          <div style="font-size: 11px; color: var(--muted);">Narzędzie CLI w Pythonie z szyfrowaniem sesji AES i obsługą 2FA</div>
+        </div>
+        <span class="cmd-item-badge">CLI TOOL</span>
       </a>
 
       <div class="cmd-item" onclick="openSelfHostModal(); closeCmdPalette();">
@@ -1116,18 +1443,18 @@ python3 -m wulf_web_leader.web.run --port 8000</pre>
         <span class="cmd-item-badge">DOCKER</span>
       </div>
 
-      <a href="https://github.com/adrian-wulf/wulf-lead-er" target="_blank" class="cmd-item">
+      <a href="https://github.com/adrian-wulf" target="_blank" class="cmd-item">
         <div>
-          <div class="cmd-item-title">GitHub: adrian-wulf/wulf-lead-er</div>
-          <div style="font-size: 11px; color: var(--muted);">Kod źródłowy aplikacji i Docker setup</div>
+          <div class="cmd-item-title">GitHub: adrian-wulf (Wszystkie repozytoria)</div>
+          <div style="font-size: 11px; color: var(--muted);">Oficjalny profil twórcy z kodem źródłowym projektów</div>
         </div>
         <span class="cmd-item-badge">GITHUB ↗</span>
       </a>
 
       <a href="https://wulf-code.it" target="_blank" class="cmd-item">
         <div>
-          <div class="cmd-item-title">Wulf Code — Strona Główna</div>
-          <div style="font-size: 11px; color: var(--muted);">Główny serwis software-house'u</div>
+          <div class="cmd-item-title">Wulf Code — Software House</div>
+          <div style="font-size: 11px; color: var(--muted);">Główny serwis agencji i usługi programistyczne</div>
         </div>
         <span class="cmd-item-badge">AGENCY ↗</span>
       </a>
@@ -1394,13 +1721,29 @@ python3 -m wulf_web_leader.web.run --port 8000</pre>
     }
 
     // Attach subtle hover sounds to interactive elements
-    document.querySelectorAll('.btn-launch, .btn-secondary, .btn-nav, .bento-card').forEach(el => {
+    document.querySelectorAll('.btn-launch, .btn-secondary, .btn-nav, .bento-card, .filter-chip').forEach(el => {
       el.addEventListener('mouseenter', () => playHoverSound());
     });
 
     // -------------------------------------------------------------
-    // 4. MODALS & COMMAND PALETTE
+    // 3.5 CATEGORY FILTERING RIBBON
     // -------------------------------------------------------------
+    function filterCategory(cat, btn) {
+      playAffirmSound();
+      document.querySelectorAll('.filter-chip').forEach(el => el.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+
+      const cards = document.querySelectorAll('.bento-card[data-category]');
+      cards.forEach(card => {
+        const cardCat = card.getAttribute('data-category');
+        if (cat === 'all' || cardCat === 'all' || cardCat === cat) {
+          card.classList.remove('is-hidden');
+        } else {
+          card.classList.add('is-hidden');
+        }
+      });
+    }
+
     function openSelfHostModal() {
       playAffirmSound();
       document.getElementById('selfhost-modal-backdrop').classList.add('show');
