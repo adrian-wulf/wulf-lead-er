@@ -1474,89 +1474,431 @@ python3 -m wulf_web_leader.web.run --port 8000</pre>
 
   <!-- JAVASCRIPT: THREE.JS 3D QUANTUM CORE & INTERACTIONS -->
   <script>
-    // -------------------------------------------------------------
-    // 1. THREE.JS INTERACTIVE QUANTUM GEODESIC SCENE
-    // -------------------------------------------------------------
+    // =============================================================
+    // 1. THREE.JS PIXELART & VOXELART RETRO TECH & GAMING WORLD
+    // =============================================================
     let scene, camera, renderer;
-    let coreGroup, wireSphere, innerCore, particleSystem;
-    let targetRotationX = 0, targetRotationY = 0;
-    let currentRotationX = 0, currentRotationY = 0;
+    let worldGroup, islandGroup, devCharGroup, wolfGroup;
+    let orbitingItems = [];
+    let voxelDust;
+    let armLeft, armRight, headMesh, wolfTail, coffeeSteam, heartMesh;
+    let screenGlowLight;
+
     let mouseX = 0, mouseY = 0;
+    let targetRotX = 0.22, targetRotY = -0.35;
+    let currentRotX = 0.22, currentRotY = -0.35;
     let windowHalfX = window.innerWidth / 2;
     let windowHalfY = window.innerHeight / 2;
 
     function initThreeScene() {
       const canvas = document.getElementById('canvas-3d');
+      if (!canvas) return;
+
       scene = new THREE.Scene();
-      
-      // Perspective camera
-      camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 2000);
-      camera.position.z = 850;
 
-      // Group holding the entire rotating quantum core
-      coreGroup = new THREE.Group();
-      scene.add(coreGroup);
+      // Perspective Camera with retro isometric tilt
+      camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 3000);
+      const isMobile = window.innerWidth < 768;
+      camera.position.set(0, 180, isMobile ? 660 : 520);
+      camera.lookAt(0, 20, 0);
 
-      // A. Outer Wireframe Geodesic Icosahedron (Gold)
-      const outerGeo = new THREE.IcosahedronGeometry(220, 2);
-      const outerMat = new THREE.MeshBasicMaterial({
-        color: 0xD4A418,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.25
+      // Master World Group (with gentle tilt & parallax)
+      worldGroup = new THREE.Group();
+      worldGroup.rotation.x = currentRotX;
+      worldGroup.rotation.y = currentRotY;
+      scene.add(worldGroup);
+
+      // --- MATERIALS PALETTE (Flat-shaded voxel look) ---
+      const mats = {
+        gold: new THREE.MeshLambertMaterial({ color: 0xD4A418, flatShading: true }),
+        goldBright: new THREE.MeshBasicMaterial({ color: 0xFFD700 }),
+        slateDark: new THREE.MeshLambertMaterial({ color: 0x121418, flatShading: true }),
+        slateMed: new THREE.MeshLambertMaterial({ color: 0x1E222B, flatShading: true }),
+        slateLight: new THREE.MeshLambertMaterial({ color: 0x363D4D, flatShading: true }),
+        red: new THREE.MeshLambertMaterial({ color: 0xE63946, flatShading: true }),
+        redGlow: new THREE.MeshBasicMaterial({ color: 0xFF4D4D }),
+        cyan: new THREE.MeshLambertMaterial({ color: 0x00E5FF, flatShading: true }),
+        cyanGlow: new THREE.MeshBasicMaterial({ color: 0x5CFFFF }),
+        greenCode: new THREE.MeshBasicMaterial({ color: 0x00FF88 }),
+        skin: new THREE.MeshLambertMaterial({ color: 0xF5C6A5, flatShading: true }),
+        hair: new THREE.MeshLambertMaterial({ color: 0x2A1F18, flatShading: true }),
+        white: new THREE.MeshLambertMaterial({ color: 0xE8ECF2, flatShading: true }),
+        yellow: new THREE.MeshLambertMaterial({ color: 0xFFD166, flatShading: true })
+      };
+
+      // --- 1. CENTRAL FLOATING VOXEL ISLAND ---
+      islandGroup = new THREE.Group();
+      worldGroup.add(islandGroup);
+
+      // A. Island Base (layered cyber floating chunk)
+      const baseGeo = new THREE.BoxGeometry(220, 18, 180);
+      const baseMesh = new THREE.Mesh(baseGeo, mats.slateDark);
+      baseMesh.position.y = -9;
+      islandGroup.add(baseMesh);
+
+      // Top decorative tile grid
+      const tileTopGeo = new THREE.BoxGeometry(204, 3, 164);
+      const tileTopMesh = new THREE.Mesh(tileTopGeo, mats.slateMed);
+      tileTopMesh.position.y = 1;
+      islandGroup.add(tileTopMesh);
+
+      // Golden cyber circuit strips on floor
+      const strip1Geo = new THREE.BoxGeometry(180, 1, 4);
+      const strip1 = new THREE.Mesh(strip1Geo, mats.gold);
+      strip1.position.set(0, 2.6, 30);
+      islandGroup.add(strip1);
+
+      const strip2Geo = new THREE.BoxGeometry(4, 1, 100);
+      const strip2 = new THREE.Mesh(strip2Geo, mats.gold);
+      strip2.position.set(-50, 2.6, -10);
+      islandGroup.add(strip2);
+
+      // B. Floating Sub-Rocks (inverted voxel steps below island)
+      const subRock1 = new THREE.Mesh(new THREE.BoxGeometry(160, 24, 130), mats.slateDark);
+      subRock1.position.y = -28;
+      islandGroup.add(subRock1);
+
+      const subRock2 = new THREE.Mesh(new THREE.BoxGeometry(90, 32, 80), mats.slateDark);
+      subRock2.position.set(10, -50, 10);
+      islandGroup.add(subRock2);
+
+      const subCore = new THREE.Mesh(new THREE.BoxGeometry(28, 28, 28), mats.gold);
+      subCore.position.set(15, -76, 12);
+      islandGroup.add(subCore);
+
+      // --- 2. WORKSTATION (DESK, MONITORS, TOWER) ---
+      const deskGroup = new THREE.Group();
+      deskGroup.position.set(-10, 3, -15);
+      islandGroup.add(deskGroup);
+
+      // Desk Surface & Legs
+      const deskTop = new THREE.Mesh(new THREE.BoxGeometry(120, 6, 60), mats.slateLight);
+      deskTop.position.set(0, 38, 0);
+      deskGroup.add(deskTop);
+
+      const legGeo = new THREE.BoxGeometry(6, 38, 6);
+      [[-54, 19, -24], [54, 19, -24], [-54, 19, 24], [54, 19, 24]].forEach(pos => {
+        const leg = new THREE.Mesh(legGeo, mats.slateDark);
+        leg.position.set(...pos);
+        deskGroup.add(leg);
       });
-      wireSphere = new THREE.Mesh(outerGeo, outerMat);
-      coreGroup.add(wireSphere);
 
-      // B. Inner Glowing Polyhedron (Crimson / Deep Gold core)
-      const innerGeo = new THREE.OctahedronGeometry(90, 1);
-      const innerMat = new THREE.MeshBasicMaterial({
-        color: 0x9B1B1B,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.45
-      });
-      innerCore = new THREE.Mesh(innerGeo, innerMat);
-      coreGroup.add(innerCore);
+      // Main Ultrawide Terminal Monitor
+      const mainMonBezel = new THREE.Mesh(new THREE.BoxGeometry(68, 38, 4), mats.slateDark);
+      mainMonBezel.position.set(0, 66, -18);
+      deskGroup.add(mainMonBezel);
 
-      // C. Orbital Quantum Rings
-      const ringGeo = new THREE.RingGeometry(290, 292, 64);
-      const ringMat = new THREE.MeshBasicMaterial({
-        color: 0xD4A418,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.18
-      });
-      const ring1 = new THREE.Mesh(ringGeo, ringMat);
-      ring1.rotation.x = Math.PI / 3;
-      coreGroup.add(ring1);
+      const mainScreen = new THREE.Mesh(new THREE.BoxGeometry(64, 34, 1), mats.greenCode);
+      mainScreen.position.set(0, 66, -15.5);
+      deskGroup.add(mainScreen);
 
-      const ring2 = new THREE.Mesh(ringGeo, ringMat);
-      ring2.rotation.y = Math.PI / 4;
-      ring2.rotation.x = -Math.PI / 5;
-      coreGroup.add(ring2);
+      const monStand = new THREE.Mesh(new THREE.BoxGeometry(10, 20, 6), mats.slateLight);
+      monStand.position.set(0, 48, -20);
+      deskGroup.add(monStand);
 
-      // D. Deep Cosmic Particle Field (1,200 micro particles)
-      const particleCount = 1200;
-      const particleGeo = new THREE.BufferGeometry();
-      const posArray = new Float32Array(particleCount * 3);
+      // Secondary Vertical Monitor (Code Inspector)
+      const secMonBezel = new THREE.Mesh(new THREE.BoxGeometry(28, 46, 4), mats.slateDark);
+      secMonBezel.position.set(48, 68, -10);
+      secMonBezel.rotation.y = -0.45;
+      deskGroup.add(secMonBezel);
 
-      for (let i = 0; i < particleCount * 3; i += 3) {
-        posArray[i] = (Math.random() - 0.5) * 1600;
-        posArray[i + 1] = (Math.random() - 0.5) * 1600;
-        posArray[i + 2] = (Math.random() - 0.5) * 1600;
+      const secScreen = new THREE.Mesh(new THREE.BoxGeometry(25, 42, 1), mats.cyanGlow);
+      secScreen.position.set(48, 68, -8);
+      secScreen.rotation.y = -0.45;
+      deskGroup.add(secScreen);
+
+      // Keyboard & Mouse
+      const kbd = new THREE.Mesh(new THREE.BoxGeometry(42, 3, 16), mats.slateDark);
+      kbd.position.set(-6, 42, 12);
+      deskGroup.add(kbd);
+
+      const mouse = new THREE.Mesh(new THREE.BoxGeometry(6, 3, 9), mats.gold);
+      mouse.position.set(24, 42, 12);
+      deskGroup.add(mouse);
+
+      // Coffee Mug with Voxel Steam
+      const mug = new THREE.Mesh(new THREE.BoxGeometry(8, 10, 8), mats.white);
+      mug.position.set(-42, 44, 10);
+      deskGroup.add(mug);
+
+      coffeeSteam = new THREE.Mesh(new THREE.BoxGeometry(3, 4, 3), mats.goldBright);
+      coffeeSteam.position.set(-42, 52, 10);
+      deskGroup.add(coffeeSteam);
+
+      // PC Server Tower (with blinking LEDs)
+      const tower = new THREE.Mesh(new THREE.BoxGeometry(20, 36, 38), mats.slateDark);
+      tower.position.set(72, 18, 0);
+      deskGroup.add(tower);
+
+      const led1 = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 1), mats.greenCode);
+      led1.position.set(72, 28, 19.5);
+      deskGroup.add(led1);
+
+      const led2 = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 1), mats.redGlow);
+      led2.position.set(72, 22, 19.5);
+      deskGroup.add(led2);
+
+      // --- 3. THE VOXEL DEVELOPER CHARACTER (LUDZIK) ---
+      devCharGroup = new THREE.Group();
+      devCharGroup.position.set(-15, 3, 34);
+      islandGroup.add(devCharGroup);
+
+      // Chair
+      const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(32, 6, 32), mats.slateDark);
+      chairSeat.position.set(0, 24, 0);
+      devCharGroup.add(chairSeat);
+
+      const chairBack = new THREE.Mesh(new THREE.BoxGeometry(30, 36, 6), mats.slateDark);
+      chairBack.position.set(0, 44, 14);
+      devCharGroup.add(chairBack);
+
+      const chairBase = new THREE.Mesh(new THREE.BoxGeometry(8, 24, 8), mats.slateLight);
+      chairBase.position.set(0, 12, 0);
+      devCharGroup.add(chairBase);
+
+      // Character Torso (Dark Hoodie with Gold Accent)
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(24, 26, 16), mats.slateMed);
+      torso.position.set(0, 40, -2);
+      devCharGroup.add(torso);
+
+      const logoStripe = new THREE.Mesh(new THREE.BoxGeometry(6, 16, 1), mats.gold);
+      logoStripe.position.set(0, 40, -10.5);
+      devCharGroup.add(logoStripe);
+
+      // Head & Hair
+      headMesh = new THREE.Group();
+      headMesh.position.set(0, 60, -2);
+      devCharGroup.add(headMesh);
+
+      const face = new THREE.Mesh(new THREE.BoxGeometry(18, 18, 16), mats.skin);
+      headMesh.add(face);
+
+      const hair = new THREE.Mesh(new THREE.BoxGeometry(20, 7, 18), mats.hair);
+      hair.position.set(0, 7, 0);
+      headMesh.add(hair);
+
+      // Eyes (pixels)
+      const eyeL = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 1), mats.slateDark);
+      eyeL.position.set(-5, 0, -8.5);
+      headMesh.add(eyeL);
+
+      const eyeR = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 1), mats.slateDark);
+      eyeR.position.set(5, 0, -8.5);
+      headMesh.add(eyeR);
+
+      // Gaming Headphones
+      const hpBand = new THREE.Mesh(new THREE.BoxGeometry(22, 4, 10), mats.gold);
+      hpBand.position.set(0, 10, 0);
+      headMesh.add(hpBand);
+
+      const hpEarL = new THREE.Mesh(new THREE.BoxGeometry(4, 10, 10), mats.cyan);
+      hpEarL.position.set(-11, 0, 0);
+      headMesh.add(hpEarL);
+
+      const hpEarR = new THREE.Mesh(new THREE.BoxGeometry(4, 10, 10), mats.cyan);
+      hpEarR.position.set(11, 0, 0);
+      headMesh.add(hpEarR);
+
+      // Animated Arms (Typing on Keyboard)
+      armLeft = new THREE.Mesh(new THREE.BoxGeometry(6, 8, 20), mats.slateLight);
+      armLeft.position.set(-14, 38, -12);
+      devCharGroup.add(armLeft);
+
+      armRight = new THREE.Mesh(new THREE.BoxGeometry(6, 8, 20), mats.slateLight);
+      armRight.position.set(14, 38, -12);
+      devCharGroup.add(armRight);
+
+      // --- 4. COMPANION: VOXEL CYBER-WOLF ---
+      wolfGroup = new THREE.Group();
+      wolfGroup.position.set(-68, 4, 35);
+      wolfGroup.rotation.y = 0.5;
+      islandGroup.add(wolfGroup);
+
+      // Wolf Body
+      const wolfBody = new THREE.Mesh(new THREE.BoxGeometry(16, 16, 24), mats.slateLight);
+      wolfBody.position.set(0, 10, 0);
+      wolfGroup.add(wolfBody);
+
+      // Wolf Head & Snout
+      const wolfHead = new THREE.Mesh(new THREE.BoxGeometry(12, 12, 14), mats.slateLight);
+      wolfHead.position.set(0, 18, -12);
+      wolfGroup.add(wolfHead);
+
+      const wolfSnout = new THREE.Mesh(new THREE.BoxGeometry(8, 6, 8), mats.white);
+      wolfSnout.position.set(0, 16, -18);
+      wolfGroup.add(wolfSnout);
+
+      // Wolf Ears
+      const earL = new THREE.Mesh(new THREE.BoxGeometry(3, 6, 4), mats.gold);
+      earL.position.set(-4, 25, -12);
+      wolfGroup.add(earL);
+
+      const earR = new THREE.Mesh(new THREE.BoxGeometry(3, 6, 4), mats.gold);
+      earR.position.set(4, 25, -12);
+      wolfGroup.add(earR);
+
+      // Wagging Tail
+      wolfTail = new THREE.Mesh(new THREE.BoxGeometry(4, 4, 12), mats.white);
+      wolfTail.position.set(0, 14, 14);
+      wolfGroup.add(wolfTail);
+
+      // --- 5. ORBITING GAMING & CODING VOXEL ARTEFACTS ---
+
+      function createVoxelGamepad() {
+        const g = new THREE.Group();
+        const body = new THREE.Mesh(new THREE.BoxGeometry(46, 26, 10), mats.slateDark);
+        g.add(body);
+        const dpad1 = new THREE.Mesh(new THREE.BoxGeometry(12, 4, 3), mats.slateLight);
+        dpad1.position.set(-12, 0, 5.5);
+        const dpad2 = new THREE.Mesh(new THREE.BoxGeometry(4, 12, 3), mats.slateLight);
+        dpad2.position.set(-12, 0, 5.5);
+        g.add(dpad1, dpad2);
+        const bA = new THREE.Mesh(new THREE.BoxGeometry(4, 4, 3), mats.redGlow);
+        bA.position.set(12, -4, 5.5);
+        const bB = new THREE.Mesh(new THREE.BoxGeometry(4, 4, 3), mats.yellow);
+        bB.position.set(16, 0, 5.5);
+        const bX = new THREE.Mesh(new THREE.BoxGeometry(4, 4, 3), mats.cyanGlow);
+        bX.position.set(8, 0, 5.5);
+        const bY = new THREE.Mesh(new THREE.BoxGeometry(4, 4, 3), mats.greenCode);
+        bY.position.set(12, 4, 5.5);
+        g.add(bA, bB, bX, bY);
+        return g;
       }
-      particleGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
 
-      const particleMat = new THREE.PointsMaterial({
-        size: 2.2,
-        color: 0xE8C547,
-        transparent: true,
-        opacity: 0.4,
-        blending: THREE.AdditiveBlending
+      function createVoxelFloppy() {
+        const g = new THREE.Group();
+        const body = new THREE.Mesh(new THREE.BoxGeometry(34, 36, 5), mats.slateLight);
+        g.add(body);
+        const shutter = new THREE.Mesh(new THREE.BoxGeometry(22, 14, 6), mats.gold);
+        shutter.position.set(0, 11, 0);
+        g.add(shutter);
+        const label = new THREE.Mesh(new THREE.BoxGeometry(26, 18, 6), mats.white);
+        label.position.set(0, -7, 0);
+        g.add(label);
+        return g;
+      }
+
+      function createVoxelHeart() {
+        const g = new THREE.Group();
+        const center = new THREE.Mesh(new THREE.BoxGeometry(24, 20, 8), mats.redGlow);
+        g.add(center);
+        const topL = new THREE.Mesh(new THREE.BoxGeometry(10, 8, 8), mats.redGlow);
+        topL.position.set(-6, 12, 0);
+        const topR = new THREE.Mesh(new THREE.BoxGeometry(10, 8, 8), mats.redGlow);
+        topR.position.set(6, 12, 0);
+        const bottom = new THREE.Mesh(new THREE.BoxGeometry(12, 8, 8), mats.redGlow);
+        bottom.position.set(0, -12, 0);
+        const highlight = new THREE.Mesh(new THREE.BoxGeometry(4, 4, 9), mats.white);
+        highlight.position.set(-6, 10, 0);
+        g.add(topL, topR, bottom, highlight);
+        return g;
+      }
+
+      function createVoxelSword() {
+        const g = new THREE.Group();
+        const blade = new THREE.Mesh(new THREE.BoxGeometry(6, 44, 4), mats.cyanGlow);
+        blade.position.set(0, 16, 0);
+        g.add(blade);
+        const guard = new THREE.Mesh(new THREE.BoxGeometry(22, 5, 6), mats.gold);
+        guard.position.set(0, -6, 0);
+        g.add(guard);
+        const grip = new THREE.Mesh(new THREE.BoxGeometry(5, 14, 5), mats.hair);
+        grip.position.set(0, -15, 0);
+        const pommel = new THREE.Mesh(new THREE.BoxGeometry(8, 6, 6), mats.gold);
+        pommel.position.set(0, -23, 0);
+        g.add(grip, pommel);
+        return g;
+      }
+
+      function createVoxelBrackets() {
+        const g = new THREE.Group();
+        // Left curly brace {
+        const b1 = new THREE.Mesh(new THREE.BoxGeometry(6, 32, 6), mats.gold);
+        b1.position.set(-18, 0, 0);
+        const b1t = new THREE.Mesh(new THREE.BoxGeometry(12, 6, 6), mats.gold);
+        b1t.position.set(-14, 13, 0);
+        const b1b = new THREE.Mesh(new THREE.BoxGeometry(12, 6, 6), mats.gold);
+        b1b.position.set(-14, -13, 0);
+        const b1m = new THREE.Mesh(new THREE.BoxGeometry(8, 6, 6), mats.gold);
+        b1m.position.set(-22, 0, 0);
+
+        // Right curly brace }
+        const b2 = new THREE.Mesh(new THREE.BoxGeometry(6, 32, 6), mats.gold);
+        b2.position.set(18, 0, 0);
+        const b2t = new THREE.Mesh(new THREE.BoxGeometry(12, 6, 6), mats.gold);
+        b2t.position.set(14, 13, 0);
+        const b2b = new THREE.Mesh(new THREE.BoxGeometry(12, 6, 6), mats.gold);
+        b2b.position.set(14, -13, 0);
+        const b2m = new THREE.Mesh(new THREE.BoxGeometry(8, 6, 6), mats.gold);
+        b2m.position.set(22, 0, 0);
+
+        g.add(b1, b1t, b1b, b1m, b2, b2t, b2b, b2m);
+        return g;
+      }
+
+      function createVoxelCoin() {
+        const g = new THREE.Group();
+        const coin = new THREE.Mesh(new THREE.CylinderGeometry(18, 18, 5, 8), mats.gold);
+        coin.rotation.x = Math.PI / 2;
+        g.add(coin);
+        const star = new THREE.Mesh(new THREE.BoxGeometry(8, 8, 7), mats.yellow);
+        g.add(star);
+        return g;
+      }
+
+      const rawItems = [
+        { mesh: createVoxelGamepad(), radius: 250, speed: 0.007, yBase: 50, rotSpeed: 0.015 },
+        { mesh: createVoxelFloppy(), radius: 270, speed: -0.005, yBase: -20, rotSpeed: 0.02 },
+        { mesh: createVoxelHeart(), radius: 230, speed: 0.009, yBase: 80, rotSpeed: 0.01 },
+        { mesh: createVoxelSword(), radius: 290, speed: -0.006, yBase: 30, rotSpeed: 0.018 },
+        { mesh: createVoxelBrackets(), radius: 260, speed: 0.008, yBase: -40, rotSpeed: 0.012 },
+        { mesh: createVoxelCoin(), radius: 240, speed: -0.008, yBase: 60, rotSpeed: 0.025 }
+      ];
+
+      rawItems.forEach((item, idx) => {
+        item.angle = (idx / rawItems.length) * Math.PI * 2;
+        worldGroup.add(item.mesh);
+        orbitingItems.push(item);
+        if (idx === 2) heartMesh = item.mesh;
       });
-      particleSystem = new THREE.Points(particleGeo, particleMat);
-      scene.add(particleSystem);
+
+      // --- 6. BACKGROUND 3D VOXEL STARDUST (CUBES) ---
+      const dustCount = 140;
+      const dustGeo = new THREE.BoxGeometry(4, 4, 4);
+      voxelDust = new THREE.Group();
+
+      for (let i = 0; i < dustCount; i++) {
+        const mat = Math.random() > 0.6 ? mats.goldBright : (Math.random() > 0.5 ? mats.cyanGlow : mats.slateLight);
+        const m = new THREE.Mesh(dustGeo, mat);
+        m.position.set(
+          (Math.random() - 0.5) * 1400,
+          (Math.random() - 0.5) * 1000 + 40,
+          (Math.random() - 0.5) * 1200
+        );
+        m.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+        m.userData = {
+          speedY: (Math.random() - 0.5) * 0.4,
+          rotSpeed: (Math.random() - 0.5) * 0.02
+        };
+        voxelDust.add(m);
+      }
+      scene.add(voxelDust);
+
+      // --- 7. SCENE LIGHTING ---
+      const ambientLight = new THREE.AmbientLight(0x222630, 1.2);
+      scene.add(ambientLight);
+
+      const dirLight = new THREE.DirectionalLight(0xFFF0D0, 1.3);
+      dirLight.position.set(300, 450, 350);
+      scene.add(dirLight);
+
+      const cyanFill = new THREE.PointLight(0x00E5FF, 1.1, 700);
+      cyanFill.position.set(-250, 180, 200);
+      scene.add(cyanFill);
+
+      screenGlowLight = new THREE.PointLight(0xD4A418, 1.6, 260);
+      screenGlowLight.position.set(-10, 75, -2);
+      scene.add(screenGlowLight);
 
       // Renderer setup
       renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
@@ -1574,6 +1916,7 @@ python3 -m wulf_web_leader.web.run --port 8000</pre>
       windowHalfX = window.innerWidth / 2;
       windowHalfY = window.innerHeight / 2;
       camera.aspect = window.innerWidth / window.innerHeight;
+      camera.position.z = window.innerWidth < 768 ? 660 : 520;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     }
@@ -1581,25 +1924,72 @@ python3 -m wulf_web_leader.web.run --port 8000</pre>
     function onDocumentMouseMove(e) {
       mouseX = (e.clientX - windowHalfX);
       mouseY = (e.clientY - windowHalfY);
-      targetRotationY = mouseX * 0.0008;
-      targetRotationX = mouseY * 0.0008;
+      targetRotY = -0.35 + (mouseX / windowHalfX) * 0.4;
+      targetRotX = 0.22 + (mouseY / windowHalfY) * 0.25;
     }
 
+    let voxelClock = 0;
     function animate() {
       requestAnimationFrame(animate);
+      voxelClock += 0.03;
 
-      // Smooth inertia rotation
-      currentRotationX += (targetRotationX - currentRotationX) * 0.05;
-      currentRotationY += (targetRotationY - currentRotationY) * 0.05;
+      // Smooth inertia rotation from mouse parallax
+      currentRotX += (targetRotX - currentRotX) * 0.05;
+      currentRotY += (targetRotY - currentRotY) * 0.05;
 
-      coreGroup.rotation.y += 0.003 + currentRotationY * 0.1;
-      coreGroup.rotation.x += 0.001 + currentRotationX * 0.1;
+      worldGroup.rotation.x = currentRotX;
+      worldGroup.rotation.y = currentRotY + Math.sin(voxelClock * 0.25) * 0.08;
 
-      innerCore.rotation.y -= 0.006;
-      innerCore.rotation.z += 0.004;
+      // Floating island levitation
+      islandGroup.position.y = Math.sin(voxelClock * 0.8) * 8;
 
-      particleSystem.rotation.y += 0.0006;
-      particleSystem.rotation.x -= 0.0003;
+      // Character Typing & Nodding animation
+      if (armLeft && armRight) {
+        armLeft.position.z = -12 + Math.sin(voxelClock * 7) * 2;
+        armRight.position.z = -12 + Math.cos(voxelClock * 7 + 1) * 2;
+      }
+      if (headMesh) {
+        headMesh.rotation.x = Math.sin(voxelClock * 1.5) * 0.05;
+        headMesh.rotation.y = Math.cos(voxelClock * 0.8) * 0.06;
+      }
+
+      // Wolf tail wagging
+      if (wolfTail) {
+        wolfTail.rotation.y = Math.sin(voxelClock * 6) * 0.45;
+      }
+
+      // Coffee steam rising
+      if (coffeeSteam) {
+        coffeeSteam.position.y = 52 + Math.sin(voxelClock * 3) * 3;
+        coffeeSteam.rotation.y += 0.04;
+      }
+
+      // Pulsing 8-bit Heartbeat
+      if (heartMesh) {
+        const pulse = 1 + Math.pow(Math.sin(voxelClock * 4), 6) * 0.35;
+        heartMesh.scale.set(pulse, pulse, pulse);
+      }
+
+      // Orbiting Voxel Artefacts
+      orbitingItems.forEach(item => {
+        item.angle += item.speed;
+        item.mesh.position.x = Math.cos(item.angle) * item.radius;
+        item.mesh.position.z = Math.sin(item.angle) * item.radius;
+        item.mesh.position.y = item.yBase + Math.sin(voxelClock * 1.8 + item.angle) * 14;
+        item.mesh.rotation.y += item.rotSpeed;
+        item.mesh.rotation.x += item.rotSpeed * 0.6;
+      });
+
+      // Voxel Dust Movement
+      if (voxelDust) {
+        voxelDust.children.forEach(cube => {
+          cube.position.y += cube.userData.speedY;
+          cube.rotation.x += cube.userData.rotSpeed;
+          cube.rotation.y += cube.userData.rotSpeed;
+          if (cube.position.y > 600) cube.position.y = -600;
+          if (cube.position.y < -600) cube.position.y = 600;
+        });
+      }
 
       renderer.render(scene, camera);
     }
