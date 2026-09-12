@@ -246,50 +246,234 @@
       cursor: pointer;
       transition: all var(--tr-fast);
       font-family: var(--font-sans);
+      text-decoration: none;
+      white-space: nowrap;
     }
     .btn-header:hover {
       background: var(--bg-card-hover);
       border-color: var(--gold);
       color: var(--gold-soft);
     }
+    .btn-header.gold-cta {
+      background: rgba(212, 164, 24, 0.14);
+      border-color: var(--gold);
+      color: var(--gold-soft);
+    }
+    .btn-header.gold-cta:hover {
+      background: var(--gold);
+      color: #000;
+      box-shadow: 0 0 15px var(--gold-glow);
+    }
 
-    .export-dropdown {
+    /* TOOLS DROPDOWN (DESKTOP) */
+    .tools-dropdown {
       position: relative;
     }
-    .export-menu {
+    .tools-menu {
       display: none;
       position: absolute;
       right: 0;
-      top: 100%;
-      margin-top: 6px;
-      width: 170px;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-default);
-      border-radius: 6px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.7);
-      z-index: 50;
+      top: calc(100% + 8px);
+      width: 290px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.85), 0 0 20px rgba(212, 164, 24, 0.1);
+      z-index: 100;
       overflow: hidden;
+      padding: 6px;
+      flex-direction: column;
+      gap: 2px;
     }
-    .export-menu.show {
-      display: block;
+    .tools-menu.show {
+      display: flex;
     }
-    .export-item {
+    .tools-menu-group {
+      font-size: 9px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--text-dim);
+      letter-spacing: 0.08em;
+      padding: 6px 8px 3px 8px;
+      text-transform: uppercase;
+    }
+    .tools-menu-item {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
+      gap: 9px;
+      padding: 7px 10px;
       font-size: 12px;
       color: var(--text-white);
       cursor: pointer;
-      transition: background var(--tr-fast);
-      border-bottom: 1px solid var(--border-subtle);
+      border-radius: 5px;
+      text-decoration: none;
+      transition: all var(--tr-fast);
+      background: transparent;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-family: var(--font-sans);
     }
-    .export-item:last-child {
-      border-bottom: none;
-    }
-    .export-item:hover {
-      background: var(--gold-subtle);
+    .tools-menu-item:hover {
+      background: var(--bg-card-hover);
       color: var(--gold-soft);
+    }
+    .tools-menu-footer {
+      border-top: 1px solid var(--border-subtle);
+      margin-top: 4px;
+      padding: 6px 8px 3px 8px;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .tools-menu-footer code {
+      color: var(--gold);
+    }
+
+    /* MOBILE HAMBURGER BUTTON & MOBILE DRAWER */
+    .btn-hamburger {
+      display: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      color: var(--text-white);
+      padding: 7px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--tr-fast);
+    }
+    .btn-hamburger:hover {
+      border-color: var(--gold);
+      color: var(--gold-soft);
+    }
+    .hide-mobile {
+      display: flex;
+    }
+    .show-mobile {
+      display: none !important;
+    }
+
+    .mobile-menu-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 1500;
+      opacity: 0;
+      transition: opacity var(--tr-smooth);
+    }
+    .mobile-menu-backdrop.show {
+      display: block;
+      opacity: 1;
+    }
+    .mobile-menu-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(88vw, 360px);
+      height: 100vh;
+      background: var(--bg-surface);
+      border-left: 1px solid var(--border-default);
+      z-index: 1510;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform var(--tr-smooth);
+      box-shadow: -10px 0 40px rgba(0, 0, 0, 0.9);
+    }
+    .mobile-menu-drawer.open {
+      transform: translateX(0);
+    }
+    .mobile-menu-header {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border-default);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .mobile-menu-body {
+      padding: 14px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .mobile-session-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .mobile-ses-id {
+      margin-left: auto;
+      color: var(--gold);
+    }
+    .mobile-menu-section-title {
+      font-size: 9px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--text-dim);
+      letter-spacing: 0.08em;
+      padding: 8px 4px 2px 4px;
+      text-transform: uppercase;
+    }
+    .btn-mobile-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-white);
+      text-decoration: none;
+      cursor: pointer;
+      text-align: left;
+      transition: all var(--tr-fast);
+      width: 100%;
+      font-family: var(--font-sans);
+    }
+    .btn-mobile-nav-item:active {
+      background: var(--bg-card-hover);
+      border-color: var(--gold);
+    }
+    .btn-mobile-nav-item.primary {
+      background: rgba(212, 164, 24, 0.12);
+      border-color: var(--gold);
+    }
+    .btn-mobile-nav-item.primary .nav-label {
+      color: var(--gold-soft);
+      font-weight: 700;
+    }
+    .nav-icon {
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+    .nav-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .nav-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-white);
+    }
+    .nav-sub {
+      font-size: 10px;
+      color: var(--text-muted);
     }
 
     /* MAIN CONTAINER */
@@ -807,6 +991,8 @@
       gap: 6px;
       transition: all var(--tr-fast);
       font-family: var(--font-mono);
+      white-space: nowrap !important;
+      flex-shrink: 0;
     }
     .filter-btn.active {
       background: var(--bg-card);
@@ -822,6 +1008,35 @@
       color: var(--gold);
       background: var(--status-warm-bg);
       border-color: var(--status-warm-border);
+    }
+    .filter-badge-pill, .pipe-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      padding: 1px 6px;
+      border-radius: 10px;
+      margin-left: 4px;
+      min-width: 16px;
+      text-align: center;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .filter-btn.active .filter-badge-pill,
+    .pipe-filter.active .pipe-badge-pill {
+      background: rgba(212, 164, 24, 0.22);
+      color: var(--gold-soft);
+    }
+    .filter-btn.active.hot .filter-badge-pill {
+      background: rgba(235, 87, 87, 0.25);
+      color: var(--status-hot);
+    }
+    .filter-btn.active.warm .filter-badge-pill {
+      background: rgba(212, 164, 24, 0.25);
+      color: var(--gold);
     }
 
     .view-switch {
@@ -1063,6 +1278,8 @@
       font-size: 12px;
       color: var(--text-muted);
       max-width: 380px;
+    }
+
     /* MINI-CRM PIPELINE & FOCUS DIALER BAR */
     .pipeline-bar {
       display: flex;
@@ -1093,6 +1310,8 @@
       border-radius: 4px;
       cursor: pointer;
       transition: all var(--tr-smooth);
+      white-space: nowrap !important;
+      flex-shrink: 0;
     }
     .pipe-filter:hover {
       color: var(--text-white);
@@ -1732,30 +1951,252 @@
       transform: translateX(-50%) translateY(0);
     }
 
-    /* RESPONSIVENESS */
-    @media (max-width: 1100px) {
+    /* RESPONSIVENESS & MOBILE-FIRST OPTIMIZATION */
+    @media (max-width: 1024px) {
       .criteria-layout-grid {
         grid-template-columns: 1fr 1fr;
+        gap: 16px;
       }
       .telemetry-grid {
         grid-template-columns: repeat(2, 1fr);
       }
     }
-    @media (max-width: 700px) {
-      .criteria-layout-grid {
-        grid-template-columns: 1fr;
-      }
-      .telemetry-grid {
-        grid-template-columns: 1fr;
-      }
+
+    @media (max-width: 768px) {
       .header {
         padding: 0 12px;
+        height: 52px;
+      }
+      .header-actions {
+        gap: 8px;
+      }
+      .hide-mobile {
+        display: none !important;
+      }
+      .show-mobile {
+        display: inline-flex !important;
+      }
+      .tools-dropdown {
+        display: none !important;
       }
       .main-content {
         padding: 12px;
       }
+      .telemetry-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .telemetry-card {
+        padding: 10px 12px;
+        border-radius: 8px;
+      }
+      .telemetry-value {
+        font-size: 20px;
+      }
+      .telemetry-label {
+        font-size: 10px;
+      }
+      .telemetry-subtext {
+        font-size: 10px;
+      }
+      .console-panel {
+        padding: 14px;
+        gap: 12px;
+        border-radius: 8px;
+      }
+      .panel-top-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+      .criteria-layout-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      .action-cell {
+        margin-top: 4px;
+      }
+      .btn-run-scan {
+        width: 100%;
+        height: 46px;
+        font-size: 13px;
+        justify-content: center;
+      }
+      .btn-stop-scan {
+        width: 100%;
+        height: 44px;
+        font-size: 13px;
+        justify-content: center;
+      }
+      .pipeline-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 10px;
+      }
+      .pipeline-filters {
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 4px;
+        gap: 6px;
+      }
+      .pipeline-filters::-webkit-scrollbar {
+        display: none;
+      }
+      .pipeline-actions {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+      }
+      .pipeline-actions .btn-pipeline {
+        flex: 1;
+        justify-content: center;
+        padding: 8px 10px;
+      }
+      .data-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .search-wrapper {
+        width: 100%;
+      }
+      .filter-group {
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 3px;
+      }
+      .filter-group::-webkit-scrollbar {
+        display: none;
+      }
+      .lead-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .lead-card {
+        padding: 14px;
+      }
+      .card-crm-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .crm-select {
+        width: 100%;
+        padding: 6px 8px;
+        font-size: 11px;
+      }
+      .card-action-btns {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        width: 100%;
+      }
+      .card-action-btns .btn-card-action {
+        flex: 1 1 calc(33.333% - 6px);
+        justify-content: center;
+        padding: 6px 8px;
+        font-size: 11px;
+      }
+      .card-action-btns .btn-card-action.call {
+        flex-basis: 100%;
+        padding: 9px;
+        font-size: 12px;
+        font-weight: 700;
+        background: rgba(37, 211, 102, 0.15);
+        color: #25D366;
+        border-color: #25D366;
+      }
       .lead-drawer {
-        width: 100vw;
+        width: 100vw !important;
+        max-width: 100vw !important;
+      }
+      .drawer-tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 0 12px;
+        gap: 4px;
+      }
+      .drawer-tabs::-webkit-scrollbar {
+        display: none;
+      }
+      .drawer-tab {
+        flex-shrink: 0;
+        padding: 10px 8px;
+        font-size: 11px;
+      }
+      .drawer-footer {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        padding: 12px 14px max(12px, env(safe-area-inset-bottom));
+        position: sticky;
+        bottom: 0;
+        background: var(--bg-surface);
+        z-index: 10;
+        border-top: 1px solid var(--border-default);
+      }
+      .drawer-footer .btn-drawer-action {
+        justify-content: center;
+        padding: 8px 6px;
+        font-size: 11px;
+      }
+      .drawer-footer .btn-drawer-action.primary {
+        grid-column: span 3;
+        order: -1;
+        padding: 11px;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .modal-dialog {
+        width: min(95vw, 680px) !important;
+        max-height: 90vh !important;
+        margin: 10px auto;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .main-content {
+        padding: 8px 10px;
+      }
+      .brand-name {
+        font-size: 13px;
+      }
+      .telemetry-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+      }
+      .telemetry-card {
+        padding: 8px 10px;
+      }
+      .telemetry-value {
+        font-size: 18px;
+      }
+      .chip-cloud {
+        gap: 4px;
+      }
+      .chip {
+        font-size: 10px;
+        padding: 4px 7px;
+      }
+      .card-action-btns .btn-card-action {
+        flex: 1 1 calc(50% - 6px);
+      }
+      .drawer-footer {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .drawer-footer .btn-drawer-action.primary {
+        grid-column: span 2;
       }
     }
   </style>
@@ -1776,82 +2217,185 @@
             <span style="display:none">WULF-WEB-LEADER</span>
           </div>
         </div>
-        <div class="header-divider"></div>
-        <div class="breadcrumb-item">
+        <div class="header-divider hide-mobile"></div>
+        <div class="breadcrumb-item hide-mobile">
           <span>Pulpit</span>
           <span>/</span>
           <span>Radar B2B</span>
-          <span>/</span>
-          <span style="color: var(--text-white);">Intelligence Console</span>
-          <span style="font-size: 10px; font-family: var(--font-mono); color: var(--gold); border: 1px solid var(--border-default); padding: 1px 5px; border-radius: 4px;">v0.3.0</span>
+          <span style="font-size: 10px; font-family: var(--font-mono); color: var(--gold); border: 1px solid var(--border-default); padding: 1px 5px; border-radius: 4px; margin-left: 4px;">v0.3.0</span>
           <span title="Identyfikator odizolowanej sesji roboczej (prywatne wyniki)" style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted); border: 1px solid var(--border-subtle); padding: 1px 5px; border-radius: 4px; margin-left: 4px;">SES: {{ session_id[:8] }}</span>
         </div>
-        <div class="telemetry-status-pill" id="system-status-indicator">
+        <div class="telemetry-status-pill hide-mobile" id="system-status-indicator">
           <span class="pulse-dot" id="system-pulse"></span>
           <span id="system-status-text">System Gotowy</span>
         </div>
       </div>
 
       <div class="header-actions">
-        <a href="https://social-wulf.eu" class="btn-header" style="border-color: var(--border-focus); color: var(--gold-soft);" title="Wróć do głównego HUB-a Wulf Code">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          <span>HUB</span>
-        </a>
-
-        <a href="https://github.com/adrian-wulf/wulf-lead-er" target="_blank" class="btn-header" title="Kod źródłowy i wdrożenie Self-Host na GitHub">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-          <span>Self-Host</span>
-        </a>
-
-        <button class="btn-header" onclick="openFocusDialer()" style="border-color: rgba(212, 164, 24, 0.4); color: var(--gold-soft);" title="Pełnoekranowy tryb szybkiego obdzwaniania leadów">
+        <!-- Desktop Primary CTA: Focus Dialer -->
+        <button class="btn-header gold-cta hide-mobile" onclick="openFocusDialer()" title="Pełnoekranowy tryb szybkiego obdzwaniania leadów (Focus Dialer)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           <span>Focus Dialer</span>
         </button>
 
-        <button class="btn-header" onclick="resetCurrentSession()" title="Rozpocznij nową sesję i wyczyść obecne wyniki">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
-          <span>Nowa sesja</span>
-        </button>
-
-        <!-- EXPORT DROPDOWN -->
-        <div class="export-dropdown">
-          <button class="btn-header" onclick="toggleExportMenu()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            <span>Eksport</span>
-            <span style="font-size: 9px;">▼</span>
+        <!-- Desktop Tools Dropdown -->
+        <div class="tools-dropdown hide-mobile" id="tools-dropdown-wrapper">
+          <button class="btn-header" onclick="toggleToolsMenu()" id="btn-tools-menu" title="Menu narzędzi wywiadu, eksportu i integracji">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>Narzędzia</span>
+            <span style="font-size: 8px;">▼</span>
           </button>
-          <div class="export-menu" id="export-menu">
-            <div class="export-item" onclick="copyTableAsTsv()">
+          <div class="tools-menu" id="tools-menu">
+            <div class="tools-menu-group">WYWIAD & REJESTRY</div>
+            <button class="tools-menu-item" onclick="openGeminiModal(); closeToolsMenu();">
+              <span>🔍</span> <span>Google OSINT (Live Grounding)</span>
+            </button>
+            <button class="tools-menu-item" onclick="openSavedScansModal(); closeToolsMenu();">
+              <span>💾</span> <span>Zapisane skany archiwalne</span>
+            </button>
+
+            <div class="tools-menu-group">ZARZĄDZANIE DANYMI & EKSPORT</div>
+            <button class="tools-menu-item" onclick="copyTableAsTsv(); closeToolsMenu();">
               <span>📋</span> <span>Kopiuj do Sheets (TSV)</span>
-            </div>
-            <div class="export-item" onclick="triggerExport('csv')">
-              <span>📄</span> <span>Arkusz CSV</span>
-            </div>
-            <div class="export-item" onclick="triggerExport('json')">
-              <span>📦</span> <span>Surowy JSON</span>
-            </div>
-            <div class="export-item" onclick="triggerExport('html')">
-              <span>🌐</span> <span>Raport HTML</span>
+            </button>
+            <button class="tools-menu-item" onclick="triggerExport('csv'); closeToolsMenu();">
+              <span>📄</span> <span>Pobierz arkusz CSV</span>
+            </button>
+            <button class="tools-menu-item" onclick="triggerExport('json'); closeToolsMenu();">
+              <span>📦</span> <span>Pobierz surowy JSON</span>
+            </button>
+            <button class="tools-menu-item" onclick="triggerExport('html'); closeToolsMenu();">
+              <span>🌐</span> <span>Pobierz raport HTML</span>
+            </button>
+            <button class="tools-menu-item" onclick="resetCurrentSession(); closeToolsMenu();">
+              <span>🔄</span> <span>Rozpocznij nową sesję roboczą</span>
+            </button>
+
+            <div class="tools-menu-group">EKOSYSTEM & API</div>
+            <a href="https://social-wulf.eu" class="tools-menu-item">
+              <span>🌐</span> <span>Główny Hub Ekosystemu</span>
+            </a>
+            <a href="https://github.com/adrian-wulf/wulf-lead-er" target="_blank" class="tools-menu-item">
+              <span>💻</span> <span>Kod źródłowy & Self-Host (GitHub)</span>
+            </a>
+            <a href="/docs" target="_blank" class="tools-menu-item">
+              <span>📖</span> <span>Dokumentacja REST API</span>
+            </a>
+            <div class="tools-menu-footer">
+              <span>ID SESJI:</span> <code>{{ session_id[:8] }}...</code>
             </div>
           </div>
         </div>
 
-        <button class="btn-header" onclick="openSavedScansModal()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          <span>Zapisane skany</span>
+        <!-- Mobile Header Quick CTA: Dialer Button -->
+        <button class="btn-header gold-cta show-mobile" onclick="openFocusDialer()" title="Dialer" style="padding: 6px 10px; font-size: 11px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Dialer</span>
         </button>
 
-        <button class="btn-header" onclick="openGeminiModal()" title="Ustawienia wywiadu Google OSINT (Gemini Grounding)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span style="color: var(--gold-soft); font-weight: 600;">Google OSINT</span>
+        <!-- Mobile Hamburger Toggle -->
+        <button class="btn-hamburger show-mobile" onclick="toggleMobileMenu()" aria-label="Otwórz menu mobilne">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
-
-        <a href="/docs" target="_blank" class="btn-header">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          <span>API</span>
-        </a>
       </div>
     </header>
+
+    <!-- MOBILE NAVIGATION DRAWER & BACKDROP -->
+    <div class="mobile-menu-backdrop" id="mobile-menu-backdrop" onclick="closeMobileMenu()"></div>
+    <aside class="mobile-menu-drawer" id="mobile-menu-drawer">
+      <div class="mobile-menu-header">
+        <div class="brand-cluster">
+          <div class="brand-logo">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 9l3 13 7-3 7 3 3-13-10-7zm0 4.2l5.5 3.8-1.5 6.5-4-1.7-4 1.7-1.5-6.5L12 6.2z"/></svg>
+          </div>
+          <div class="brand-name">WULF <span class="gold">LEAD.ER</span></div>
+        </div>
+        <button class="drawer-close" onclick="closeMobileMenu()" aria-label="Zamknij">✕</button>
+      </div>
+      <div class="mobile-menu-body">
+        <div class="mobile-session-pill">
+          <span class="pulse-dot"></span>
+          <span>System Gotowy</span>
+          <span class="mobile-ses-id">SES: {{ session_id[:8] }}</span>
+        </div>
+
+        <div class="mobile-menu-section-title">DZIAŁANIA GŁÓWNE</div>
+        <button class="btn-mobile-nav-item primary" onclick="openFocusDialer(); closeMobileMenu();">
+          <span class="nav-icon">🎯</span>
+          <div class="nav-text">
+            <span class="nav-label">Tryb Focus Dialer</span>
+            <span class="nav-sub">Pełnoekranowe obdzwanianie po kolei</span>
+          </div>
+        </button>
+        <button class="btn-mobile-nav-item" onclick="openGeminiModal(); closeMobileMenu();">
+          <span class="nav-icon">🔍</span>
+          <div class="nav-text">
+            <span class="nav-label">Google OSINT (Gemini)</span>
+            <span class="nav-sub">Weryfikacja rejestrów i opinii w Google</span>
+          </div>
+        </button>
+        <button class="btn-mobile-nav-item" onclick="openSavedScansModal(); closeMobileMenu();">
+          <span class="nav-icon">💾</span>
+          <div class="nav-text">
+            <span class="nav-label">Zapisane Skany</span>
+            <span class="nav-sub">Archiwalne bazy leadów</span>
+          </div>
+        </button>
+
+        <div class="mobile-menu-section-title">EKSPORT I SESJA</div>
+        <button class="btn-mobile-nav-item" onclick="copyTableAsTsv(); closeMobileMenu();">
+          <span class="nav-icon">📋</span>
+          <div class="nav-text">
+            <span class="nav-label">Kopiuj do Google Sheets</span>
+            <span class="nav-sub">Kopiuj widoczne leady (TSV)</span>
+          </div>
+        </button>
+        <button class="btn-mobile-nav-item" onclick="triggerExport('csv'); closeMobileMenu();">
+          <span class="nav-icon">📄</span>
+          <div class="nav-text">
+            <span class="nav-label">Pobierz Arkusz CSV</span>
+            <span class="nav-sub">Format Excel / arkusze kalkulacyjne</span>
+          </div>
+        </button>
+        <button class="btn-mobile-nav-item" onclick="triggerExport('html'); closeMobileMenu();">
+          <span class="nav-icon">🌐</span>
+          <div class="nav-text">
+            <span class="nav-label">Pobierz Raport HTML</span>
+            <span class="nav-sub">Samodzielny raport do wysyłki</span>
+          </div>
+        </button>
+        <button class="btn-mobile-nav-item" onclick="resetCurrentSession(); closeMobileMenu();">
+          <span class="nav-icon">🔄</span>
+          <div class="nav-text">
+            <span class="nav-label">Nowa Sesja Robocza</span>
+            <span class="nav-sub">Wyczyść pamięć i zacznij od nowa</span>
+          </div>
+        </button>
+
+        <div class="mobile-menu-section-title">EKOSYSTEM & ŹRÓDŁA</div>
+        <a href="https://social-wulf.eu" class="btn-mobile-nav-item">
+          <span class="nav-icon">🌐</span>
+          <div class="nav-text">
+            <span class="nav-label">Główny Hub</span>
+            <span class="nav-sub">social-wulf.eu</span>
+          </div>
+        </a>
+        <a href="https://github.com/adrian-wulf/wulf-lead-er" target="_blank" class="btn-mobile-nav-item">
+          <span class="nav-icon">💻</span>
+          <div class="nav-text">
+            <span class="nav-label">Self-Host (GitHub)</span>
+            <span class="nav-sub">Instrukcja instalacji i kod źródłowy</span>
+          </div>
+        </a>
+        <a href="/docs" target="_blank" class="btn-mobile-nav-item">
+          <span class="nav-icon">📖</span>
+          <div class="nav-text">
+            <span class="nav-label">Dokumentacja API</span>
+            <span class="nav-sub">Specyfikacja REST Swagger UI</span>
+          </div>
+        </a>
+      </div>
+    </aside>
 
     <!-- MAIN BODY -->
     <main class="main-content">
@@ -2044,10 +2588,10 @@
         </div>
 
         <div class="filter-group">
-          <button class="filter-btn active" onclick="setFilter('all', this)">Wszystkie (<span id="count-filter-all">0</span>)</button>
-          <button class="filter-btn" onclick="setFilter('hot', this)">🔥 Gorące (<span id="count-filter-hot">0</span>)</button>
-          <button class="filter-btn" onclick="setFilter('warm', this)">⚡ Ciepłe (<span id="count-filter-warm">0</span>)</button>
-          <button class="filter-btn" onclick="setFilter('skip', this)">🚫 Pomiń (<span id="count-filter-skip">0</span>)</button>
+          <button class="filter-btn active" onclick="setFilter('all', this)"><span>Wszystkie</span><span class="filter-badge-pill" id="count-filter-all">0</span></button>
+          <button class="filter-btn" onclick="setFilter('hot', this)"><span>🔥 Gorące</span><span class="filter-badge-pill" id="count-filter-hot">0</span></button>
+          <button class="filter-btn" onclick="setFilter('warm', this)"><span>⚡ Ciepłe</span><span class="filter-badge-pill" id="count-filter-warm">0</span></button>
+          <button class="filter-btn" onclick="setFilter('skip', this)"><span>🚫 Pomiń</span><span class="filter-badge-pill" id="count-filter-skip">0</span></button>
         </div>
 
         <div class="view-switch">
@@ -2065,13 +2609,13 @@
       <!-- MINI-CRM PIPELINE & FOCUS DIALER TOOLBAR -->
       <div class="pipeline-bar" id="pipeline-status-toolbar">
         <div class="pipeline-filters">
-          <span style="font-size: 11px; font-weight: 700; color: var(--gold); text-transform: uppercase; margin-right: 4px;">Lejek CRM:</span>
-          <button class="pipe-filter active" onclick="setPipelineFilter('ALL', this)">Wszystkie (<span id="pipe-cnt-all">0</span>)</button>
-          <button class="pipe-filter" onclick="setPipelineFilter('NOWY', this)">📥 Do kontaktu (<span id="pipe-cnt-new">0</span>)</button>
-          <button class="pipe-filter" onclick="setPipelineFilter('ZADZWONIONO', this)">📞 Zadzwoniono (<span id="pipe-cnt-called">0</span>)</button>
-          <button class="pipe-filter" onclick="setPipelineFilter('WYSLANO_AUDYT', this)">📄 Wysłano audyt (<span id="pipe-cnt-audit">0</span>)</button>
-          <button class="pipe-filter" onclick="setPipelineFilter('SPOTKANIE', this)">🤝 Spotkanie (<span id="pipe-cnt-meeting">0</span>)</button>
-          <button class="pipe-filter" onclick="setPipelineFilter('ODRZUCONY', this)">❌ Odrzucone (<span id="pipe-cnt-rejected">0</span>)</button>
+          <span style="font-size: 11px; font-weight: 700; color: var(--gold); text-transform: uppercase; margin-right: 4px; white-space: nowrap; flex-shrink: 0;">Lejek CRM:</span>
+          <button class="pipe-filter active" onclick="setPipelineFilter('ALL', this)"><span>Wszystkie</span><span class="pipe-badge-pill" id="pipe-cnt-all">0</span></button>
+          <button class="pipe-filter" onclick="setPipelineFilter('NOWY', this)"><span>📥 Do kontaktu</span><span class="pipe-badge-pill" id="pipe-cnt-new">0</span></button>
+          <button class="pipe-filter" onclick="setPipelineFilter('ZADZWONIONO', this)"><span>📞 Zadzwoniono</span><span class="pipe-badge-pill" id="pipe-cnt-called">0</span></button>
+          <button class="pipe-filter" onclick="setPipelineFilter('WYSLANO_AUDYT', this)"><span>📄 Wysłano audyt</span><span class="pipe-badge-pill" id="pipe-cnt-audit">0</span></button>
+          <button class="pipe-filter" onclick="setPipelineFilter('SPOTKANIE', this)"><span>🤝 Spotkanie</span><span class="pipe-badge-pill" id="pipe-cnt-meeting">0</span></button>
+          <button class="pipe-filter" onclick="setPipelineFilter('ODRZUCONY', this)"><span>❌ Odrzucone</span><span class="pipe-badge-pill" id="pipe-cnt-rejected">0</span></button>
         </div>
         <div class="pipeline-actions">
           <button class="btn-pipeline gold" onclick="openFocusDialer()" title="Uruchom tryb pełnoekranowy do obdzwaniania po kolei">
@@ -4012,16 +4556,56 @@
       }
     }
 
+    // TOOLS MENU & MOBILE DRAWER NAVIGATION
+    function toggleToolsMenu() {
+      const menu = document.getElementById('tools-menu');
+      if (menu) menu.classList.toggle('show');
+    }
+    function closeToolsMenu() {
+      const menu = document.getElementById('tools-menu');
+      if (menu) menu.classList.remove('show');
+    }
+
+    function toggleMobileMenu() {
+      const drawer = document.getElementById('mobile-menu-drawer');
+      const backdrop = document.getElementById('mobile-menu-backdrop');
+      if (drawer && backdrop) {
+        const isOpen = drawer.classList.contains('open');
+        if (isOpen) {
+          closeMobileMenu();
+        } else {
+          drawer.classList.add('open');
+          backdrop.classList.add('show');
+          document.body.style.overflow = 'hidden';
+        }
+      }
+    }
+    function closeMobileMenu() {
+      const drawer = document.getElementById('mobile-menu-drawer');
+      const backdrop = document.getElementById('mobile-menu-backdrop');
+      if (drawer) drawer.classList.remove('open');
+      if (backdrop) backdrop.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+
+    window.addEventListener('click', (e) => {
+      const dropdown = document.getElementById('tools-dropdown-wrapper');
+      if (dropdown && !dropdown.contains(e.target)) {
+        closeToolsMenu();
+      }
+    });
+
     // EXPORT & TOAST UTILS
     function toggleExportMenu() {
-      document.getElementById('export-menu').classList.toggle('show');
+      toggleToolsMenu();
     }
     function closeExportMenu() {
-      document.getElementById('export-menu').classList.remove('show');
+      closeToolsMenu();
     }
 
     function triggerExport(fmt) {
-      closeExportMenu();
+      closeToolsMenu();
+      closeMobileMenu();
       window.location.href = '/api/export/' + fmt;
       showToast('Generowanie i pobieranie ' + fmt.toUpperCase() + '...');
     }

@@ -709,17 +709,113 @@
       50% { opacity: 0.4; transform: scale(0.85); }
     }
 
-    /* RESPONSIVE BREAKPOINTS */
+    /* RESPONSIVE BREAKPOINTS - MOBILE FIRST ENHANCED */
     @media (max-width: 1024px) {
       .bento-card.hero-app { grid-column: span 12; }
       .bento-card.app-secondary { grid-column: span 6; }
     }
     @media (max-width: 768px) {
-      .viewport-wrapper { padding: 16px; }
-      header { flex-direction: column; gap: 14px; align-items: flex-start; }
-      .nav-actions { width: 100%; justify-content: space-between; }
-      .bento-card.app-secondary { grid-column: span 12; }
-      footer { flex-direction: column; gap: 12px; text-align: center; }
+      .viewport-wrapper { padding: 12px; }
+      header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+      }
+      .brand-identity {
+        width: 100%;
+        justify-content: flex-start;
+      }
+      .brand-titles h1 {
+        font-size: 15px;
+      }
+      .brand-titles p {
+        font-size: 10px;
+      }
+      .nav-actions {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .telemetry-pill {
+        flex: 1 1 auto;
+        padding: 5px 8px;
+        font-size: 10px;
+        justify-content: center;
+      }
+      .btn-nav {
+        flex: 1 1 auto;
+        padding: 6px 10px;
+        font-size: 11px;
+        justify-content: center;
+      }
+      .btn-kbd {
+        display: none !important;
+      }
+      .hero-section {
+        padding: 28px 12px 20px;
+      }
+      .hero-title {
+        font-size: 24px !important;
+        line-height: 1.25 !important;
+      }
+      .hero-desc {
+        font-size: 13px !important;
+        line-height: 1.5 !important;
+      }
+      .bento-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      .bento-card {
+        padding: 16px;
+      }
+      .bento-card.hero-app,
+      .bento-card.app-secondary,
+      .bento-card.docker-open-source {
+        grid-column: span 1;
+      }
+      .card-actions {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .btn-launch, .btn-secondary {
+        width: 100%;
+        justify-content: center;
+      }
+      .terminal-snippet-box {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 10px;
+      }
+      .terminal-snippet-box code {
+        font-size: 10px;
+        word-break: break-all;
+      }
+      .btn-copy-code {
+        width: 100%;
+        justify-content: center;
+        padding: 6px;
+      }
+      footer {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+        padding: 20px 10px;
+      }
+    }
+    @media (max-width: 480px) {
+      .hero-title {
+        font-size: 20px !important;
+      }
+      .tag-cloud {
+        gap: 4px;
+      }
+      .pill-tag {
+        font-size: 9px;
+        padding: 2px 6px;
+      }
     }
   </style>
 </head>
@@ -782,11 +878,10 @@
         <span>⚡ Autorskie Silniki & Narzędzia B2B</span>
       </div>
       <h2 class="hero-title">
-        ARCHITEKTURA <span class="gold-gradient">NOWEJ GENERACJI</span>
+        EKOSYSTEM NARZĘDZI <span class="gold-gradient">B2B & WYWIADU</span>
       </h2>
       <p class="hero-desc">
-        Centralny launchpad narzędzi badawczych, systemów wywiadu rynkowego i agentów sztucznej inteligencji.
-        Wybierz moduł produkcyjny, testuj w chmurze lub wdróż własną instancję w modelu Self-Hosted.
+        Dedykowane narzędzia do pozyskiwania leadów, audytu technicznego i geolokalizacji firm. Uruchom online lub wdróż własną instancję w modelu Self-Hosted.
       </p>
     </section>
 
