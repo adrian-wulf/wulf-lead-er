@@ -6,13 +6,22 @@ import logging
 from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import FastAPI, HTTPException, Query, Request, Response
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
 from wulf_web_leader.verticals import load_all_verticals
 from wulf_web_leader.web.scan_manager import ScanManager
+from wulf_web_leader.web.session_manager import (
+    COOKIE_MAX_AGE,
+    SESSION_COOKIE_NAME,
+    SESSION_HEADER_NAME,
+    get_manager,
+    get_session_id,
+    sanitize_session_id,
+    session_registry,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +34,33 @@ app = FastAPI(
     version="0.3.0",
 )
 
+# Global default manager reference for backwards compatibility and testing
+scan_manager = session_registry.get("default")
+
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
-scan_manager = ScanManager()
+
+
+@app.middleware("http")
+async def session_cookie_middleware(request: Request, call_next):
+    """Ensure every HTTP request has an isolated session ID and cookie."""
+    raw_sid = request.cookies.get(SESSION_COOKIE_NAME) or request.headers.get(SESSION_HEADER_NAME)
+    sid = sanitize_session_id(raw_sid)
+    is_new = (raw_sid != sid)
+    request.state.session_id = sid
+
+    response = await call_next(request)
+
+    # Set cookie if absent, sanitized, or not yet set
+    if is_new or request.cookies.get(SESSION_COOKIE_NAME) != sid:
+        response.set_cookie(
+            key=SESSION_COOKIE_NAME,
+            value=sid,
+            max_age=COOKIE_MAX_AGE,
+            httponly=True,
+            samesite="lax",
+            path="/",
+        )
+    return response
 
 
 class StartScanRequest(BaseModel):
@@ -53,16 +87,18 @@ class LoadScanRequest(BaseModel):
 
 
 @app.get("/", response_class=HTMLResponse)
-async def get_dashboard(request: Request):
+async def get_dashboard(request: Request, mgr: ScanManager = Depends(get_manager)):
     """Render main dashboard."""
     verticals = load_all_verticals()
+    sid = get_session_id(request)
     return templates.TemplateResponse(
         request=request,
         name="index.html",
         context={
             "version": "0.3.0",
+            "session_id": sid,
             "verticals": list(verticals.values()),
-            "initial_counts": scan_manager.counts,
+            "initial_counts": mgr.counts,
         },
     )
 
@@ -71,6 +107,19 @@ async def get_dashboard(request: Request):
 async def health():
     """Health check endpoint."""
     return {"status": "ok", "version": "0.3.0"}
+
+
+@app.post("/api/session/reset")
+async def reset_session(request: Request, mgr: ScanManager = Depends(get_manager)):
+    """Reset current session workspace, wiping temporary files and clearing leads."""
+    sid = get_session_id(request)
+    session_registry.reset(sid)
+    return {
+        "status": "ok",
+        "session_id": sid,
+        "message": "Sesja została zresetowana.",
+        "counts": mgr.counts,
+    }
 
 
 @app.get("/api/verticals")
@@ -97,41 +146,41 @@ async def get_verticals():
 
 
 @app.get("/api/scans")
-async def get_saved_scans():
-    """List available scan files."""
-    return {"scans": scan_manager.list_saved_scans()}
+async def get_saved_scans(mgr: ScanManager = Depends(get_manager)):
+    """List available scan files for this session."""
+    return {"scans": mgr.list_saved_scans()}
 
 
 @app.post("/api/scans/load")
-async def load_saved_scan(req: LoadScanRequest):
+async def load_saved_scan(req: LoadScanRequest, mgr: ScanManager = Depends(get_manager)):
     """Load a specific scan file into memory."""
     target_path = None
     if req.path:
         target_path = Path(req.path)
     elif req.filename:
-        target_path = scan_manager.workspace_dir / req.filename
+        target_path = mgr.workspace_dir / req.filename
     else:
-        target_path = scan_manager.workspace_dir / "leads.json"
+        target_path = mgr.workspace_dir / "leads.json"
 
     if not target_path or not target_path.is_file():
         raise HTTPException(status_code=404, detail=f"Plik '{target_path}' nie istnieje.")
 
     try:
-        count = scan_manager.load_scan_file(target_path)
-        return {"status": "ok", "loaded": count, "counts": scan_manager.counts}
+        count = mgr.load_scan_file(target_path)
+        return {"status": "ok", "loaded": count, "counts": mgr.counts}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Błąd odczytu pliku: {e}")
 
 
 @app.post("/api/scan/start")
-async def start_scan(req: StartScanRequest):
+async def start_scan(req: StartScanRequest, mgr: ScanManager = Depends(get_manager)):
     """Start an asynchronous lead discovery scan."""
     country_norm = req.country.strip().upper()
     if country_norm not in ("PL", "DE"):
         raise HTTPException(status_code=400, detail="Kod kraju musi wynosić 'PL' lub 'DE'.")
 
     effective_radius = req.radius_km if req.radius_km is not None else req.radius
-    started = await scan_manager.start_scan(
+    started = await mgr.start_scan(
         country=country_norm,
         city=req.city,
         vertical_id=req.vertical,
@@ -149,39 +198,39 @@ async def start_scan(req: StartScanRequest):
 
     return {
         "status": "started",
-        "params": scan_manager.current_params,
-        "message": scan_manager.message,
+        "params": mgr.current_params,
+        "message": mgr.message,
     }
 
 
 @app.post("/api/scan/stop")
-async def stop_scan():
+async def stop_scan(mgr: ScanManager = Depends(get_manager)):
     """Cancel the active scan."""
-    stopped = await scan_manager.stop_scan()
-    return {"stopped": stopped, "status": scan_manager.status}
+    stopped = await mgr.stop_scan()
+    return {"stopped": stopped, "status": mgr.status}
 
 
 @app.get("/api/scan/status")
-async def get_scan_status():
+async def get_scan_status(mgr: ScanManager = Depends(get_manager)):
     """Get current scan state, progress, logs, and counts."""
-    return scan_manager.get_status_data()
+    return mgr.get_status_data()
 
 
 @app.get("/api/scan/events")
-async def stream_scan_events(request: Request):
+async def stream_scan_events(request: Request, mgr: ScanManager = Depends(get_manager)):
     """SSE endpoint streaming live scan events (status, logs, leads, completion)."""
-    queue = scan_manager.subscribe()
+    queue = mgr.subscribe()
 
     async def event_generator():
         try:
             # Yield initial status immediately on connection
             init_event = {
                 "type": "status",
-                "status": scan_manager.status,
-                "stage": scan_manager.stage,
-                "progress": scan_manager.progress,
-                "message": scan_manager.message,
-                "counts": scan_manager.counts,
+                "status": mgr.status,
+                "stage": mgr.stage,
+                "progress": mgr.progress,
+                "message": mgr.message,
+                "counts": mgr.counts,
             }
             yield f"data: {json.dumps(init_event)}\n\n"
 
@@ -198,7 +247,7 @@ async def stream_scan_events(request: Request):
                     yield ": ping\n\n"
 
         finally:
-            scan_manager.unsubscribe(queue)
+            mgr.unsubscribe(queue)
 
     return StreamingResponse(
         event_generator(),
@@ -217,9 +266,10 @@ async def get_leads(
     verdict: Optional[str] = Query("all", description="Filtruj po ocenie: all, hot, warm, skip"),
     has_phone: bool = Query(False, description="Tylko firmy z numerem telefonu"),
     min_score: int = Query(0, ge=0, le=100, description="Minimalny score"),
+    mgr: ScanManager = Depends(get_manager),
 ):
     """Query currently loaded leads with search and verdict filters."""
-    leads = scan_manager.get_leads(
+    leads = mgr.get_leads(
         query=query,
         verdict=verdict,
         has_phone=has_phone,
@@ -227,7 +277,7 @@ async def get_leads(
     )
     return {
         "total": len(leads),
-        "counts": scan_manager.counts,
+        "counts": mgr.counts,
         "leads": [lead.model_dump(mode="json") for lead in leads],
     }
 
@@ -239,16 +289,17 @@ async def export_leads(
     verdict: Optional[str] = Query("all"),
     has_phone: bool = Query(False),
     min_score: int = Query(0),
+    mgr: ScanManager = Depends(get_manager),
 ):
     """Export currently loaded / filtered leads into CSV, JSON, or HTML."""
     try:
-        filtered_leads = scan_manager.get_leads(
+        filtered_leads = mgr.get_leads(
             query=query,
             verdict=verdict,
             has_phone=has_phone,
             min_score=min_score,
         )
-        content_bytes, media_type, filename = scan_manager.export_leads(format_type, filtered_leads)
+        content_bytes, media_type, filename = mgr.export_leads(format_type, filtered_leads)
         return Response(
             content=content_bytes,
             media_type=media_type,
@@ -273,13 +324,14 @@ async def verify_lead_gemini_endpoint(
     source_id: str,
     req: Optional[GeminiVerifyRequest] = None,
     request: Request = None,
+    mgr: ScanManager = Depends(get_manager),
 ):
     """Verify an individual lead in Google via Gemini API with live Search Grounding."""
     api_key = req.api_key if req else None
     if not api_key and request:
         api_key = request.headers.get("X-Gemini-Api-Key")
 
-    lead = await scan_manager.verify_lead_gemini(source_id=source_id, api_key=api_key)
+    lead = await mgr.verify_lead_gemini(source_id=source_id, api_key=api_key)
     if not lead:
         raise HTTPException(status_code=404, detail=f"Lead o ID '{source_id}' nie został odnaleziony w pamięci.")
 
@@ -288,4 +340,3 @@ async def verify_lead_gemini_endpoint(
         "lead": lead.model_dump(mode="json"),
         "gemini_intel": lead.gemini_intel.model_dump(mode="json") if lead.gemini_intel else None,
     }
-

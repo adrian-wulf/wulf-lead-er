@@ -37,10 +37,13 @@ htmlcov/
 audit_cache.json
 geocache.json
 
-# Lead exports (keep user data out of repo)
+# Lead exports & sessions (keep user data out of repo)
 leads*.csv
 leads*.json
 report*.html
 scan_*.csv
 scan_*.json
 scan_*.html
+sessions/
+.scan_state*
+

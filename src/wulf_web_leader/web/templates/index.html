@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="session-id" content="{{ session_id }}">
   <title>WULF LEAD.ER — Radar B2B & Lead Intelligence Console</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1470,6 +1471,7 @@
           <span>/</span>
           <span style="color: var(--text-white);">Intelligence Console</span>
           <span style="font-size: 10px; font-family: var(--font-mono); color: var(--gold); border: 1px solid var(--border-default); padding: 1px 5px; border-radius: 4px;">v0.3.0</span>
+          <span title="Identyfikator odizolowanej sesji roboczej (prywatne wyniki)" style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted); border: 1px solid var(--border-subtle); padding: 1px 5px; border-radius: 4px; margin-left: 4px;">SES: {{ session_id[:8] }}</span>
         </div>
         <div class="telemetry-status-pill" id="system-status-indicator">
           <span class="pulse-dot" id="system-pulse"></span>
@@ -1478,9 +1480,15 @@
       </div>
 
       <div class="header-actions">
+        <button class="btn-header" onclick="resetCurrentSession()" title="Rozpocznij nową sesję i wyczyść obecne wyniki">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+          <span>Nowa sesja</span>
+        </button>
+
         <!-- EXPORT DROPDOWN -->
         <div class="export-dropdown">
           <button class="btn-header" onclick="toggleExportMenu()">
+
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span>Eksport</span>
             <span style="font-size: 9px;">▼</span>
@@ -1950,8 +1958,29 @@
     </div>
   </div>
 
+  <!-- SAVED SCANS MODAL -->
+  <div class="modal-backdrop" id="scans-modal-backdrop" onclick="closeSavedScansModal()"></div>
+  <div class="modal-dialog" id="scans-modal-dialog">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="color: var(--gold); font-size: 16px;">📦</span>
+        <span style="font-weight: 700; font-size: 13px; color: var(--text-white); text-transform: uppercase; letter-spacing: 0.5px;">Zapisane skany sesji</span>
+      </div>
+      <button class="drawer-close" onclick="closeSavedScansModal()" title="Zamknij (Esc)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="saved-scans-list" style="max-height: 320px; overflow-y: auto;">
+      <div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px;">Ładowanie listy skanów...</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-drawer-action" onclick="closeSavedScansModal()">Zamknij</button>
+    </div>
+  </div>
+
   <!-- TOAST FEEDBACK NOTIFICATION -->
   <div class="toast-pill" id="toast-pill">Skopiowano do schowka!</div>
+
 
   <!-- JAVASCRIPT LOGIC -->
   <script>
@@ -1964,6 +1993,15 @@
     let sseSource = null;
     let pollInterval = null;
     let currentCountry = 'PL';
+    const SESSION_ID = "{{ session_id }}";
+
+    function apiFetch(url, options = {}) {
+      options.headers = options.headers || {};
+      if (SESSION_ID && !options.headers['X-Session-ID']) {
+        options.headers['X-Session-ID'] = SESSION_ID;
+      }
+      return fetch(url, options);
+    }
 
     const topCities = {
       'PL': ['Rzeszów', 'Warszawa', 'Kraków', 'Wrocław', 'Poznań', 'Gdańsk', 'Katowice', 'Lublin'],
@@ -1987,12 +2025,14 @@
           closeDrawer();
           closeExportMenu();
           closeGeminiModal();
+          closeSavedScansModal();
         }
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
           startScan();
         }
       });
     });
+
 
     // CITY & COUNTRY SWITCHING
     function selectCountry(c) {
@@ -2115,7 +2155,7 @@
 
     async function fetchInitialStatus() {
       try {
-        const res = await fetch('/api/scan/status');
+        const res = await apiFetch('/api/scan/status');
         if (res.ok) {
           const data = await res.json();
           if (data.counts) updateTelemetry(data.counts);
@@ -2136,7 +2176,7 @@
 
     async function fetchPollStatus() {
       try {
-        const res = await fetch('/api/scan/status');
+        const res = await apiFetch('/api/scan/status');
         if (res.ok) {
           const data = await res.json();
           updateScanProgress(data);
@@ -2269,7 +2309,7 @@
       startPolling();
 
       try {
-        const res = await fetch('/api/scan/start', {
+        const res = await apiFetch('/api/scan/start', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -2300,7 +2340,7 @@
 
     async function stopScan() {
       try {
-        await fetch('/api/scan/stop', { method: 'POST' });
+        await apiFetch('/api/scan/stop', { method: 'POST' });
         showToast('Wysłano sygnał zatrzymania skanera');
         fetchPollStatus();
       } catch (err) {
@@ -2310,7 +2350,7 @@
 
     async function fetchLeads() {
       try {
-        const res = await fetch('/api/leads');
+        const res = await apiFetch('/api/leads');
         if (res.ok) {
           const data = await res.json();
           allLeads = data.leads || [];
@@ -2318,6 +2358,7 @@
         }
       } catch (err) {}
     }
+
 
     // DATA RENDERING (GRID & TABLE)
     function setFilter(filter, btn) {
@@ -2638,7 +2679,8 @@
       const localKey = getStoredGeminiKey();
 
       try {
-        const res = await fetch('/api/gemini/status');
+        const res = await apiFetch('/api/gemini/status');
+
         if (res.ok) {
           const data = await res.json();
           if (data.available || localKey) {
@@ -2810,7 +2852,7 @@
 
       try {
         const apiKey = getStoredGeminiKey() || undefined;
-        const res = await fetch('/api/leads/' + encodeURIComponent(lead.source_id) + '/gemini-verify', {
+        const res = await apiFetch('/api/leads/' + encodeURIComponent(lead.source_id) + '/gemini-verify', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -2853,9 +2895,97 @@
       showToast('Generowanie i pobieranie ' + fmt.toUpperCase() + '...');
     }
 
-    function openSavedScansModal() {
-      showToast('Otwieranie zapisanych skanów...');
+    async function resetCurrentSession() {
+      if (!confirm('Czy na pewno chcesz zresetować sesję i wyczyścić obecne wyniki skanera?')) {
+        return;
+      }
+      try {
+        const res = await apiFetch('/api/session/reset', { method: 'POST' });
+        if (res.ok) {
+          allLeads = [];
+          renderedLogCount = 0;
+          const term = document.getElementById('terminal-log-output');
+          if (term) term.innerHTML = '';
+          updateTelemetry({ total: 0, hot: 0, warm: 0, skip: 0 });
+          renderDataView();
+          showToast('Sesja zresetowana — gotowy na nowy skan');
+        } else {
+          showToast('Błąd resetowania sesji');
+        }
+      } catch (e) {
+        showToast('Błąd połączenia podczas resetu sesji');
+      }
     }
+
+    async function openSavedScansModal() {
+      const backdrop = document.getElementById('scans-modal-backdrop');
+      const dialog = document.getElementById('scans-modal-dialog');
+      const listContainer = document.getElementById('saved-scans-list');
+      if (!backdrop || !dialog || !listContainer) return;
+
+      backdrop.classList.add('show');
+      dialog.classList.add('show');
+      listContainer.innerHTML = '<div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px;">Wczytywanie listy skanów...</div>';
+
+      try {
+        const res = await apiFetch('/api/scans');
+        if (res.ok) {
+          const data = await res.json();
+          const scans = data.scans || [];
+          if (scans.length === 0) {
+            listContainer.innerHTML = '<div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px;">Brak zapisanych skanów w bieżącej sesji.<br><span style="color: var(--text-dim); font-size: 11px;">Rozpocznij skanowanie, aby wygenerować wyniki.</span></div>';
+            return;
+          }
+          let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+          scans.forEach(s => {
+            html += `
+              <div style="background: var(--bg-root); border: 1px solid var(--border-subtle); padding: 10px 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-white);">${escapeHtml(s.filename)}</div>
+                  <div style="font-size: 11px; color: var(--text-dim); margin-top: 2px;">Rozmiar: ${(s.size_bytes / 1024).toFixed(1)} KB | ${new Date(s.modified_at * 1000).toLocaleString('pl-PL')}</div>
+                </div>
+                <button class="btn-drawer-action" onclick="loadSavedScanFile('${escapeHtml(s.filename)}')">Wczytaj</button>
+              </div>
+            `;
+          });
+          html += '</div>';
+          listContainer.innerHTML = html;
+        } else {
+          listContainer.innerHTML = '<div style="font-size: 12px; color: #ef4444; text-align: center; padding: 20px;">Nie udało się pobrać listy skanów.</div>';
+        }
+      } catch (err) {
+        listContainer.innerHTML = '<div style="font-size: 12px; color: #ef4444; text-align: center; padding: 20px;">Błąd sieci przy pobieraniu skanów.</div>';
+      }
+    }
+
+    function closeSavedScansModal() {
+      const backdrop = document.getElementById('scans-modal-backdrop');
+      const dialog = document.getElementById('scans-modal-dialog');
+      if (backdrop) backdrop.classList.remove('show');
+      if (dialog) dialog.classList.remove('show');
+    }
+
+    async function loadSavedScanFile(filename) {
+      try {
+        const res = await apiFetch('/api/scans/load', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          showToast(`Wczytano ${data.loaded} leadów z pliku`);
+          closeSavedScansModal();
+          fetchLeads();
+        } else {
+          const err = await res.json();
+          showToast('Błąd wczytywania: ' + (err.detail || 'Niepowodzenie'));
+        }
+      } catch (e) {
+        showToast('Błąd sieci podczas wczytywania skanu');
+      }
+    }
+
 
     function copyText(text) {
       if (!text) return;

@@ -216,7 +216,7 @@ class ScanManager:
                             return False
                 except Exception:
                     pass
-            elif self.status == "running" and self.scan_task and not self.scan_task.done():
+            elif self.status == "running":
                 return False
 
             self.status = "running"

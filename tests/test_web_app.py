@@ -8,6 +8,9 @@ from wulf_web_leader.web.app import app, scan_manager
 from wulf_web_leader.models import CanonicalLead
 
 
+from wulf_web_leader.web.session_manager import get_manager
+
+
 @pytest.fixture
 def test_client():
     return TestClient(app)
@@ -15,6 +18,7 @@ def test_client():
 
 @pytest.fixture(autouse=True)
 def reset_scan_manager():
+    app.dependency_overrides[get_manager] = lambda: scan_manager
     scan_manager.status = "idle"
     scan_manager.stage = "idle"
     scan_manager.progress = 0
@@ -24,6 +28,9 @@ def reset_scan_manager():
     if scan_manager.scan_task and not scan_manager.scan_task.done():
         scan_manager.scan_task.cancel()
     scan_manager.scan_task = None
+    yield
+    app.dependency_overrides.clear()
+
 
 
 def test_get_dashboard_html(test_client):
@@ -218,7 +225,7 @@ async def test_api_scan_events_sse():
     mock_req = MagicMock()
     mock_req.is_disconnected = AsyncMock(side_effect=[False, True])
 
-    resp = await stream_scan_events(mock_req)
+    resp = await stream_scan_events(mock_req, mgr=scan_manager)
     assert resp.status_code == 200
     assert resp.media_type == "text/event-stream"
 
@@ -228,4 +235,105 @@ async def test_api_scan_events_sse():
     event = json.loads(first_chunk[6:])
     assert event["type"] == "status"
     assert event["status"] == "idle"
+
+
+def test_session_cookie_created_on_first_visit():
+    app.dependency_overrides.clear()
+    client = TestClient(app)
+    res = client.get("/")
+    assert res.status_code == 200
+    assert "wulf_session_id" in client.cookies
+    sid = client.cookies["wulf_session_id"]
+    assert len(sid) >= 16
+
+
+def test_session_isolation_two_clients():
+    app.dependency_overrides.clear()
+    client_a = TestClient(app)
+    client_b = TestClient(app)
+
+    # Client A accesses dashboard and gets session cookie
+    res_a = client_a.get("/")
+    assert res_a.status_code == 200
+    sid_a = client_a.cookies.get("wulf_session_id")
+    assert sid_a
+
+    # Client B accesses dashboard and gets different session cookie
+    res_b = client_b.get("/")
+    assert res_b.status_code == 200
+    sid_b = client_b.cookies.get("wulf_session_id")
+    assert sid_b
+    assert sid_a != sid_b
+
+    # Both start with 0 leads
+    assert client_a.get("/api/leads").json()["total"] == 0
+    assert client_b.get("/api/leads").json()["total"] == 0
+
+    # Inject a lead directly into Client A's session manager
+    from wulf_web_leader.web.session_manager import session_registry
+    mgr_a = session_registry.get(sid_a)
+    lead_a = CanonicalLead(
+        country="PL",
+        name="Firma Klienta A",
+        city="Warszawa",
+        source="osm",
+        source_id="lead_a_1",
+        score=80,
+        verdict="hot",
+        industry_label="Test",
+    )
+    mgr_a.leads = [lead_a]
+
+    # Verify Client A sees the lead, but Client B STILL SEES 0 LEADS (ISOLATION!)
+    res_leads_a = client_a.get("/api/leads")
+    assert res_leads_a.json()["total"] == 1
+    assert res_leads_a.json()["leads"][0]["name"] == "Firma Klienta A"
+
+    res_leads_b = client_b.get("/api/leads")
+    assert res_leads_b.json()["total"] == 0
+
+
+def test_session_reset():
+    app.dependency_overrides.clear()
+    client = TestClient(app)
+    client.get("/")
+    sid = client.cookies.get("wulf_session_id")
+
+    from wulf_web_leader.web.session_manager import session_registry
+    mgr = session_registry.get(sid)
+    mgr.leads = [
+        CanonicalLead(
+            name="Lead do skasowania",
+            country="PL",
+            city="Gdańsk",
+            industry_label="Test",
+            source="osm",
+            source_id="del_1",
+        )
+    ]
+    assert client.get("/api/leads").json()["total"] == 1
+
+    # Reset session
+    res_reset = client.post("/api/session/reset")
+    assert res_reset.status_code == 200
+    assert res_reset.json()["status"] == "ok"
+
+    # Verify leads are now 0
+    assert client.get("/api/leads").json()["total"] == 0
+
+
+def test_session_path_traversal_protection():
+    app.dependency_overrides.clear()
+    client = TestClient(app)
+    # Attempt directory traversal attack via header or cookie
+    res = client.get("/api/leads", headers={"X-Session-ID": "../../../../etc/passwd"})
+    assert res.status_code == 200
+    set_cookie = res.headers.get("set-cookie", "")
+    assert "wulf_session_id=" in set_cookie
+    cookie_val = set_cookie.split("wulf_session_id=")[1].split(";")[0]
+    assert "/" not in cookie_val
+    assert ".." not in cookie_val
+    assert len(cookie_val) == 32
+
+
 

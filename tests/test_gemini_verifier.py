@@ -10,6 +10,7 @@ from wulf_web_leader.audit.gemini_verifier import (
     verify_lead_with_gemini,
 )
 from wulf_web_leader.web.app import app, scan_manager
+from wulf_web_leader.web.session_manager import get_manager
 
 
 def test_is_gemini_available(monkeypatch):
@@ -108,56 +109,61 @@ async def test_verify_lead_mocked_success():
 
 
 def test_api_gemini_endpoints():
-    client = TestClient(app)
+    app.dependency_overrides[get_manager] = lambda: scan_manager
+    try:
+        client = TestClient(app)
 
-    # 1. Check status endpoint
-    res = client.get("/api/gemini/status")
-    assert res.status_code == 200
-    data = res.json()
-    assert "available" in data
-    assert data["model"] == "gemini-3.6-flash"
+        # 1. Check status endpoint
+        res = client.get("/api/gemini/status")
+        assert res.status_code == 200
+        data = res.json()
+        assert "available" in data
+        assert data["model"] == "gemini-3.6-flash"
 
-    # 2. Add a dummy lead to scan_manager in-memory
-    lead = CanonicalLead(
-        country="PL",
-        name="Piekarnia Tradycyjna",
-        city="Kraków",
-        industry_label="Piekarnia",
-        phone="12 345 67 89",
-        source="osm",
-        source_id="test_piekarnia_123",
-        score=75,
-        verdict="hot",
-    )
-    scan_manager.leads = [lead]
-
-    # 3. Mock verify_lead_gemini
-    mock_intel = GeminiIntel(
-        checked=True,
-        found_in_google=True,
-        google_rating=4.7,
-        google_reviews_count=45,
-        summary="Ceniona piekarnia w Krakowie bez własnego sklepu online.",
-        ai_pitch="Dzień dobry! Wasza piekarnia ma 4.7 na Google Maps w Krakowie...",
-    )
-
-    with patch.object(scan_manager, "verify_lead_gemini", new_callable=AsyncMock) as mock_verify:
-        lead_copy = lead.model_copy(deep=True)
-        lead_copy.gemini_intel = mock_intel
-        lead_copy.hooks.insert(0, f"✨ [AI Google Pitch]: {mock_intel.ai_pitch}")
-        mock_verify.return_value = lead_copy
-
-        # Call endpoint
-        verify_res = client.post(
-            f"/api/leads/{lead.source_id}/gemini-verify",
-            json={"api_key": "AIzaSyD-dummy-key"},
+        # 2. Add a dummy lead to scan_manager in-memory
+        lead = CanonicalLead(
+            country="PL",
+            name="Piekarnia Tradycyjna",
+            city="Kraków",
+            industry_label="Piekarnia",
+            phone="12 345 67 89",
+            source="osm",
+            source_id="test_piekarnia_123",
+            score=75,
+            verdict="hot",
         )
-        assert verify_res.status_code == 200
-        res_data = verify_res.json()
-        assert res_data["status"] == "ok"
-        assert res_data["gemini_intel"]["google_rating"] == 4.7
-        assert res_data["gemini_intel"]["google_reviews_count"] == 45
-        assert any("AI Google Pitch" in h for h in res_data["lead"]["hooks"])
+        scan_manager.leads = [lead]
+
+        # 3. Mock verify_lead_gemini
+        mock_intel = GeminiIntel(
+            checked=True,
+            found_in_google=True,
+            google_rating=4.7,
+            google_reviews_count=45,
+            summary="Ceniona piekarnia w Krakowie bez własnego sklepu online.",
+            ai_pitch="Dzień dobry! Wasza piekarnia ma 4.7 na Google Maps w Krakowie...",
+        )
+
+        with patch.object(scan_manager, "verify_lead_gemini", new_callable=AsyncMock) as mock_verify:
+            lead_copy = lead.model_copy(deep=True)
+            lead_copy.gemini_intel = mock_intel
+            lead_copy.hooks.insert(0, f"✨ [AI Google Pitch]: {mock_intel.ai_pitch}")
+            mock_verify.return_value = lead_copy
+
+            # Call endpoint
+            verify_res = client.post(
+                f"/api/leads/{lead.source_id}/gemini-verify",
+                json={"api_key": "AIzaSyD-dummy-key"},
+            )
+            assert verify_res.status_code == 200
+            res_data = verify_res.json()
+            assert res_data["status"] == "ok"
+            assert res_data["gemini_intel"]["google_rating"] == 4.7
+            assert res_data["gemini_intel"]["google_reviews_count"] == 45
+            assert any("AI Google Pitch" in h for h in res_data["lead"]["hooks"])
+    finally:
+        app.dependency_overrides.clear()
+
 
 
 def test_index_template_has_gemini_ui_elements():
