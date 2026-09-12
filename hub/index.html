@@ -329,27 +329,55 @@
       box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 24px rgba(212, 164, 24, 0.1);
     }
 
-    /* HERO APP CARD - WIDE (8 cols) */
+    /* HERO APP CARD - FULL (12 cols) */
     .bento-card.hero-app {
-      grid-column: span 8;
+      grid-column: span 12;
       background: linear-gradient(145deg, rgba(24, 24, 24, 0.8) 0%, rgba(12, 12, 12, 0.9) 100%);
       border: 1px solid rgba(212, 164, 24, 0.3);
       position: relative;
+      padding: 32px 36px;
     }
     .bento-card.hero-app::after {
       content: '';
       position: absolute;
       top: 0;
       right: 0;
-      width: 250px;
-      height: 250px;
-      background: radial-gradient(circle, rgba(212, 164, 24, 0.15) 0%, transparent 70%);
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, rgba(212, 164, 24, 0.12) 0%, transparent 70%);
       pointer-events: none;
     }
 
-    /* MEDIUM CARD (4 cols) */
-    .bento-card.app-secondary {
-      grid-column: span 4;
+    .features-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin: 20px 0 24px;
+    }
+    .feature-mini-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      background: rgba(8, 8, 8, 0.6);
+      border: 1px solid var(--border);
+      padding: 12px;
+      border-radius: 10px;
+    }
+    .feature-mini-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .feature-mini-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 2px;
+    }
+    .feature-mini-sub {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.35;
     }
 
     /* FULL WIDTH DOCKER CARD (12 cols) */
@@ -712,7 +740,7 @@
     /* RESPONSIVE BREAKPOINTS - MOBILE FIRST ENHANCED */
     @media (max-width: 1024px) {
       .bento-card.hero-app { grid-column: span 12; }
-      .bento-card.app-secondary { grid-column: span 6; }
+      .features-mini-grid { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 768px) {
       .viewport-wrapper { padding: 12px; }
@@ -771,9 +799,12 @@
         padding: 16px;
       }
       .bento-card.hero-app,
-      .bento-card.app-secondary,
       .bento-card.docker-open-source {
         grid-column: span 1;
+      }
+      .features-mini-grid {
+        grid-template-columns: 1fr !important;
+        gap: 8px;
       }
       .card-actions {
         flex-direction: column;
@@ -903,15 +934,47 @@
 
           <h3 class="card-title">WULF LEAD.ER // RADAR B2B</h3>
           <p class="card-subtitle">
-            Autonomiczny silnik wywiadu gospodarczego i geolokalizacji. Skanuje firmy z OpenStreetMap, weryfikuje ich witryny www (audyt SSL, technologii, responsywności), wyciąga e-maile i telefony, a za pomocą <strong>Google AI Studio (Gemini 3.6 Flash)</strong> przeszukuje Google i Mapy w celu weryfikacji reputacji i generowania spersonalizowanych pitchy.
+            Autonomiczny silnik wywiadu gospodarczego i geolokalizacji firm w Europie (Polska & Niemcy). Pozyskuje dane z OpenStreetMap, wykonuje kompleksowy audyt techniczny (SSL, Core Web Vitals TTFB, technologie, responsywność), ekstrahuje dane kontaktowe (e-mail, telefon) i wspiera bezpośredni cold calling (Focus Dialer, 1-Click WhatsApp) oraz automatyczne zapytania Google OSINT z modelem Gemini 3.6 Flash.
           </p>
+
+          <div class="features-mini-grid">
+            <div class="feature-mini-item">
+              <span class="feature-mini-icon">⚡</span>
+              <div>
+                <div class="feature-mini-title">Błyskawiczny Skan OSM</div>
+                <div class="feature-mini-sub">Geolokalizacja firm w Polsce i Niemczech bez limitów API</div>
+              </div>
+            </div>
+            <div class="feature-mini-item">
+              <span class="feature-mini-icon">🔍</span>
+              <div>
+                <div class="feature-mini-title">Audyt 4 Filarów WWW</div>
+                <div class="feature-mini-sub">Testy SSL, TTFB, RWD, weryfikacja technologii i błędy mobilne</div>
+              </div>
+            </div>
+            <div class="feature-mini-item">
+              <span class="feature-mini-icon">📞</span>
+              <div>
+                <div class="feature-mini-title">Focus Dialer & WhatsApp</div>
+                <div class="feature-mini-sub">Tryb seryjnego obdzwaniania bazy z gotową matrycą ripost</div>
+              </div>
+            </div>
+            <div class="feature-mini-item">
+              <span class="feature-mini-icon">🤖</span>
+              <div>
+                <div class="feature-mini-title">Google OSINT (Gemini 3.6)</div>
+                <div class="feature-mini-sub">Automatyczny wywiad w wyszukiwarce Google i scenariusze pitch</div>
+              </div>
+            </div>
+          </div>
 
           <div class="tag-cloud">
             <span class="pill-tag">FastAPI + LiteSpeed WSGI</span>
             <span class="pill-tag">Google Search Grounding</span>
             <span class="pill-tag">Audyt Techniczny WWW</span>
+            <span class="pill-tag">Focus Dialer & CRM</span>
             <span class="pill-tag">Niezależne Sesje Użytkowników</span>
-            <span class="pill-tag">Eksport CSV / JSON / HTML</span>
+            <span class="pill-tag">Eksport CSV / JSON / HTML / Sheets</span>
           </div>
         </div>
 
@@ -924,64 +987,10 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
             <span>Uruchom Self-Host</span>
           </button>
-        </div>
-      </article>
-
-      <!-- CARD 2: AI STUDIO ORCHESTRATOR -->
-      <article class="bento-card app-secondary" onmousemove="handleTilt(event, this)" onmouseleave="resetTilt(this)">
-        <div class="card-top">
-          <div class="card-header-meta">
-            <div class="card-icon-box">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-            </div>
-            <span class="status-badge planned">W TRAKCIE PRAC // Q3 2026</span>
-          </div>
-
-          <h3 class="card-title">AI STUDIO // AGENTS</h3>
-          <p class="card-subtitle">
-            Wielomodelowe środowisko orkiestracji agentów autonomicznych. Generowanie lead-magnetów, automatyczny research konkurencji i tworzenie kampanii cold-outreach z pamięcią wektorową.
-          </p>
-
-          <div class="tag-cloud">
-            <span class="pill-tag">Multi-Agent Graph</span>
-            <span class="pill-tag">RAG Vector Store</span>
-            <span class="pill-tag">Automated Pitch</span>
-          </div>
-        </div>
-
-        <div class="card-actions">
-          <button class="btn-secondary" onclick="notifySoon('AI Studio Orchestrator')" style="width: 100%; justify-content: center;">
-            <span>Powiadom o premierze</span>
-          </button>
-        </div>
-      </article>
-
-      <!-- CARD 3: SHADOW CRAWLER LAB -->
-      <article class="bento-card app-secondary" onmousemove="handleTilt(event, this)" onmouseleave="resetTilt(this)">
-        <div class="card-top">
-          <div class="card-header-meta">
-            <div class="card-icon-box">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-            </div>
-            <span class="status-badge alpha">ALPHA LAB</span>
-          </div>
-
-          <h3 class="card-title">SHADOW CRAWLER</h3>
-          <p class="card-subtitle">
-            Wysokowydajny, bezgłowy system ekstrakcji danych ze stron zabezpieczonych Cloudflare/Akamai, monitoringu zmian w cennikach oraz automatycznego wykrywania technologii.
-          </p>
-
-          <div class="tag-cloud">
-            <span class="pill-tag">Headless Cluster</span>
-            <span class="pill-tag">Stealth Bypass</span>
-            <span class="pill-tag">Diff Engine</span>
-          </div>
-        </div>
-
-        <div class="card-actions">
-          <button class="btn-secondary" onclick="notifySoon('Shadow Crawler')" style="width: 100%; justify-content: center;">
-            <span>Wkrótce dostępne</span>
-          </button>
+          <a href="https://github.com/adrian-wulf/wulf-lead-er" target="_blank" class="btn-secondary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            <span>GitHub Repo</span>
+          </a>
         </div>
       </article>
 
@@ -1427,11 +1436,6 @@ python3 -m wulf_web_leader.web.run --port 8000</pre>
         const text = item.innerText.toLowerCase();
         item.style.display = text.includes(q) ? 'flex' : 'none';
       });
-    }
-
-    function notifySoon(toolName) {
-      playAffirmSound();
-      showToast(`Moduł [${toolName}] jest w zaawansowanej fazie budowy!`);
     }
 
     // -------------------------------------------------------------
