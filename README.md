@@ -29,9 +29,12 @@ Większość agencji marnuje setki godzin na ręczne przeszukiwanie map lub wysy
 **WULF LEAD.ER działa inaczej:**
 1. **Pobiera legalne dane:** Przeszukuje otwarty rejestr OpenStreetMap dla wybranego miasta, promienia i branży (w Polsce i Niemczech).
 2. **Automatycznie audytuje witryny www:** Weryfikuje błędy HTTP (404, 500), wygasłe domeny, brak responsywności (RWD / mobile viewport), brak certyfikatu SSL, przestarzałe technologie (np. Joomla, Drupal 7, stary WordPress) oraz brak wymaganego prawem Impressum w Niemczech.
-3. **Weryfikuje tożsamość firmy:** Wykorzystuje zaawansowaną heurystykę nazw, numerów kierunkowych i lokalizacji, aby odsiać fałszywe alarmy.
-4. **Google Search Grounding & Gemini 3.6 Flash:** Dzięki integracji z darmowym API Google AI Studio aplikacja sama przeszukuje sieć i Google Maps, ocenia reputację firmy, wyciąga średnią ocenę oraz generuje gotowy, spersonalizowany argument sprzedażowy (pitch do cold callingu lub rozmowy).
-5. **Daje Ci gotowy powód do kontaktu:** Nie wysyłasz spamu. Dzwonisz lub wchodzisz do warsztatu/salonu z precyzyjną diagnozą ich problemu technicznego.
+3. **Kalkulator Utraconych Przychodów & Sonda Speed:** Oblicza szacunkowy comiesięczny i roczny wyciek kapitału klienta oraz mierzy czas pierwszej odpowiedzi serwera (TTFB) i wagę strony.
+4. **Google Search Grounding & OSINT:** Dzięki integracji z silnikiem Gemini 3.6 Flash i Google Search Grounding aplikacja bada w czasie rzeczywistym reputację firmy w Google Maps, wyciąga oceny i generuje celny pitch.
+5. **Focus Dialer & Mini Pipeline CRM:** Dedykowany tryb pełnoekranowy do obzwania bazy (skróty klawiszowe, 1-Click Click-to-Call, WhatsApp, statusy: Nowy, Zadzwoniono, Wysłano audyt, Spotkanie, Odrzucony).
+6. **Karta Audytu A4 (Print & PDF):** Generuje certyfikowany, elegancki raport diagnostyczny gotowy do druku na spotkanie handlowe lub wysyłki mailowej.
+7. **Błyskawiczny Prototyp Nowej Witryny (Instant Demo):** Generuje spersonalizowany podgląd nowoczesnej strony komercyjnej dla konkretnego klienta w 1 kliknięcie.
+8. **Matryca Ripost na Obiekcje (Battlecards):** Gotowe scenariusze rozmów obalające obiekcje: „wystarcza nam Facebook”, „mamy stronę z 2012 roku”, „klienci przychodzą z polecenia”, „brak budżetu”.
 
 ---
 

@@ -340,3 +340,48 @@ async def verify_lead_gemini_endpoint(
         "lead": lead.model_dump(mode="json"),
         "gemini_intel": lead.gemini_intel.model_dump(mode="json") if lead.gemini_intel else None,
     }
+
+
+@app.get("/audit-card", response_class=HTMLResponse)
+async def get_client_audit_card(request: Request):
+    """Serve printable client-facing technical audit sheet."""
+    return templates.TemplateResponse(request=request, name="client_audit.html", context={})
+
+
+@app.get("/demo/preview", response_class=HTMLResponse)
+async def get_instant_demo_preview(request: Request):
+    """Serve instant live demo concept for prospect's vertical."""
+    return templates.TemplateResponse(request=request, name="instant_demo.html", context={})
+
+
+@app.get("/api/speed")
+async def get_speed_audit(url: str = Query(...)):
+    """Run real-time speed and Core Web Vitals probe on website."""
+    from wulf_web_leader.audit.speed import audit_website_speed
+    result = audit_website_speed(url)
+    return {"status": "ok", "speed": result}
+
+
+@app.get("/api/revenue-loss")
+async def get_revenue_loss(
+    vertical: Optional[str] = Query(None),
+    country: str = Query("PL"),
+    has_website: bool = Query(True),
+    is_https: bool = Query(True),
+    has_viewport: bool = Query(True),
+    load_time_seconds: Optional[float] = Query(None),
+    http_error: bool = Query(False),
+):
+    """Calculate estimated business loss and lost customers from website defects."""
+    from wulf_web_leader.score.revenue_calc import calculate_lost_revenue
+    result = calculate_lost_revenue(
+        vertical=vertical,
+        country=country,
+        has_website=has_website,
+        is_https=is_https,
+        has_viewport=has_viewport,
+        load_time_seconds=load_time_seconds,
+        http_error=http_error,
+    )
+    return {"status": "ok", "revenue_loss": result}
+

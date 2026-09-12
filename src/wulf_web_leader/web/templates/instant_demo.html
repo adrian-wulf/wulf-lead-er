@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Podgląd Koncepcyjny Nowej Strony // Wulf Code</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #D4A418;
+      --primary-hover: #F3CA40;
+      --bg: #0C0D0E;
+      --surface: #141618;
+      --border: #24272B;
+      --text: #F4F5F6;
+      --text-muted: #8E96A0;
+      --font-main: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-main);
+      line-height: 1.5;
+    }
+
+    /* Agency Demo Bar */
+    .demo-bar {
+      background: #000;
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      font-size: 12px;
+    }
+    .demo-tag {
+      background: rgba(212, 164, 24, 0.15);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+    .demo-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .btn-agency {
+      background: var(--primary);
+      color: #000;
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    /* Demo Client Site Mockup */
+    header {
+      padding: 24px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #FFF;
+    }
+    .call-btn {
+      background: var(--primary);
+      color: #000;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hero {
+      max-width: 1000px;
+      margin: 60px auto;
+      padding: 0 20px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 20px;
+      color: #FFF;
+    }
+    .hero p {
+      font-size: 17px;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 30px auto;
+    }
+
+    .trust-badges {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-top: 40px;
+      padding: 20px;
+      background: var(--surface);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #E0E0E0;
+    }
+    .trust-item span.icon { color: var(--primary); }
+
+    .grid-features {
+      max-width: 1000px;
+      margin: 60px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .f-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+    }
+    .f-card h3 {
+      font-size: 16px;
+      margin-bottom: 8px;
+      color: #FFF;
+    }
+    .f-card p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+      header { padding: 16px 20px; }
+      .hero h1 { font-size: 28px; }
+      .grid-features { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Pasek demonstracyjny Agencji -->
+  <div class="demo-bar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="demo-tag">WULF CODE // ARCHITEKTURA WWW</span>
+      <span>Interaktywny model zoptymalizowanej witryny komercyjnej</span>
+    </div>
+    <div class="demo-actions">
+      <span style="color: var(--text-muted);">Projekt dla: <strong style="color: #FFF;" id="bar-client-name">Firma</strong></span>
+      <a href="https://wulf-code.it" target="_blank" class="btn-agency">Wdrożenie Wulf Code ↗</a>
+    </div>
+  </div>
+
+  <!-- Przykładowy serwis klienta -->
+  <header>
+    <div class="logo" id="site-logo">Przedsiębiorstwo</div>
+    <div>
+      <a href="#" class="call-btn" id="site-call-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <span id="site-phone-txt">Zadzwoń bezpośrednio</span>
+      </a>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-badge" id="hero-badge">Potwierdzona obecność lokalna</div>
+    <h1 id="hero-title">Rzetelne i terminowe usługi dla klientów w Twoim regionie</h1>
+    <p id="hero-desc">Błyskawiczny kontakt, fachowa realizacja z dojazdem do klienta i pełna transparentność kosztów. Zadzwoń i sprawdź najbliższy dostępny termin.</p>
+    
+    <div style="display: flex; justify-content: center; gap: 14px;">
+      <a href="#" class="call-btn" id="hero-cta-btn" style="padding: 14px 28px; font-size: 15px;">Połącz z biurem obsługi</a>
+    </div>
+
+    <div class="trust-badges">
+      <div class="trust-item"><span class="icon">✓</span> Bezpośredni kontakt telefoniczny 1-Click</div>
+      <div class="trust-item"><span class="icon">✓</span> Certyfikat bezpieczeństwa SSL (HTTPS)</div>
+      <div class="trust-item"><span class="icon">✓</span> Pełna obsługa na smartfonach i tabletach</div>
+      <div class="trust-item"><span class="icon">✓</span> Optymalizacja prędkości Core Web Vitals < 0.8s</div>
+    </div>
+  </section>
+
+  <section class="grid-features">
+    <div class="f-card">
+      <h3>📞 Połączenie telefoniczne w 1 sekundę</h3>
+      <p>Klienci mobilni natychmiast łączą się z firmą bez konieczności przepisywania numeru na kartkę lub przełączania aplikacji.</p>
+    </div>
+    <div class="f-card">
+      <h3>🔒 Zabezpieczenie SSL & Zaufanie Google</h3>
+      <p>Zielona kłódka i pełne szyfrowanie danych eliminują ostrzeżenia o niebezpiecznej stronie, budując zaufanie klienta.</p>
+    </div>
+    <div class="f-card">
+      <h3>⚡ Indeksacja i przewaga w mapach Google</h3>
+      <p>Lekka, nowoczesna struktura kodu zgodna ze standardami Google pozwala wyprzedzić przestarzałe serwisy konkurencji.</p>
+    </div>
+  </section>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get('name') || 'Firma Usługowa';
+    const city = params.get('city') || 'Twoje Miasto';
+    const phone = params.get('phone') || '';
+    const vert = params.get('vert') || 'services';
+
+    document.getElementById('bar-client-name').innerText = name;
+    document.getElementById('site-logo').innerText = name;
+    if (phone) {
+      document.getElementById('site-phone-txt').innerText = phone;
+      document.getElementById('site-call-btn').href = 'tel:' + phone.replace(/\s+/g, '');
+      document.getElementById('hero-cta-btn').href = 'tel:' + phone.replace(/\s+/g, '');
+    }
+
+    const titles = {
+      plumbers: `Rzetelne i sprawne usługi hydrauliczne w ${city}`,
+      auto_repair: `Profesjonalny serwis samochodowy i naprawy w ${city}`,
+      hair: `Nowoczesny salon fryzjerski i stylizacja w ${city}`,
+      electricians: `Certyfikowane instalacje i usługi elektryczne w ${city}`,
+      restaurant: `Wyjątkowe smaki i kulinarna pasja w sercu ${city}`,
+      bakery: `Tradycyjne wypieki i świeże pieczywo w ${city}`,
+      veterinary: `Kompleksowa opieka i troska o Twojego pupila w ${city}`,
+      gym: `Klub fitness i profesjonalny trening w ${city}`
+    };
+
+    if (titles[vert]) {
+      document.getElementById('hero-title').innerText = titles[vert];
+    }
+    document.getElementById('hero-badge').innerText = `Lokalne usługi // ${city}`;
+  </script>
+</body>
+</html>

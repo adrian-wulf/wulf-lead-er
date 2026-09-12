@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karta Audytu Technicznego // Wulf Code</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080808;
+      --surface: #121212;
+      --surface-border: #222222;
+      --gold: #D4A418;
+      --gold-soft: #F3CA40;
+      --crimson: #9B1B1B;
+      --text: #F0F0F0;
+      --text-dim: #888888;
+      --red: #E63946;
+      --green: #2A9D8F;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      padding: 32px 16px;
+      line-height: 1.5;
+    }
+
+    .audit-container {
+      max-width: 840px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      padding: 40px;
+      position: relative;
+    }
+
+    .brand-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--gold);
+      padding-bottom: 20px;
+      margin-bottom: 28px;
+    }
+
+    .brand-title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #FFF;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-title span { color: var(--gold); }
+
+    .ref-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      background: #000;
+      padding: 6px 12px;
+      border-radius: 4px;
+      border: 1px solid var(--surface-border);
+    }
+
+    .company-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      gap: 20px;
+    }
+
+    .company-name {
+      font-size: 26px;
+      font-weight: 800;
+      color: #FFF;
+      margin-bottom: 6px;
+    }
+
+    .company-meta {
+      font-size: 13px;
+      color: var(--text-dim);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .verdict-box {
+      text-align: right;
+      min-width: 200px;
+    }
+
+    .verdict-pill {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .verdict-pill.critical { background: rgba(230, 57, 70, 0.15); color: #FF4D4D; border: 1px solid #E63946; }
+    .verdict-pill.warning { background: rgba(212, 164, 24, 0.15); color: var(--gold-soft); border: 1px solid var(--gold); }
+    .verdict-pill.good { background: rgba(42, 157, 143, 0.15); color: #2A9D8F; border: 1px solid #2A9D8F; }
+
+    .score-large {
+      font-family: var(--font-mono);
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--gold);
+    }
+
+    .grid-pillars {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .pillar-card {
+      background: #080808;
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    .pillar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .pillar-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #FFF;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .pillar-status {
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .pillar-status.fail { background: rgba(230, 57, 70, 0.2); color: #FF6B6B; }
+    .pillar-status.pass { background: rgba(42, 157, 143, 0.2); color: #4EBAAA; }
+
+    .pillar-detail {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    .revenue-card {
+      background: linear-gradient(145deg, rgba(155, 27, 27, 0.2) 0%, rgba(8, 8, 8, 0.9) 100%);
+      border: 1px solid var(--crimson);
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 28px;
+    }
+
+    .revenue-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #FF8080;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .revenue-numbers {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .revenue-item {
+      background: #000;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 12px;
+    }
+    .revenue-item-val {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--gold);
+    }
+    .revenue-item-lbl {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .recommendation-box {
+      background: #000;
+      border: 1px solid var(--surface-border);
+      border-left: 4px solid var(--gold);
+      border-radius: 6px;
+      padding: 18px;
+      margin-bottom: 28px;
+    }
+    .rec-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    .rec-body {
+      font-size: 13px;
+      color: #D8D8D8;
+      line-height: 1.6;
+    }
+
+    .footer-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--surface-border);
+      padding-top: 20px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .no-print {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .btn-print {
+      background: var(--gold);
+      color: #000;
+      border: none;
+      padding: 10px 22px;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-print:hover { background: var(--gold-soft); }
+
+    /* Print styles */
+    @media print {
+      body {
+        background: #FFF !important;
+        color: #111 !important;
+        padding: 0 !important;
+      }
+      .audit-container {
+        border: none !important;
+        background: #FFF !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+      .brand-title { color: #000 !important; }
+      .brand-title span { color: #8A6500 !important; }
+      .company-name { color: #000 !important; }
+      .pillar-card {
+        background: #F9F9F9 !important;
+        border: 1px solid #CCC !important;
+      }
+      .pillar-title { color: #111 !important; }
+      .revenue-card {
+        background: #FFF0F0 !important;
+        border: 1px solid #E63946 !important;
+      }
+      .revenue-title { color: #B00020 !important; }
+      .revenue-item {
+        background: #FFF !important;
+        border: 1px solid #DDD !important;
+      }
+      .revenue-item-val { color: #8A6500 !important; }
+      .recommendation-box {
+        background: #F8F8F8 !important;
+        border: 1px solid #CCC !important;
+        border-left: 4px solid #8A6500 !important;
+      }
+      .rec-title { color: #8A6500 !important; }
+      .rec-body { color: #222 !important; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="audit-container">
+    <div class="no-print">
+      <button class="btn-print" onclick="window.print()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        <span>Drukuj / Zapisz jako PDF</span>
+      </button>
+    </div>
+
+    <div class="brand-bar">
+      <div class="brand-title">
+        <span>WULF CODE</span> // Certyfikowany Raport Audytu Technicznego
+      </div>
+      <div class="ref-badge">ID: <span id="audit-ref-id">WULF-AUDIT</span></div>
+    </div>
+
+    <div class="company-header">
+      <div>
+        <div class="company-name" id="audit-company-name">Nazwa Przedsiębiorstwa</div>
+        <div class="company-meta">
+          <span id="audit-industry">Branża</span>
+          <span>•</span>
+          <span id="audit-city">Miejscowość</span>
+          <span>•</span>
+          <span id="audit-phone" style="font-family: var(--font-mono); font-weight: 700;">Telefon</span>
+        </div>
+      </div>
+      <div class="verdict-box">
+        <div class="verdict-pill critical" id="audit-verdict-badge">PILNY AUDYT</div>
+        <div class="score-large"><span id="audit-score">75</span><span style="font-size: 14px; color: var(--text-dim);">/100</span></div>
+      </div>
+    </div>
+
+    <!-- 4 Główne filary inspekcji -->
+    <div class="grid-pillars">
+      <div class="pillar-card">
+        <div class="pillar-header">
+          <div class="pillar-title">1. Szyfrowanie SSL (HTTPS)</div>
+          <span class="pillar-status fail" id="status-ssl">BŁĄD</span>
+        </div>
+        <div class="pillar-detail" id="detail-ssl">
+          Brak bezpiecznego certyfikatu SSL. Przeglądarki Chrome i Safari wyświetlają klientom ostrzeżenie „Strona Niezabezpieczona”.
+        </div>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-header">
+          <div class="pillar-title">2. Urządzenia Mobilne (RWD)</div>
+          <span class="pillar-status fail" id="status-rwd">BŁĄD</span>
+        </div>
+        <div class="pillar-detail" id="detail-rwd">
+          Strona nie posiada zdefiniowanego widoku mobilnego. Ponad 75% klientów na smartfonach widzi nieczytelną treść.
+        </div>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-header">
+          <div class="pillar-title">3. Prędkość & Core Web Vitals</div>
+          <span class="pillar-status fail" id="status-speed">OPÓŹNIENIE</span>
+        </div>
+        <div class="pillar-detail" id="detail-speed">
+          Czas ładowania strony przekracza zalecane standardy Google. Każda sekunda zwłoki obniża pozycję w wyszukiwarce.
+        </div>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-header">
+          <div class="pillar-title">4. Widoczność & Reputacja</div>
+          <span class="pillar-status pass" id="status-reputation">WERYFIKACJA</span>
+        </div>
+        <div class="pillar-detail" id="detail-reputation">
+          Firma posiada profil rynkowy, jednak brak nowoczesnej witryny odcina ją od bezpośrednich zapytań z wyszukiwarki.
+        </div>
+      </div>
+    </div>
+
+    <!-- Szacowanie strat finansowych -->
+    <div class="revenue-card">
+      <div class="revenue-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Ekonomiczne Następstwa Usterek Technicznych</span>
+      </div>
+      <div style="font-size: 13px; color: #EEE; line-height: 1.5;" id="revenue-pitch">
+        Przez wady technologiczne witryny firma traci szacunkowo ok. 3–5 klientów miesięcznie, którzy uciekają do konkurencji.
+      </div>
+      <div class="revenue-numbers">
+        <div class="revenue-item">
+          <div class="revenue-item-val" id="rev-clients">3–5</div>
+          <div class="revenue-item-lbl">Utraconych zleceń / msc</div>
+        </div>
+        <div class="revenue-item">
+          <div class="revenue-item-val" id="rev-monthly">1 800 PLN</div>
+          <div class="revenue-item-lbl">Szacowany wyciek / msc</div>
+        </div>
+        <div class="revenue-item">
+          <div class="revenue-item-val" id="rev-annual">21 600 PLN</div>
+          <div class="revenue-item-lbl">Szacowany ubytek roczny</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rekomendacja wdrożeniowa -->
+    <div class="recommendation-box">
+      <div class="rec-title">Rekomendacja Działań Naprawczych (Wulf Code)</div>
+      <div class="rec-body" id="rec-text">
+        Wdrożenie nowoczesnej, ultraszybkiej strony one-page lub serwisu z pełną optymalizacją pod urządzenia mobilne, certyfikatem SSL i bezpośrednim przyciskiem połączenia telefonicznego (Click-to-Call) pozwoli natychmiast zabezpieczyć ruch z wyszukiwarki Google i odzyskać tracone zlecenia.
+      </div>
+    </div>
+
+    <div class="footer-bar">
+      <div>
+        <strong>Wulf Code</strong> • Zaawansowane Systemy Cyfrowe • <a href="https://wulf-code.it" target="_blank" style="color: var(--gold); text-decoration: none;">wulf-code.it</a>
+      </div>
+      <div>
+        Data audytu: <span id="audit-date">2026-09-12</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Odczyt parametrów z Query String
+    const urlParams = new URLSearchParams(window.location.search);
+    const name = urlParams.get('name') || 'Firma Klienta';
+    const city = urlParams.get('city') || 'Lokalizacja';
+    const phone = urlParams.get('phone') || '';
+    const vertical = urlParams.get('vert') || urlParams.get('vertical') || 'Usługi';
+    const score = urlParams.get('score') || '75';
+    const verdict = urlParams.get('verdict') || 'hot';
+    const siteUrl = urlParams.get('site') || '';
+    const hasWeb = Boolean(siteUrl && siteUrl.trim() !== '') || urlParams.get('web') === '1';
+    const hasSsl = urlParams.get('https') === '1' || urlParams.get('ssl') === '1';
+    const hasRwd = urlParams.get('rwd') === '1';
+    const lostRev = urlParams.get('loss_monthly') || urlParams.get('lost') || '2 400 PLN';
+    const lostClients = urlParams.get('clients') || '3–5';
+    const speedScore = urlParams.get('speed_score') || '42';
+    const lcpSec = urlParams.get('lcp') || '3.8s';
+    const ttfbMs = urlParams.get('ttfb') || '620ms';
+
+    document.getElementById('audit-ref-id').innerText = 'WULF-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    document.getElementById('audit-company-name').innerText = name;
+    document.getElementById('audit-industry').innerText = vertical;
+    document.getElementById('audit-city').innerText = city;
+    document.getElementById('audit-phone').innerText = phone || 'Brak numeru w rejestrze';
+    document.getElementById('audit-score').innerText = score;
+    document.getElementById('audit-date').innerText = new Date().toISOString().split('T')[0];
+
+    const vBadge = document.getElementById('audit-verdict-badge');
+    if (verdict === 'hot') {
+      vBadge.className = 'verdict-pill critical';
+      vBadge.innerText = 'PILNY AUDYT (HOT)';
+    } else if (verdict === 'warm') {
+      vBadge.className = 'verdict-pill warning';
+      vBadge.innerText = 'POTRZEBNA MODERNIZACJA';
+    } else {
+      vBadge.className = 'verdict-pill good';
+      vBadge.innerText = 'STAN ZADOWALAJĄCY';
+    }
+
+    // SSL
+    const sslStatus = document.getElementById('status-ssl');
+    const sslDetail = document.getElementById('detail-ssl');
+    if (!hasWeb) {
+      sslStatus.innerText = 'BRAK STRONY';
+      sslStatus.className = 'pillar-status fail';
+      sslDetail.innerText = 'Przedsiębiorstwo nie posiada zarejestrowanej witryny internetowej w domenie WWW.';
+    } else if (hasSsl) {
+      sslStatus.innerText = 'POPRAWNY';
+      sslStatus.className = 'pillar-status pass';
+      sslDetail.innerText = 'Połączenie szyfrowane aktywnym certyfikatem SSL (protokół HTTPS aktywny).';
+    } else {
+      sslStatus.innerText = 'BRAK SSL!';
+      sslStatus.className = 'pillar-status fail';
+      sslDetail.innerText = 'Brak certyfikatu SSL. Przeglądarki mobilne wyświetlają czerwony alert ostrzegający przed wejściem.';
+    }
+
+    // RWD
+    const rwdStatus = document.getElementById('status-rwd');
+    const rwdDetail = document.getElementById('detail-rwd');
+    if (!hasWeb) {
+      rwdStatus.innerText = 'BRAK MOBILNOŚCI';
+      rwdStatus.className = 'pillar-status fail';
+      rwdDetail.innerText = 'Klienci mobilni nie mogą odnaleźć bezpośredniej oferty przedsiębiorstwa w Google.';
+    } else if (hasRwd) {
+      rwdStatus.innerText = 'RESPONSYWNA';
+      rwdStatus.className = 'pillar-status pass';
+      rwdDetail.innerText = 'Układ strony dostosowuje się poprawnie do ekranów telefonów komórkowych (Viewport aktywny).';
+    } else {
+      rwdStatus.innerText = 'BŁĄD MOBILE';
+      rwdStatus.className = 'pillar-status fail';
+      rwdDetail.innerText = 'Brak tagu Viewport. Na smartfonach strona wymaga uciążliwego powiększania palcami i ucina treść.';
+    }
+
+    // Speed & Core Web Vitals
+    const speedStatus = document.getElementById('status-speed');
+    const speedDetail = document.getElementById('detail-speed');
+    if (!hasWeb) {
+      speedStatus.innerText = 'BRAK';
+      speedStatus.className = 'pillar-status fail';
+      speedDetail.innerText = 'Brak platformy WWW generującej zapytania ofertowe w Google.';
+    } else {
+      const sNum = parseInt(speedScore) || 45;
+      if (sNum >= 80) {
+        speedStatus.innerText = 'WYSOKA (' + sNum + '/100)';
+        speedStatus.className = 'pillar-status pass';
+        speedDetail.innerText = `Witryna szybko odpowiada użytkownikom (LCP: ${lcpSec}, TTFB: ${ttfbMs}).`;
+      } else {
+        speedStatus.innerText = 'OPÓŹNIENIE (' + sNum + '/100)';
+        speedStatus.className = 'pillar-status fail';
+        speedDetail.innerText = `Opóźnienie renderowania (LCP: ${lcpSec}, TTFB serwera: ${ttfbMs}). Klienci porzucają witrynę po 3 sekundach.`;
+      }
+    }
+
+    // Revenue numbers
+    document.getElementById('rev-clients').innerText = lostClients;
+    document.getElementById('rev-monthly').innerText = lostRev;
+    const numOnly = parseInt(lostRev.replace(/\D/g, '')) || 2400;
+    const curr = lostRev.includes('EUR') ? 'EUR' : 'PLN';
+    document.getElementById('rev-annual').innerText = (numOnly * 12).toLocaleString() + ' ' + curr;
+  </script>
+</body>
+</html>

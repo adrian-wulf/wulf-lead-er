@@ -337,3 +337,26 @@ def test_session_path_traversal_protection():
 
 
 
+
+
+def test_audit_card_endpoint(test_client):
+    res = test_client.get("/audit-card?name=Test+Warsztat&city=Warszawa&vertical=auto_repair")
+    assert res.status_code == 200
+    assert "Karta Audytu Technicznego" in res.text
+    assert "WULF CODE" in res.text
+
+
+def test_demo_preview_endpoint(test_client):
+    res = test_client.get("/demo/preview?name=Test+Firma&city=Krakow&vert=plumbers")
+    assert res.status_code == 200
+    assert "Podgląd Koncepcyjny" in res.text
+    assert "WULF CODE" in res.text
+
+
+def test_api_revenue_loss_endpoint(test_client):
+    res = test_client.get("/api/revenue-loss?vertical=plumbers&country=PL&has_website=false")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "ok"
+    assert "revenue_loss" in data
+    assert data["revenue_loss"]["lost_clients_monthly"] > 0

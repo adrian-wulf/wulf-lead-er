@@ -1063,9 +1063,322 @@
       font-size: 12px;
       color: var(--text-muted);
       max-width: 380px;
+    /* MINI-CRM PIPELINE & FOCUS DIALER BAR */
+    .pipeline-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      padding: 8px 12px;
+    }
+    .pipeline-filters {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .pipe-filter {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all var(--tr-smooth);
+    }
+    .pipe-filter:hover {
+      color: var(--text-white);
+      border-color: var(--border-focus);
+    }
+    .pipe-filter.active {
+      background: var(--gold-subtle);
+      border-color: var(--gold);
+      color: var(--gold-soft);
+      font-weight: 700;
+    }
+    .pipeline-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn-pipeline {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-white);
+      font-size: 11px;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--tr-smooth);
+    }
+    .btn-pipeline:hover {
+      background: var(--bg-panel);
+      border-color: var(--gold);
+      color: var(--gold-soft);
+    }
+    .btn-pipeline.gold {
+      background: var(--gold);
+      color: #000;
+      border: 1px solid var(--gold);
+      font-weight: 700;
+    }
+    .btn-pipeline.gold:hover {
+      background: var(--gold-soft);
+    }
+
+    /* CARD CRM ROW & FAST ACTION BUTTONS */
+    .card-crm-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border-subtle);
+    }
+    .crm-select {
+      background: var(--bg-root);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-white);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 3px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      outline: none;
+    }
+    .crm-select:focus {
+      border-color: var(--gold);
+    }
+    .card-action-btns {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .btn-card-action {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-dim);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 4px 7px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      transition: all var(--tr-smooth);
+    }
+    .btn-card-action:hover {
+      color: var(--text-white);
+      border-color: var(--border-focus);
+      background: var(--bg-panel);
+    }
+    .btn-card-action.call {
+      color: #2A9D8F;
+      border-color: rgba(42, 157, 143, 0.3);
+      background: rgba(42, 157, 143, 0.08);
+    }
+    .btn-card-action.call:hover {
+      background: rgba(42, 157, 143, 0.2);
+      border-color: #2A9D8F;
+    }
+    .btn-card-action.whatsapp {
+      color: #25D366;
+      border-color: rgba(37, 211, 102, 0.3);
+      background: rgba(37, 211, 102, 0.08);
+    }
+    .btn-card-action.whatsapp:hover {
+      background: rgba(37, 211, 102, 0.2);
+      border-color: #25D366;
+    }
+    .btn-card-action.gold {
+      color: var(--gold-soft);
+      border-color: rgba(212, 164, 24, 0.4);
+      background: rgba(212, 164, 24, 0.08);
+    }
+    .btn-card-action.gold:hover {
+      background: rgba(212, 164, 24, 0.2);
+      border-color: var(--gold);
+    }
+
+    /* BATTLECARD & DIALER MODAL SPECIALS */
+    .battlecard-lead-meta {
+      background: var(--bg-root);
+      border: 1px solid var(--border-default);
+      border-radius: 6px;
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .battlecard-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 12px;
+    }
+    .battlecard-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .battlecard-text {
+      font-size: 12px;
+      color: var(--text-white);
+      line-height: 1.5;
+    }
+    .objection-tab-buttons {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    .obj-btn {
+      background: var(--bg-root);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 10px;
+      font-family: var(--font-mono);
+      padding: 5px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all var(--tr-smooth);
+    }
+    .obj-btn:hover {
+      color: var(--text-white);
+      border-color: var(--border-focus);
+    }
+    .obj-btn.active {
+      background: rgba(212, 164, 24, 0.15);
+      border-color: var(--gold);
+      color: var(--gold-soft);
+      font-weight: 700;
+    }
+    .obj-content {
+      background: var(--bg-root);
+      border: 1px solid var(--border-subtle);
+      border-left: 3px solid var(--gold);
+      border-radius: 4px;
+      padding: 10px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #E2E2E2;
+    }
+
+    /* FOCUS DIALER OVERLAY */
+    .dialer-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 8, 8, 0.96);
+      backdrop-filter: blur(8px);
+      z-index: 1200;
+      overflow-y: auto;
+      padding: 24px 16px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .dialer-overlay.show {
+      display: flex;
+    }
+    .dialer-box {
+      max-width: 720px;
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: 12px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9), 0 0 40px rgba(212, 164, 24, 0.1);
+      overflow: hidden;
+    }
+    .dialer-topbar {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+    .dialer-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .dialer-phone-hero {
+      background: #000;
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      padding: 18px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .dialer-phone-number {
+      font-family: var(--font-mono);
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--gold);
+      letter-spacing: 1px;
+    }
+    .dialer-call-btn {
+      background: #2A9D8F;
+      color: #FFF;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 10px 24px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all var(--tr-smooth);
+    }
+    .dialer-call-btn:hover {
+      background: #248277;
+      transform: translateY(-1px);
+    }
+    .dialer-bottom-nav {
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border-subtle);
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     /* SLIDE-OVER LEAD INSPECTOR DRAWER */
+
     .drawer-backdrop {
       display: none;
       position: fixed;
@@ -1490,6 +1803,11 @@
           <span>Self-Host</span>
         </a>
 
+        <button class="btn-header" onclick="openFocusDialer()" style="border-color: rgba(212, 164, 24, 0.4); color: var(--gold-soft);" title="Pełnoekranowy tryb szybkiego obdzwaniania leadów">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Focus Dialer</span>
+        </button>
+
         <button class="btn-header" onclick="resetCurrentSession()" title="Rozpocznij nową sesję i wyczyść obecne wyniki">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
           <span>Nowa sesja</span>
@@ -1498,12 +1816,14 @@
         <!-- EXPORT DROPDOWN -->
         <div class="export-dropdown">
           <button class="btn-header" onclick="toggleExportMenu()">
-
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span>Eksport</span>
             <span style="font-size: 9px;">▼</span>
           </button>
           <div class="export-menu" id="export-menu">
+            <div class="export-item" onclick="copyTableAsTsv()">
+              <span>📋</span> <span>Kopiuj do Sheets (TSV)</span>
+            </div>
             <div class="export-item" onclick="triggerExport('csv')">
               <span>📄</span> <span>Arkusz CSV</span>
             </div>
@@ -1521,9 +1841,9 @@
           <span>Zapisane skany</span>
         </button>
 
-        <button class="btn-header" onclick="openGeminiModal()" title="Ustawienia Google AI Studio (Gemini API)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-          <span style="color: var(--gold-soft); font-weight: 600;">✨ Gemini AI</span>
+        <button class="btn-header" onclick="openGeminiModal()" title="Ustawienia wywiadu Google OSINT (Gemini Grounding)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span style="color: var(--gold-soft); font-weight: 600;">Google OSINT</span>
         </button>
 
         <a href="/docs" target="_blank" class="btn-header">
@@ -1668,7 +1988,7 @@
               </label>
               <label class="checkbox-label" style="color: var(--gold-soft);">
                 <input type="checkbox" id="scan-use-gemini">
-                <span>✨ Wywiad Google AI (Search Grounding)</span>
+                <span>Google OSINT (Weryfikacja w rejestrach i Google)</span>
               </label>
             </div>
           </div>
@@ -1742,6 +2062,29 @@
         </div>
       </section>
 
+      <!-- MINI-CRM PIPELINE & FOCUS DIALER TOOLBAR -->
+      <div class="pipeline-bar" id="pipeline-status-toolbar">
+        <div class="pipeline-filters">
+          <span style="font-size: 11px; font-weight: 700; color: var(--gold); text-transform: uppercase; margin-right: 4px;">Lejek CRM:</span>
+          <button class="pipe-filter active" onclick="setPipelineFilter('ALL', this)">Wszystkie (<span id="pipe-cnt-all">0</span>)</button>
+          <button class="pipe-filter" onclick="setPipelineFilter('NOWY', this)">📥 Do kontaktu (<span id="pipe-cnt-new">0</span>)</button>
+          <button class="pipe-filter" onclick="setPipelineFilter('ZADZWONIONO', this)">📞 Zadzwoniono (<span id="pipe-cnt-called">0</span>)</button>
+          <button class="pipe-filter" onclick="setPipelineFilter('WYSLANO_AUDYT', this)">📄 Wysłano audyt (<span id="pipe-cnt-audit">0</span>)</button>
+          <button class="pipe-filter" onclick="setPipelineFilter('SPOTKANIE', this)">🤝 Spotkanie (<span id="pipe-cnt-meeting">0</span>)</button>
+          <button class="pipe-filter" onclick="setPipelineFilter('ODRZUCONY', this)">❌ Odrzucone (<span id="pipe-cnt-rejected">0</span>)</button>
+        </div>
+        <div class="pipeline-actions">
+          <button class="btn-pipeline gold" onclick="openFocusDialer()" title="Uruchom tryb pełnoekranowy do obdzwaniania po kolei">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>🎯 Tryb Focus Dialer</span>
+          </button>
+          <button class="btn-pipeline" onclick="copyTableAsTsv()" title="Skopiuj widoczne leady do schowka, aby wkleić do Google Sheets / Excel">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span>📋 Kopiuj (Sheets)</span>
+          </button>
+        </div>
+      </div>
+
       <!-- MAIN DATA CONTAINER -->
       <section class="leads-view-wrapper">
         <!-- CARDS VIEW -->
@@ -1773,9 +2116,9 @@
         <!-- EMPTY STATE -->
         <div class="empty-state" id="leads-empty-state">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="10" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <div class="empty-title">Brak leadów w widoku roboczym</div>
+          <div class="empty-title">Brak leadów w bieżącym widoku</div>
           <div class="empty-desc">
-            Wybierz kryteria i kliknij <strong>Uruchom radar</strong> lub zmień filtry wyszukiwania.
+            Wybierz parametry i kliknij <strong>Uruchom skanowanie</strong> lub zresetuj aktywne filtry pipeline'u CRM.
           </div>
         </div>
       </section>
@@ -1795,8 +2138,8 @@
         <div class="drawer-company" id="drawer-company-name">Nazwa Firmy</div>
         <div style="font-size: 11px; color: var(--text-muted);" id="drawer-sublocation">Rzeszów, Polska</div>
         <button class="btn-drawer-action" id="drawer-btn-quick-gemini" onclick="triggerDrawerGeminiVerify()" style="margin-top: 8px; width: 100%; border-color: var(--gold); color: var(--gold-soft); background: rgba(212, 164, 24, 0.08); font-size: 11px; padding: 6px 10px;">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="drawer-quick-gemini-icon"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-          <span id="drawer-quick-gemini-text">✨ Sprawdź w Google przez Gemini AI</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="drawer-quick-gemini-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span id="drawer-quick-gemini-text">Weryfikuj w Google OSINT</span>
         </button>
       </div>
       <button class="drawer-close" onclick="closeDrawer()" title="Zamknij (Esc)">
@@ -1806,7 +2149,9 @@
 
     <div class="drawer-tabs">
       <button class="drawer-tab active" onclick="switchDrawerTab('audit', this)">Audyt WWW</button>
-      <button class="drawer-tab" onclick="switchDrawerTab('gemini', this)" id="drawer-tab-gemini-btn">✨ Google AI</button>
+      <button class="drawer-tab" onclick="switchDrawerTab('speed', this)" id="drawer-tab-speed-btn">⚡ Szybkość & Straty</button>
+      <button class="drawer-tab" onclick="switchDrawerTab('battlecard', this)">🎯 Battlecard</button>
+      <button class="drawer-tab" onclick="switchDrawerTab('gemini', this)" id="drawer-tab-gemini-btn">🔍 Google OSINT</button>
       <button class="drawer-tab" onclick="switchDrawerTab('pitch', this)">Gotowe Hooki & Pitch</button>
       <button class="drawer-tab" onclick="switchDrawerTab('contact', this)">Kontakt & Rejestr</button>
       <button class="drawer-tab" onclick="switchDrawerTab('json', this)">JSON</button>
@@ -1843,6 +2188,80 @@
             <div style="font-size: 11px; font-weight: 700; color: var(--status-hot); text-transform: uppercase;">Problem do rozwiązania:</div>
             <div class="hook-text" id="drawer-primary-issue">Strona nie wyświetla się prawidłowo na smartfonach i nie posiada szyfrowania HTTPS.</div>
           </div>
+        </div>
+      </div>
+
+      <!-- TAB: SZYBKOŚĆ & STRATY FINANSOWE -->
+      <div class="drawer-tab-content" id="tab-content-speed" style="display: none;">
+        <div class="drawer-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div class="section-title" style="margin: 0;">Audyt Prędkości i Core Web Vitals</div>
+            <button class="btn-drawer-action" onclick="runSpeedAuditForSelected()" id="btn-run-speed-probe" style="font-size: 11px; padding: 4px 8px; border-color: var(--gold); color: var(--gold-soft);">
+              ⚡ Przetestuj stronę
+            </button>
+          </div>
+          <div class="audit-grid">
+            <div class="audit-metric-box">
+              <span class="metric-label">Wynik Mobilny (0-100)</span>
+              <span class="metric-value" id="speed-score-val">—</span>
+            </div>
+            <div class="audit-metric-box">
+              <span class="metric-label">Czas Ładowania (LCP)</span>
+              <span class="metric-value" id="speed-lcp-val">—</span>
+            </div>
+            <div class="audit-metric-box">
+              <span class="metric-label">Czas Odpowiedzi (TTFB)</span>
+              <span class="metric-value" id="speed-ttfb-val">—</span>
+            </div>
+            <div class="audit-metric-box">
+              <span class="metric-label">Waga Strony (KB)</span>
+              <span class="metric-value" id="speed-bytes-val">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="drawer-section" style="margin-top: 14px;">
+          <div class="section-title">Kalkulator Utraconych Przychodów</div>
+          <div style="background: var(--bg-root); border: 1px solid var(--border-default); border-radius: 6px; padding: 12px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 11px; color: var(--text-muted);">Miesięczny ubytek obrotu:</span>
+              <span style="font-family: var(--font-mono); font-size: 13px; font-weight: 800; color: var(--status-hot);" id="rev-monthly-loss">—</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 11px; color: var(--text-muted);">Szacowani utraceni klienci:</span>
+              <span style="font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: #FFF;" id="rev-lost-clients">—</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+              <span style="font-size: 11px; color: var(--text-muted);">Roczny wyciek zysków:</span>
+              <span style="font-family: var(--font-mono); font-size: 12px; color: var(--gold);" id="rev-annual-loss">—</span>
+            </div>
+            <div class="hook-box-large" style="margin-top: 8px;">
+              <div style="font-size: 10px; font-weight: 700; color: var(--gold); text-transform: uppercase;">Argument liczbowy do rozmowy:</div>
+              <div class="hook-text" id="rev-pitch-copy" style="font-size: 11px;">Wybierz leada, aby wygenerować wyliczenie finansowe.</div>
+              <button class="btn-drawer-action" onclick="copyRevenuePitch()" style="margin-top: 6px; font-size: 10px; padding: 4px 8px;">📋 Kopiuj argument liczbowy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: BATTLECARD ROZMOWY W DRAWERZE -->
+      <div class="drawer-tab-content" id="tab-content-battlecard" style="display: none;">
+        <div class="drawer-section">
+          <div class="section-title">15-Sekundowy Skrypt Otwierający</div>
+          <div class="hook-box-large">
+            <div class="hook-text" id="drawer-bc-hook" style="font-size: 12px; font-weight: 600; color: #FFF;">—</div>
+            <button class="btn-drawer-action" onclick="copyDrawerBcHook()" style="margin-top: 6px; font-size: 10px; padding: 4px 8px;">📋 Kopiuj skrypt</button>
+          </div>
+        </div>
+        <div class="drawer-section" style="margin-top: 14px;">
+          <div class="section-title">4 Kluczowe Obiekcje & Gotowe Riposty</div>
+          <div class="objection-tab-buttons">
+            <button class="obj-btn active" onclick="switchDrawerObjectionTab(0, this)">1. Facebook</button>
+            <button class="obj-btn" onclick="switchDrawerObjectionTab(1, this)">2. Stara strona</button>
+            <button class="obj-btn" onclick="switchDrawerObjectionTab(2, this)">3. Polecenia</button>
+            <button class="obj-btn" onclick="switchDrawerObjectionTab(3, this)">4. Budżet</button>
+          </div>
+          <div class="obj-content" id="drawer-bc-objection-content"></div>
         </div>
       </div>
 
@@ -1906,29 +2325,193 @@
       </div>
     </div>
 
-    <div class="drawer-footer">
+    <div class="drawer-footer" style="flex-wrap: wrap; gap: 6px;">
       <a href="#" target="_blank" class="btn-drawer-action" id="drawer-btn-website">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-        <span>Otwórz WWW</span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span>WWW</span>
       </a>
       <a href="#" target="_blank" class="btn-drawer-action" id="drawer-btn-google">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-        <span>Google Search</span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        <span>Google</span>
       </a>
+      <a href="#" target="_blank" class="btn-card-action whatsapp" id="drawer-btn-whatsapp" style="padding: 6px 10px; font-size: 11px;">
+        <span>💬 WhatsApp</span>
+      </a>
+      <button class="btn-drawer-action" onclick="openBattlecardFromDrawer()">
+        <span>🎯 Battlecard</span>
+      </button>
+      <button class="btn-drawer-action" onclick="openClientAuditFromDrawer()">
+        <span>📄 Karta A4</span>
+      </button>
+      <button class="btn-drawer-action" onclick="openInstantDemoFromDrawer()">
+        <span>🚀 Demo</span>
+      </button>
       <a href="#" class="btn-drawer-action primary" id="drawer-btn-call">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
         <span>Zadzwoń</span>
       </a>
     </div>
   </aside>
+
+  <!-- SALES BATTLECARD & OBJECTION MATRIX MODAL -->
+  <div class="modal-backdrop" id="battlecard-modal-backdrop" onclick="closeBattlecardModal()"></div>
+  <div class="modal-dialog" id="battlecard-modal-dialog" style="width: min(94vw, 680px);">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="color: var(--gold); font-size: 16px;">🎯</span>
+        <span style="font-weight: 700; font-size: 13px; color: var(--text-white); text-transform: uppercase; letter-spacing: 0.5px;">Skrypt Rozmowy & Matryca Obiekcji</span>
+      </div>
+      <button class="drawer-close" onclick="closeBattlecardModal()" title="Zamknij (Esc)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+      <div class="battlecard-lead-meta">
+        <div>
+          <div style="font-weight: 800; font-size: 15px; color: #FFF;" id="bc-company-name">Nazwa Firmy</div>
+          <div style="font-size: 11px; color: var(--text-muted);" id="bc-company-meta">Branża • Miasto</div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <a href="#" class="btn-card-action call" id="bc-phone-btn" style="padding: 6px 12px; font-size: 11px;">📞 Zadzwoń</a>
+          <a href="#" target="_blank" class="btn-card-action whatsapp" id="bc-wa-btn" style="padding: 6px 12px; font-size: 11px;">💬 WhatsApp</a>
+        </div>
+      </div>
+
+      <!-- KROK 1: 15-SEKUNDOWY HACZYK -->
+      <div class="battlecard-section">
+        <div class="battlecard-label">
+          <span>⚡ KROK 1: Haczyk Otwierający (15 sekund)</span>
+          <button class="btn-card-action" onclick="copyBcHook()" style="margin-left: auto; font-size: 10px;">📋 Kopiuj</button>
+        </div>
+        <div class="battlecard-text" id="bc-hook-text" style="font-weight: 600; color: #FFF; background: var(--bg-root); padding: 10px; border-radius: 4px; border-left: 3px solid var(--gold);">
+          <!-- Dynamic pitch hook -->
+        </div>
+      </div>
+
+      <!-- KROK 2: PYTANIE DIAGNOSTYCZNE -->
+      <div class="battlecard-section">
+        <div class="battlecard-label">🔍 KROK 2: Pytanie Diagnozujące Problem</div>
+        <div class="battlecard-text" id="bc-diagnostic-text" style="color: #DDD;">
+          „Czy zauważyli Państwo w ostatnich miesiącach spadek liczby zapytań telefonicznych od nowych klientów szukających usług w Google na smartfonie?”
+        </div>
+      </div>
+
+      <!-- KROK 3: MATRYCA OBIEKCJI -->
+      <div class="battlecard-section">
+        <div class="battlecard-label">🛡️ KROK 3: Gotowe Riposty na Obiekcje Klienta</div>
+        <div class="objection-tab-buttons">
+          <button class="obj-btn active" onclick="switchObjectionTab(0, this)">1. „Mamy Facebooka”</button>
+          <button class="obj-btn" onclick="switchObjectionTab(1, this)">2. „Stara strona, ale działa”</button>
+          <button class="obj-btn" onclick="switchObjectionTab(2, this)">3. „Tylko polecenia”</button>
+          <button class="obj-btn" onclick="switchObjectionTab(3, this)">4. „Brak budżetu”</button>
+        </div>
+        <div class="obj-content" id="bc-objection-content">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- KROK 4: DOMKNIĘCIE I CEL ROZMOWY -->
+      <div class="battlecard-section">
+        <div class="battlecard-label">🤝 KROK 4: Zamknięcie Rozmowy (Call to Action)</div>
+        <div class="battlecard-text" style="color: #EEE;">
+          „Nie chcę Państwu zabierać pracy w ciągu dnia. Przygotowaliśmy bezpłatny podgląd i 1-stronicowy raport techniczny. Mogę go podesłać na WhatsAppa lub maila, a w czwartek o 10:30 zadzwoniłbym dosłownie na 2 minuty zapytać o opinię. Zgoda?”
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-action secondary" onclick="closeBattlecardModal()">Zamknij</button>
+    </div>
+  </div>
+
+  <!-- FOCUS DIALER FULLSCREEN MODAL -->
+  <div class="dialer-overlay" id="focus-dialer-overlay">
+    <div class="dialer-box">
+      <div class="dialer-topbar">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: var(--gold); font-size: 14px;">🎯</span>
+          <strong style="color: #FFF;">WULF FOCUS DIALER</strong>
+          <span>•</span>
+          <span id="dialer-counter">Lead 1 z 12</span>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <span style="font-size: 11px;">Skróty: <strong>[←]</strong> Poprzedni <strong>[→]</strong> Następny <strong>[Esc]</strong> Wyjdź</span>
+          <button class="drawer-close" onclick="closeFocusDialer()" title="Wyjdź (Esc)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="dialer-body">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+          <div>
+            <h2 style="font-size: 22px; font-weight: 800; color: #FFF; margin-bottom: 4px;" id="dialer-company-name">Nazwa Firmy</h2>
+            <div style="font-size: 12px; color: var(--text-muted);" id="dialer-meta">Branża • Miasto • Adres</div>
+          </div>
+          <div style="text-align: right;">
+            <div class="status-badge hot" id="dialer-verdict-badge">HOT 85/100</div>
+          </div>
+        </div>
+
+        <!-- HERO TELEFON & AKCJE -->
+        <div class="dialer-phone-hero">
+          <div style="font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px;">Numer bezpośredni / rejestr:</div>
+          <div class="dialer-phone-number" id="dialer-phone-number">+48 000 000 000</div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+            <a href="#" class="dialer-call-btn" id="dialer-call-link">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <span>Zadzwoń teraz</span>
+            </a>
+            <a href="#" target="_blank" class="dialer-call-btn" id="dialer-wa-link" style="background: #25D366;">
+              <span>💬 WhatsApp</span>
+            </a>
+            <button class="btn-pipeline" onclick="openDialerBattlecard()" style="padding: 8px 14px;">
+              <span>🎯 Pełny Skrypt</span>
+            </button>
+            <button class="btn-pipeline" onclick="openDialerAuditCard()" style="padding: 8px 14px;">
+              <span>📄 Karta A4</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SKRYPT ROZMOWY NA EKRANIE DIALERA -->
+        <div class="battlecard-section" style="background: var(--bg-root);">
+          <div class="battlecard-label">⚡ Haczyk Otwierający (Przeczytaj od razu po odebraniu):</div>
+          <div style="font-size: 13px; color: #FFF; line-height: 1.5;" id="dialer-hook-text">
+            Dzień dobry! Dzwonię z Wulf Code w konkretnej sprawie...
+          </div>
+        </div>
+
+        <!-- ZMIANA STATUSU CRM -->
+        <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); padding: 12px; border-radius: 6px; border: 1px solid var(--border-subtle); flex-wrap: wrap; gap: 8px;">
+          <span style="font-size: 12px; font-weight: 700; color: var(--text-white);">Status po rozmowie:</span>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button class="pipe-filter" onclick="setDialerCurrentStatus('ZADZWONIONO')">📞 Zadzwoniono</button>
+            <button class="pipe-filter" onclick="setDialerCurrentStatus('WYSLANO_AUDYT')">📄 Wysłano audyt</button>
+            <button class="pipe-filter" onclick="setDialerCurrentStatus('SPOTKANIE')">🤝 Spotkanie</button>
+            <button class="pipe-filter" onclick="setDialerCurrentStatus('ODRZUCONY')">❌ Odrzucony</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="dialer-bottom-nav">
+        <button class="btn-pipeline" onclick="dialerPrev()" id="btn-dialer-prev">
+          <span>← Poprzedni</span>
+        </button>
+        <span style="font-size: 11px; color: var(--text-dim);" id="dialer-status-display">Status: NOWY</span>
+        <button class="btn-pipeline gold" onclick="dialerNext()" id="btn-dialer-next">
+          <span>Następny →</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- GEMINI SETTINGS MODAL -->
   <div class="modal-backdrop" id="gemini-modal-backdrop" onclick="closeGeminiModal()"></div>
   <div class="modal-dialog" id="gemini-modal-dialog">
     <div class="modal-header">
       <div style="display: flex; align-items: center; gap: 8px;">
-        <span style="color: var(--gold); font-size: 16px;">✨</span>
-        <span style="font-weight: 700; font-size: 13px; color: var(--text-white); text-transform: uppercase; letter-spacing: 0.5px;">Google AI Studio & Search Grounding</span>
+        <span style="color: var(--gold); font-size: 14px; font-weight: 800;">⚡</span>
+        <span style="font-weight: 700; font-size: 13px; color: var(--text-white); text-transform: uppercase; letter-spacing: 0.5px;">Google OSINT & Search Grounding</span>
       </div>
       <button class="drawer-close" onclick="closeGeminiModal()" title="Zamknij (Esc)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1936,8 +2519,8 @@
     </div>
     <div class="modal-body">
       <div style="font-size: 12px; line-height: 1.5; color: var(--text-muted);">
-        Integracja wykorzystuje bezpłatny model <strong style="color: var(--text-white);">Gemini 3.6 Flash</strong> z narzędziem <strong style="color: var(--gold);">Google Search Grounding</strong>.
-        Silnik przeszukuje Google i Mapy Google na żywo, sprawdza reputację (gwiazdki/opinie), weryfikuje istnienie biznesu i tworzy spersonalizowany pitch.
+        System łączy się bezpośrednio z silnikiem <strong style="color: var(--text-white);">Gemini 3.6 Flash</strong> wyposażonym w aktywne narzędzie <strong style="color: var(--gold);">Google Search Grounding</strong>.
+        Przeprowadza wywiad OSINT w wyszukiwarce Google oraz Google Maps w czasie rzeczywistym, odczytując aktualne opinie, oceny, godziny pracy oraz generując spersonalizowany cold pitch.
       </div>
       <div style="background: var(--bg-root); border: 1px solid var(--border-subtle); padding: 10px 14px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between;">
         <div>
@@ -2396,10 +2979,424 @@
       renderDataView();
     }
 
+    let currentPipelineFilter = 'ALL';
+    let dialerLeadList = [];
+    let dialerCurrentIndex = 0;
+    let currentObjectionIndex = 0;
+    let drawerObjectionIndex = 0;
+
+    const BATTLECARD_OBJECTIONS = [
+      {
+        title: "1. Mamy fanpage na Facebooku i to wystarcza",
+        riposte: "„Rozumiem, Facebook świetnie trzyma kontakt z obecnymi klientami. Natomiast gdy ktoś pilnie potrzebuje usługi w okolicy (np. awaria rury czy naprawa auta), nie scrolluje Facebooka, tylko wpisuje frazę w Google na smartfonie. Algorytmy Google promują witryny WWW, spychając profile FB na sam dół. Z tego powodu ucieka od Państwa co najmniej 3-5 nowych, płacących zleceń w miesiącu.”"
+      },
+      {
+        title: "2. Strona ma swoje lata, ale działa i wystarczy",
+        riposte: "„To prawda, strona fizycznie odpowiada, ale ponad 80% współczesnych klientów wchodzi na nią ze smartfona. Państwa witryna nie dopasowuje się do ekranu telefonu i nie ma certyfikatu SSL – przeglądarka wyświetla klientowi czerwony alert 'Strona Niebezpieczna'. Ponad połowa klientów zamyka stronę po 3 sekundach i dzwoni do Państwa bezpośredniej konkurencji.”"
+      },
+      {
+        title: "3. Klienci przychodzą tylko z polecenia",
+        riposte: "„To najlepszy dowód na Państwa fachowość i renomę. Ale proszę zwrócić uwagę na jedno: nawet klient z polecenia przed telefonem sprawdza Państwa w Google na telefonie, żeby zweryfikować godziny pracy lub kliknąć numer. Gdy widzi zniekształconą witrynę z błędem SSL, zaczyna wątpić, czy firma jeszcze aktywnie działa na rynku.”"
+      },
+      {
+        title: "4. Nie mamy teraz budżetu na informatyków",
+        riposte: "„Całkowicie to rozumiem, dlatego nie dzwonię z ofertą wydawania 10 tysięcy na agencję. W Wulf Code wdrażamy zoptymalizowane, nowoczesne rozwiązania, które natychmiast generują zapytania i zwracają się z pierwszego zlecenia. Przygotowaliśmy już gotowy podgląd i bezpłatny audyt techniczny – podeślę go bez żadnych zobowiązań.”"
+      }
+    ];
+
+    function getLeadCrmKey(lead) {
+      return 'wulf_crm_' + (lead.id || (lead.name + '_' + (lead.phone || '')));
+    }
+
+    function getLeadCrmStatus(lead) {
+      return localStorage.getItem(getLeadCrmKey(lead)) || 'NOWY';
+    }
+
+    function setLeadCrmStatus(lead, status) {
+      localStorage.setItem(getLeadCrmKey(lead), status);
+      updatePipelineCounters();
+    }
+
+    function updateLeadStatus(leadIdx, status, event) {
+      if (event) event.stopPropagation();
+      const lead = allLeads[leadIdx];
+      if (!lead) return;
+      setLeadCrmStatus(lead, status);
+      showToast('Zaktualizowano status: ' + status);
+      renderDataView();
+    }
+
+    function setPipelineFilter(status, btn) {
+      currentPipelineFilter = status;
+      const buttons = document.querySelectorAll('#pipeline-status-toolbar .pipe-filter');
+      buttons.forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderDataView();
+    }
+
+    function updatePipelineCounters() {
+      let counts = { ALL: allLeads.length, NOWY: 0, ZADZWONIONO: 0, WYSLANO_AUDYT: 0, SPOTKANIE: 0, ODRZUCONY: 0 };
+      allLeads.forEach(lead => {
+        const s = getLeadCrmStatus(lead);
+        if (counts[s] !== undefined) counts[s]++;
+      });
+      const elAll = document.getElementById('pipe-cnt-all');
+      if (elAll) elAll.innerText = counts.ALL;
+      const elNew = document.getElementById('pipe-cnt-new');
+      if (elNew) elNew.innerText = counts.NOWY;
+      const elCalled = document.getElementById('pipe-cnt-called');
+      if (elCalled) elCalled.innerText = counts.ZADZWONIONO;
+      const elAudit = document.getElementById('pipe-cnt-audit');
+      if (elAudit) elAudit.innerText = counts.WYSLANO_AUDYT;
+      const elMeeting = document.getElementById('pipe-cnt-meeting');
+      if (elMeeting) elMeeting.innerText = counts.SPOTKANIE;
+      const elRejected = document.getElementById('pipe-cnt-rejected');
+      if (elRejected) elRejected.innerText = counts.ODRZUCONY;
+    }
+
+    function copyTableAsTsv() {
+      const leads = getFilteredLeads();
+      if (!leads.length) {
+        showToast('Brak leadów do skopiowania.');
+        return;
+      }
+      const headers = ['Nazwa Firmy', 'Branża', 'Miasto', 'Kraj', 'Telefon', 'Email', 'Strona WWW', 'Score', 'Status Lead', 'Status CRM', 'Główna Wada'];
+      const rows = [headers.join('\t')];
+      leads.forEach(l => {
+        const row = [
+          (l.name || '').replace(/\t|\n/g, ' '),
+          (l.industry_label || '').replace(/\t|\n/g, ' '),
+          (l.city || '').replace(/\t|\n/g, ' '),
+          (l.country || '').replace(/\t|\n/g, ' '),
+          (l.phone || '').replace(/\t|\n/g, ' '),
+          (l.email || '').replace(/\t|\n/g, ' '),
+          (l.website || '').replace(/\t|\n/g, ' '),
+          l.score || 0,
+          l.verdict || 'skip',
+          getLeadCrmStatus(l),
+          (l.primary_issue || '').replace(/\t|\n/g, ' ')
+        ];
+        rows.push(row.join('\t'));
+      });
+      copyText(rows.join('\n'));
+      showToast(`Skopiowano ${leads.length} leadów w formacie TSV (gotowe do wklejenia w Google Sheets/Excel)!`);
+    }
+
+    function getLeadOpeningHook(lead) {
+      if (lead.hooks && lead.hooks[0]) return lead.hooks[0];
+      if (lead.primary_issue) return lead.primary_issue;
+      if (!lead.website) return `Dzień dobry! Zauważyłem, że Państwa firma ${lead.name} w ${lead.city || 'mieście'} nie posiada strony WWW widocznej w Google na smartfonach...`;
+      return `Dzień dobry! Zwracam się w nawiązaniu do profilu Państwa firmy w ${lead.city || 'mieście'}...`;
+    }
+
+    function openBattlecardModal(leadIdx, event) {
+      if (event) event.stopPropagation();
+      const lead = allLeads[leadIdx];
+      if (!lead) return;
+      selectedLeadIndex = leadIdx;
+
+      document.getElementById('bc-company-name').innerText = lead.name;
+      document.getElementById('bc-company-meta').innerText = `${lead.industry_label || 'Firma'} • ${lead.city || ''} • ${lead.country || 'PL'}`;
+      
+      const cleanPhone = (lead.phone || '').replace(/[^0-9+]/g, '');
+      const phoneBtn = document.getElementById('bc-phone-btn');
+      if (cleanPhone) {
+        phoneBtn.href = 'tel:' + cleanPhone;
+        phoneBtn.style.display = 'inline-flex';
+      } else {
+        phoneBtn.style.display = 'none';
+      }
+
+      const waBtn = document.getElementById('bc-wa-btn');
+      if (cleanPhone) {
+        let intlPhone = cleanPhone.replace(/^0+/, '');
+        if (!intlPhone.startsWith('+')) intlPhone = (lead.country === 'DE' ? '49' : '48') + intlPhone.replace(/^0/, '');
+        else intlPhone = intlPhone.slice(1);
+        const msg = encodeURIComponent(`Dzień dobry! Piszę z Wulf Code w nawiązaniu do Państwa profilu firmy ${lead.name}.`);
+        waBtn.href = `https://wa.me/${intlPhone}?text=${msg}`;
+        waBtn.style.display = 'inline-flex';
+      } else {
+        waBtn.style.display = 'none';
+      }
+
+      document.getElementById('bc-hook-text').innerText = getLeadOpeningHook(lead);
+      switchObjectionTab(0);
+
+      document.getElementById('battlecard-modal-backdrop').classList.add('show');
+      document.getElementById('battlecard-modal-dialog').classList.add('show');
+    }
+
+    function closeBattlecardModal() {
+      document.getElementById('battlecard-modal-backdrop').classList.remove('show');
+      document.getElementById('battlecard-modal-dialog').classList.remove('show');
+    }
+
+    function switchObjectionTab(index, btn) {
+      currentObjectionIndex = index;
+      if (btn) {
+        const buttons = btn.parentElement.querySelectorAll('.obj-btn');
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+      const item = BATTLECARD_OBJECTIONS[index] || BATTLECARD_OBJECTIONS[0];
+      const container = document.getElementById('bc-objection-content');
+      if (container) {
+        container.innerHTML = `
+          <div style="font-weight: 700; color: var(--gold); margin-bottom: 6px; font-size: 12px;">${escapeHtml(item.title)}</div>
+          <div style="font-size: 13px; line-height: 1.5; color: #EEE; margin-bottom: 8px;">${escapeHtml(item.riposte)}</div>
+          <button class="btn-card-action" onclick="copyText('${escapeHtml(item.riposte).replace(/'/g, "\\'")}')" style="font-size: 10px; padding: 3px 8px;">📋 Kopiuj ripostę</button>
+        `;
+      }
+    }
+
+    function copyBcHook() {
+      const text = document.getElementById('bc-hook-text').innerText;
+      copyText(text);
+      showToast('Skopiowano skrypt otwierający!');
+    }
+
+    function openClientAuditCard(leadIdx, event) {
+      if (event) event.stopPropagation();
+      const lead = allLeads[leadIdx];
+      if (!lead) return;
+      const params = new URLSearchParams({
+        name: lead.name || '',
+        city: lead.city || '',
+        vert: lead.industry_label || 'Firma',
+        country: lead.country || 'PL',
+        phone: lead.phone || '',
+        email: lead.email || '',
+        site: lead.website || '',
+        score: lead.score || 0,
+        verdict: lead.verdict || 'skip',
+        https: (lead.audit && lead.audit.is_https) ? '1' : '0',
+        rwd: (lead.audit && lead.audit.has_viewport) ? '1' : '0',
+        cms: (lead.audit && lead.audit.generator) || 'Inne',
+        issue: lead.primary_issue || '',
+        speed_score: (lead.speed_audit && lead.speed_audit.performance_score) || '42',
+        lcp: (lead.speed_audit && lead.speed_audit.lcp_seconds) ? (lead.speed_audit.lcp_seconds + 's') : '3.8s',
+        ttfb: (lead.speed_audit && lead.speed_audit.ttfb_ms) ? (lead.speed_audit.ttfb_ms + 'ms') : '620ms',
+        loss_monthly: (lead.revenue_loss && lead.revenue_loss.monthly_loss_formatted) || '3 500 PLN'
+      });
+      window.open('/audit-card?' + params.toString(), '_blank');
+    }
+
+    function openInstantDemo(leadIdx, event) {
+      if (event) event.stopPropagation();
+      const lead = allLeads[leadIdx];
+      if (!lead) return;
+      const params = new URLSearchParams({
+        name: lead.name || '',
+        city: lead.city || '',
+        vert: lead.industry_label || 'Firma',
+        phone: lead.phone || '',
+        email: lead.email || '',
+        addr: (lead.street || lead.address || '') + ' ' + (lead.city || '')
+      });
+      window.open('/demo/preview?' + params.toString(), '_blank');
+    }
+
+    function openBattlecardFromDrawer() {
+      if (selectedLeadIndex >= 0) openBattlecardModal(selectedLeadIndex);
+    }
+
+    function openClientAuditFromDrawer() {
+      if (selectedLeadIndex >= 0) openClientAuditCard(selectedLeadIndex);
+    }
+
+    function openInstantDemoFromDrawer() {
+      if (selectedLeadIndex >= 0) openInstantDemo(selectedLeadIndex);
+    }
+
+    // FOCUS DIALER
+    function openFocusDialer() {
+      dialerLeadList = getFilteredLeads().filter(l => l.phone && l.phone.trim().length > 3);
+      if (!dialerLeadList.length) {
+        showToast('Brak leadów z numerem telefonu w bieżącym widoku!');
+        return;
+      }
+      dialerCurrentIndex = 0;
+      renderFocusDialerLead();
+      document.getElementById('focus-dialer-overlay').classList.add('show');
+    }
+
+    function closeFocusDialer() {
+      document.getElementById('focus-dialer-overlay').classList.remove('show');
+    }
+
+    function renderFocusDialerLead() {
+      if (dialerCurrentIndex < 0) dialerCurrentIndex = 0;
+      if (dialerCurrentIndex >= dialerLeadList.length) dialerCurrentIndex = dialerLeadList.length - 1;
+
+      const lead = dialerLeadList[dialerCurrentIndex];
+      if (!lead) return;
+
+      document.getElementById('dialer-counter').innerText = `Lead ${dialerCurrentIndex + 1} z ${dialerLeadList.length}`;
+      document.getElementById('dialer-company-name').innerText = lead.name;
+      document.getElementById('dialer-meta').innerText = `${lead.industry_label || 'Firma'} • ${lead.city || ''} • ${lead.country || 'PL'} • ${lead.street || lead.address || ''}`;
+
+      const v = lead.verdict || 'skip';
+      const vBadge = document.getElementById('dialer-verdict-badge');
+      vBadge.className = 'status-badge ' + v;
+      vBadge.innerText = (v === 'hot' ? '🔥 HOT ' : (v === 'warm' ? '⚡ WARM ' : '🚫 SKIP ')) + lead.score + '/100';
+
+      const cleanPhone = (lead.phone || '').replace(/[^0-9+]/g, '');
+      document.getElementById('dialer-phone-number').innerText = lead.phone || 'Brak numeru';
+      document.getElementById('dialer-call-link').href = 'tel:' + cleanPhone;
+
+      let intlPhone = cleanPhone.replace(/^0+/, '');
+      if (!intlPhone.startsWith('+')) intlPhone = (lead.country === 'DE' ? '49' : '48') + intlPhone.replace(/^0/, '');
+      else intlPhone = intlPhone.slice(1);
+      const msg = encodeURIComponent(`Dzień dobry! Piszę z Wulf Code w nawiązaniu do Państwa profilu firmy ${lead.name}.`);
+      document.getElementById('dialer-wa-link').href = `https://wa.me/${intlPhone}?text=${msg}`;
+
+      document.getElementById('dialer-hook-text').innerText = getLeadOpeningHook(lead);
+
+      const status = getLeadCrmStatus(lead);
+      document.getElementById('dialer-status-display').innerText = 'Bieżący status: ' + status;
+
+      document.getElementById('btn-dialer-prev').disabled = (dialerCurrentIndex === 0);
+      document.getElementById('btn-dialer-next').disabled = (dialerCurrentIndex === dialerLeadList.length - 1);
+    }
+
+    function dialerNext() {
+      if (dialerCurrentIndex < dialerLeadList.length - 1) {
+        dialerCurrentIndex++;
+        renderFocusDialerLead();
+      }
+    }
+
+    function dialerPrev() {
+      if (dialerCurrentIndex > 0) {
+        dialerCurrentIndex--;
+        renderFocusDialerLead();
+      }
+    }
+
+    function setDialerCurrentStatus(status) {
+      const lead = dialerLeadList[dialerCurrentIndex];
+      if (!lead) return;
+      setLeadCrmStatus(lead, status);
+      document.getElementById('dialer-status-display').innerText = 'Bieżący status: ' + status;
+      showToast('Zapisano status: ' + status);
+      renderDataView();
+      if (dialerCurrentIndex < dialerLeadList.length - 1) {
+        setTimeout(() => dialerNext(), 400);
+      }
+    }
+
+    function openDialerBattlecard() {
+      const lead = dialerLeadList[dialerCurrentIndex];
+      if (!lead) return;
+      const leadIdx = allLeads.indexOf(lead);
+      openBattlecardModal(leadIdx >= 0 ? leadIdx : 0);
+    }
+
+    function openDialerAuditCard() {
+      const lead = dialerLeadList[dialerCurrentIndex];
+      if (!lead) return;
+      const leadIdx = allLeads.indexOf(lead);
+      openClientAuditCard(leadIdx >= 0 ? leadIdx : 0);
+    }
+
+    // SPEED AUDIT & REVENUE PROBE IN DRAWER
+    async function runSpeedAuditForSelected() {
+      const lead = allLeads[selectedLeadIndex];
+      if (!lead || !lead.website) {
+        showToast('Lead nie posiada adresu witryny WWW do przetestowania.');
+        return;
+      }
+      const btn = document.getElementById('btn-run-speed-probe');
+      btn.disabled = true;
+      btn.innerText = '⏳ Badanie...';
+
+      try {
+        const resp = await fetch('/api/speed?url=' + encodeURIComponent(lead.website));
+        const res = await resp.json();
+        if (res.success && res.data) {
+          const d = res.data;
+          lead.speed_audit = d;
+          document.getElementById('speed-score-val').innerText = d.performance_score + '/100';
+          document.getElementById('speed-score-val').style.color = d.performance_score >= 80 ? 'var(--status-live)' : (d.performance_score >= 50 ? 'var(--gold)' : 'var(--status-hot)');
+          document.getElementById('speed-lcp-val').innerText = d.lcp_seconds + ' s';
+          document.getElementById('speed-ttfb-val').innerText = d.ttfb_ms + ' ms';
+          document.getElementById('speed-bytes-val').innerText = d.page_weight_kb + ' KB';
+          showToast('Audyt prędkości ukończony!');
+          
+          loadRevenueLossForSelected(lead);
+        } else {
+          showToast('Nie udało się przeprowadzić audytu prędkości: ' + (res.message || 'Błąd'));
+        }
+      } catch (err) {
+        showToast('Błąd połączenia z modułem audytu.');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = '⚡ Przetestuj stronę';
+      }
+    }
+
+    async function loadRevenueLossForSelected(lead) {
+      const vert = lead.industry_label || 'Firma';
+      const country = lead.country || 'PL';
+      const hasHttps = (lead.audit && lead.audit.is_https) ? '1' : '0';
+      const hasRwd = (lead.audit && lead.audit.has_viewport) ? '1' : '0';
+      const loadTime = (lead.speed_audit && lead.speed_audit.lcp_seconds) || 3.5;
+      const hasSite = lead.website ? '1' : '0';
+
+      try {
+        const url = `/api/revenue-loss?vert=${encodeURIComponent(vert)}&country=${country}&https=${hasHttps}&rwd=${hasRwd}&load_time=${loadTime}&has_site=${hasSite}`;
+        const resp = await fetch(url);
+        const res = await resp.json();
+        if (res.success && res.data) {
+          lead.revenue_loss = res.data;
+          document.getElementById('rev-monthly-loss').innerText = res.data.monthly_loss_formatted;
+          document.getElementById('rev-lost-clients').innerText = `~${res.data.estimated_lost_clients_monthly} klientów / mies.`;
+          document.getElementById('rev-annual-loss').innerText = res.data.annual_loss_formatted;
+          document.getElementById('rev-pitch-copy').innerText = `„${res.data.sales_pitch_hook}”`;
+        }
+      } catch (e) {}
+    }
+
+    function copyRevenuePitch() {
+      const text = document.getElementById('rev-pitch-copy').innerText;
+      copyText(text);
+      showToast('Skopiowano argument finansowy!');
+    }
+
+    function switchDrawerObjectionTab(index, btn) {
+      drawerObjectionIndex = index;
+      if (btn) {
+        const buttons = btn.parentElement.querySelectorAll('.obj-btn');
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+      const item = BATTLECARD_OBJECTIONS[index] || BATTLECARD_OBJECTIONS[0];
+      const container = document.getElementById('drawer-bc-objection-content');
+      if (container) {
+        container.innerHTML = `
+          <div style="font-weight: 700; color: var(--gold); margin-bottom: 6px; font-size: 11px;">${escapeHtml(item.title)}</div>
+          <div style="font-size: 12px; line-height: 1.5; color: #EEE; margin-bottom: 8px;">${escapeHtml(item.riposte)}</div>
+          <button class="btn-card-action" onclick="copyText('${escapeHtml(item.riposte).replace(/'/g, "\\'")}')" style="font-size: 10px; padding: 3px 8px;">📋 Kopiuj ripostę</button>
+        `;
+      }
+    }
+
+    function copyDrawerBcHook() {
+      const text = document.getElementById('drawer-bc-hook').innerText;
+      copyText(text);
+      showToast('Skopiowano skrypt rozmowy!');
+    }
+
     function getFilteredLeads() {
       return allLeads.filter(lead => {
         if (currentFilter !== 'all' && lead.verdict !== currentFilter) {
           return false;
+        }
+        if (currentPipelineFilter !== 'ALL') {
+          const status = getLeadCrmStatus(lead);
+          if (status !== currentPipelineFilter) {
+            return false;
+          }
         }
         if (searchQuery) {
           const matchName = (lead.name || '').toLowerCase().includes(searchQuery);
@@ -2413,6 +3410,7 @@
     }
 
     function renderDataView() {
+      updatePipelineCounters();
       const filtered = getFilteredLeads();
       const emptyState = document.getElementById('leads-empty-state');
       const grid = document.getElementById('leads-grid-view');
@@ -2455,7 +3453,7 @@
           if (lead.gemini_intel.google_rating) {
             techBadges += `<span class="tech-tag" style="border-color: var(--gold); color: var(--gold-soft); background: rgba(212, 164, 24, 0.1);">⭐ ${lead.gemini_intel.google_rating.toFixed(1)} (${lead.gemini_intel.google_reviews_count || 0})</span>`;
           } else {
-            techBadges += `<span class="tech-tag" style="border-color: var(--gold); color: var(--gold-soft);">✨ Google AI</span>`;
+            techBadges += `<span class="tech-tag" style="border-color: var(--gold); color: var(--gold-soft);">Google OSINT</span>`;
           }
         }
         if (lead.audit) {
@@ -2469,6 +3467,21 @@
         }
 
         const hook = (lead.hooks && lead.hooks[0]) ? lead.hooks[0] : (lead.primary_issue || 'Brak zidentyfikowanych problemów');
+        const crmStatus = getLeadCrmStatus(lead);
+        const cleanPhone = (lead.phone || '').replace(/[^0-9+]/g, '');
+        const phoneBtn = cleanPhone ? `<a href="tel:${cleanPhone}" class="btn-card-action call" onclick="event.stopPropagation()" title="Zadzwoń bezpośrednio">📞 Zadzwoń</a>` : '';
+
+        let waBtn = '';
+        if (cleanPhone) {
+          let intlPhone = cleanPhone.replace(/^0+/, '');
+          if (!intlPhone.startsWith('+')) {
+            intlPhone = (lead.country === 'DE' ? '49' : '48') + intlPhone.replace(/^0/, '');
+          } else {
+            intlPhone = intlPhone.slice(1);
+          }
+          const defaultMsg = encodeURIComponent(`Dzień dobry! Piszę z Wulf Code w nawiązaniu do Państwa profilu firmy w ${lead.city || 'mieście'}.`);
+          waBtn = `<a href="https://wa.me/${intlPhone}?text=${defaultMsg}" target="_blank" class="btn-card-action whatsapp" onclick="event.stopPropagation()" title="Otwórz czat WhatsApp">💬 WA</a>`;
+        }
 
         card.innerHTML = 
           '<div class="card-top">' +
@@ -2483,6 +3496,22 @@
           '</div>' +
           '<div class="tech-pill-row">' + techBadges + '</div>' +
           '<div class="pitch-hook-preview">' + escapeHtml(hook) + '</div>' +
+          '<div class="card-crm-row" onclick="event.stopPropagation()">' +
+            '<select class="crm-select" onchange="updateLeadStatus(' + leadIdx + ', this.value, event)">' +
+              '<option value="NOWY"' + (crmStatus === 'NOWY' ? ' selected' : '') + '>📥 Nowy</option>' +
+              '<option value="ZADZWONIONO"' + (crmStatus === 'ZADZWONIONO' ? ' selected' : '') + '>📞 Zadzwoniono</option>' +
+              '<option value="WYSLANO_AUDYT"' + (crmStatus === 'WYSLANO_AUDYT' ? ' selected' : '') + '>📄 Audyt</option>' +
+              '<option value="SPOTKANIE"' + (crmStatus === 'SPOTKANIE' ? ' selected' : '') + '>🤝 Spotkanie</option>' +
+              '<option value="ODRZUCONY"' + (crmStatus === 'ODRZUCONY' ? ' selected' : '') + '>❌ Odrzucony</option>' +
+            '</select>' +
+            '<div class="card-action-btns">' +
+              phoneBtn +
+              waBtn +
+              '<button class="btn-card-action gold" onclick="openBattlecardModal(' + leadIdx + ', event)" title="Skrypt rozmowy & riposty na obiekcje">🎯 Skrypt</button>' +
+              '<button class="btn-card-action" onclick="openClientAuditCard(' + leadIdx + ', event)" title="Karta Audytu A4 dla klienta">📄 Audyt</button>' +
+              '<button class="btn-card-action" onclick="openInstantDemo(' + leadIdx + ', event)" title="Prototyp nowej strony">🚀 Demo</button>' +
+            '</div>' +
+          '</div>' +
           '<div class="card-footer">' +
             '<span style="font-size: 11px; color: var(--text-dim); font-family: var(--font-mono);">' + (lead.website ? 'Witryna aktywna' : 'Brak witryny') + '</span>' +
             '<span style="font-size: 11px; font-weight: 700; color: var(--gold);">Szczegóły →</span>' +
@@ -2512,19 +3541,51 @@
 
         let nameHtml = `<div style="font-weight: 700;">${escapeHtml(lead.name)}</div>`;
         if (lead.gemini_intel && lead.gemini_intel.checked) {
-          const ratingStr = lead.gemini_intel.google_rating ? `⭐ ${lead.gemini_intel.google_rating.toFixed(1)} (${lead.gemini_intel.google_reviews_count || 0})` : '✨ Google AI';
+          const ratingStr = lead.gemini_intel.google_rating ? `⭐ ${lead.gemini_intel.google_rating.toFixed(1)} (${lead.gemini_intel.google_reviews_count || 0})` : 'Google OSINT';
           nameHtml += `<div style="font-size: 10px; color: var(--gold); font-family: var(--font-mono); margin-top: 2px;">${ratingStr}</div>`;
+        }
+
+        const crmStatus = getLeadCrmStatus(lead);
+        const cleanPhone = (lead.phone || '').replace(/[^0-9+]/g, '');
+
+        let waBtn = '';
+        if (cleanPhone) {
+          let intlPhone = cleanPhone.replace(/^0+/, '');
+          if (!intlPhone.startsWith('+')) {
+            intlPhone = (lead.country === 'DE' ? '49' : '48') + intlPhone.replace(/^0/, '');
+          } else {
+            intlPhone = intlPhone.slice(1);
+          }
+          const defaultMsg = encodeURIComponent(`Dzień dobry! Piszę z Wulf Code w nawiązaniu do Państwa profilu firmy ${lead.name}.`);
+          waBtn = `<a href="https://wa.me/${intlPhone}?text=${defaultMsg}" target="_blank" class="btn-card-action whatsapp" onclick="event.stopPropagation()" title="Czat WhatsApp">💬</a>`;
         }
 
         tr.innerHTML = 
           '<td><span class="status-badge ' + v + '">' + vLabel + '</span></td>' +
           '<td style="font-family: var(--font-mono); font-weight: 700; color: var(--gold);">' + lead.score + '/100</td>' +
           '<td>' + nameHtml + '</td>' +
+          '<td>' +
+            '<select class="crm-select" onchange="updateLeadStatus(' + leadIdx + ', this.value, event)" onclick="event.stopPropagation()" style="font-size: 10px; padding: 2px 4px;">' +
+              '<option value="NOWY"' + (crmStatus === 'NOWY' ? ' selected' : '') + '>📥 Nowy</option>' +
+              '<option value="ZADZWONIONO"' + (crmStatus === 'ZADZWONIONO' ? ' selected' : '') + '>📞 Zadzwoniono</option>' +
+              '<option value="WYSLANO_AUDYT"' + (crmStatus === 'WYSLANO_AUDYT' ? ' selected' : '') + '>📄 Audyt</option>' +
+              '<option value="SPOTKANIE"' + (crmStatus === 'SPOTKANIE' ? ' selected' : '') + '>🤝 Spotkanie</option>' +
+              '<option value="ODRZUCONY"' + (crmStatus === 'ODRZUCONY' ? ' selected' : '') + '>❌ Odrzucony</option>' +
+            '</select>' +
+          '</td>' +
           '<td style="color: var(--text-muted);">' + escapeHtml(lead.city || '—') + '</td>' +
           '<td style="font-family: var(--font-mono);">' + (lead.phone ? escapeHtml(lead.phone) : '—') + '</td>' +
           '<td>' + (lead.website ? '<a href="' + escapeHtml(lead.website) + '" target="_blank" onclick="event.stopPropagation()">' + escapeHtml(lead.website.replace(/^https?:\/\//, '').slice(0, 22)) + '</a>' : '—') + '</td>' +
           '<td style="font-family: var(--font-mono); font-size: 11px;">' + techSummary + '</td>' +
-          '<td><button class="btn-header" style="padding: 3px 8px; font-size: 11px;">Inspekcja</button></td>';
+          '<td>' +
+            '<div style="display: flex; gap: 4px; align-items: center;">' +
+              (cleanPhone ? '<a href="tel:' + cleanPhone + '" class="btn-card-action call" onclick="event.stopPropagation()" title="Zadzwoń">📞</a>' : '') +
+              (waBtn ? waBtn : '') +
+              '<button class="btn-card-action gold" onclick="openBattlecardModal(' + leadIdx + ', event)" title="Skrypt rozmowy">🎯</button>' +
+              '<button class="btn-card-action" onclick="openClientAuditCard(' + leadIdx + ', event)" title="Karta Audytu A4">📄</button>' +
+              '<button class="btn-card-action" onclick="openInstantDemo(' + leadIdx + ', event)" title="Demo Wireframe">🚀</button>' +
+            '</div>' +
+          '</td>';
 
         tbody.appendChild(tr);
       });
@@ -2611,6 +3672,47 @@
         btnCall.style.display = 'none';
       }
 
+      const btnWa = document.getElementById('drawer-btn-whatsapp');
+      if (lead.phone) {
+        const cleanPhone = (lead.phone || '').replace(/[^0-9+]/g, '');
+        let intlPhone = cleanPhone.replace(/^0+/, '');
+        if (!intlPhone.startsWith('+')) intlPhone = (lead.country === 'DE' ? '49' : '48') + intlPhone.replace(/^0/, '');
+        else intlPhone = intlPhone.slice(1);
+        const msg = encodeURIComponent(`Dzień dobry! Piszę z Wulf Code w nawiązaniu do Państwa profilu firmy ${lead.name}.`);
+        btnWa.href = `https://wa.me/${intlPhone}?text=${msg}`;
+        btnWa.style.display = 'inline-flex';
+      } else {
+        btnWa.style.display = 'none';
+      }
+
+      // Populate Battlecard tab in drawer
+      document.getElementById('drawer-bc-hook').innerText = getLeadOpeningHook(lead);
+      switchDrawerObjectionTab(0);
+
+      // Speed & Revenue Tab state
+      if (lead.speed_audit) {
+        const d = lead.speed_audit;
+        document.getElementById('speed-score-val').innerText = d.performance_score + '/100';
+        document.getElementById('speed-score-val').style.color = d.performance_score >= 80 ? 'var(--status-live)' : (d.performance_score >= 50 ? 'var(--gold)' : 'var(--status-hot)');
+        document.getElementById('speed-lcp-val').innerText = d.lcp_seconds + ' s';
+        document.getElementById('speed-ttfb-val').innerText = d.ttfb_ms + ' ms';
+        document.getElementById('speed-bytes-val').innerText = d.page_weight_kb + ' KB';
+      } else {
+        document.getElementById('speed-score-val').innerText = '—';
+        document.getElementById('speed-lcp-val').innerText = '—';
+        document.getElementById('speed-ttfb-val').innerText = '—';
+        document.getElementById('speed-bytes-val').innerText = '—';
+      }
+      if (lead.revenue_loss) {
+        const r = lead.revenue_loss;
+        document.getElementById('rev-monthly-loss').innerText = r.monthly_loss_formatted;
+        document.getElementById('rev-lost-clients').innerText = `~${r.estimated_lost_clients_monthly} klientów / mies.`;
+        document.getElementById('rev-annual-loss').innerText = r.annual_loss_formatted;
+        document.getElementById('rev-pitch-copy').innerText = `„${r.sales_pitch_hook}”`;
+      } else {
+        loadRevenueLossForSelected(lead);
+      }
+
       // Render Gemini Tab
       renderDrawerGeminiTab(lead);
 
@@ -2631,6 +3733,8 @@
       btn.classList.add('active');
 
       document.getElementById('tab-content-audit').style.display = tabName === 'audit' ? 'block' : 'none';
+      document.getElementById('tab-content-speed').style.display = tabName === 'speed' ? 'block' : 'none';
+      document.getElementById('tab-content-battlecard').style.display = tabName === 'battlecard' ? 'block' : 'none';
       document.getElementById('tab-content-gemini').style.display = tabName === 'gemini' ? 'block' : 'none';
       document.getElementById('tab-content-pitch').style.display = tabName === 'pitch' ? 'block' : 'none';
       document.getElementById('tab-content-contact').style.display = tabName === 'contact' ? 'block' : 'none';
@@ -2643,6 +3747,23 @@
       const text = (lead.hooks && lead.hooks[0]) ? lead.hooks[0] : (lead.primary_issue || '');
       copyText(text);
     }
+
+    // KEYBOARD SHORTCUTS FOR DIALER & ESC
+    document.addEventListener('keydown', (e) => {
+      const dialer = document.getElementById('focus-dialer-overlay');
+      if (dialer && dialer.classList.contains('show')) {
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          dialerNext();
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          dialerPrev();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          closeFocusDialer();
+        }
+      }
+    });
 
     // GEMINI & GOOGLE SEARCH GROUNDING LOGIC
     function getStoredGeminiKey() {
@@ -2720,21 +3841,21 @@
       const intel = lead.gemini_intel;
 
       if (!intel || !intel.checked) {
-        if (quickBtnText) quickBtnText.innerText = '✨ Sprawdź w Google przez Gemini AI';
+        if (quickBtnText) quickBtnText.innerText = 'Weryfikuj w Google OSINT';
         container.innerHTML = `
           <div class="drawer-section">
-            <div class="section-title">Weryfikacja w Google & AI Studio</div>
+            <div class="section-title">Weryfikacja tożsamości rynkowej w Google</div>
             <div class="gemini-intel-box">
               <div style="font-size: 13px; font-weight: 600; color: var(--text-white);">
-                Firma nie była jeszcze weryfikowana na żywo w Google.
+                Podmiot nie był jeszcze sprawdzany na żywo w rejestrze Google.
               </div>
               <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
-                Uruchom darmowy model <strong>Gemini 3.6 Flash</strong> z technologią <strong>Google Search Grounding</strong>.
-                Sztuczna inteligencja odpyta Google i Mapy Google w czasie rzeczywistym, odczyta opinie i gwiazdki oraz przygotuje unikalny cold pitch.
+                Połączenie z silnikiem <strong>Gemini 3.6 Flash</strong> i aktywnym <strong>Google Search Grounding</strong>.
+                System pobiera aktualne opinie, oceny, pozycję lokalną w Google Maps i generuje precyzyjny raport gotowości do rozmowy.
               </div>
               <button class="btn-drawer-action primary" onclick="triggerDrawerGeminiVerify()" style="margin-top: 6px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-                <span>✨ Uruchom wywiad Google AI teraz</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span>Uruchom wywiad Google OSINT</span>
               </button>
             </div>
           </div>
