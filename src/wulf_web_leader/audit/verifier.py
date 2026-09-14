@@ -495,10 +495,12 @@ async def discover_real_website_candidate(
     try:
         close_client = False
         if client is None:
+            from wulf_web_leader.audit.proxy_pool import get_random_proxy
+            proxy = get_random_proxy()
             # verify=False is intentional: many SMB target sites have expired, self-signed, or
             # untrusted SSL certificates. The audit engine specifically evaluates SSL health as a
             # scoring criterion rather than aborting connection attempts.
-            client = httpx.AsyncClient(timeout=4.0, headers=headers, verify=False)
+            client = httpx.AsyncClient(timeout=6.0, headers=headers, verify=False, proxy=proxy)
             close_client = True
 
         try:

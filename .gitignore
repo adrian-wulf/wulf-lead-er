@@ -51,4 +51,6 @@ sessions/
 .env
 .env.*
 *.env
-
+*proxies*.txt
+data/proxies.txt
+bin/google_maps_scraper

@@ -1,9 +1,11 @@
 import asyncio
 import logging
+import re
 from typing import Callable
 from wulf_web_leader.models import CanonicalLead, CountryCode, VerticalDefinition
 from wulf_web_leader.adapters.nominatim import NominatimClient, GeocodedLocation
 from wulf_web_leader.adapters.osm import OverpassClient, build_overpass_query, is_corporate_entity
+from wulf_web_leader.adapters.gmaps_scraper import scrape_google_maps, is_gmaps_scraper_available
 from wulf_web_leader.adapters.pl_ceidg import CEIDGAdapter
 from wulf_web_leader.adapters.de_offeneregister import OffeneRegisterAdapter
 from wulf_web_leader.audit.cache import AuditCache
@@ -14,6 +16,59 @@ from wulf_web_leader.score.engine import calculate_lead_score
 from wulf_web_leader.score.hooks import generate_pitch_hooks
 
 logger = logging.getLogger(__name__)
+
+
+def _normalize_biz_name(name: str) -> str:
+    n = name.lower()
+    for drop in ["sp. z o.o.", "sp. z o. o.", "spółka z o.o.", "spółka cywilna", "gmbh", "ug", "s.a.", "ag", "sp.k.", "s.c."]:
+        n = n.replace(drop, "")
+    n = re.sub(r"[^\w\s]", "", n)
+    return " ".join(n.split())
+
+
+def _merge_and_deduplicate_leads(
+    gmaps_leads: list[CanonicalLead],
+    osm_leads: list[CanonicalLead],
+    default_city: str,
+) -> list[CanonicalLead]:
+    """
+    Merge Google Maps verified leads with OpenStreetMap POIs.
+    Google Maps data is trusted as primary ground-truth (official website, phone,
+    Google reviews/ratings, address). OSM supplements missing records and extra contact info.
+    """
+    merged: list[CanonicalLead] = list(gmaps_leads)
+    gmaps_lookup: dict[str, CanonicalLead] = {}
+    for gl in gmaps_leads:
+        key = _normalize_biz_name(gl.name)
+        if key:
+            gmaps_lookup[key] = gl
+
+    for ol in osm_leads:
+        norm_osm = _normalize_biz_name(ol.name)
+        matched_lead: CanonicalLead | None = None
+        if norm_osm in gmaps_lookup:
+            matched_lead = gmaps_lookup[norm_osm]
+        else:
+            if len(norm_osm) >= 6:
+                for k, candidate in gmaps_lookup.items():
+                    if len(k) >= 6 and (norm_osm in k or k in norm_osm):
+                        matched_lead = candidate
+                        break
+
+        if matched_lead is not None:
+            # Enrich existing Google Maps lead with any missing details from OSM
+            if not matched_lead.email and ol.email:
+                matched_lead.email = ol.email
+            if not matched_lead.phone and ol.phone:
+                matched_lead.phone = ol.phone
+            if not matched_lead.postcode and ol.postcode:
+                matched_lead.postcode = ol.postcode
+            if not matched_lead.industry_code and ol.industry_code:
+                matched_lead.industry_code = ol.industry_code
+        else:
+            merged.append(ol)
+
+    return merged
 
 
 async def run_scan_pipeline(
@@ -34,6 +89,7 @@ async def run_scan_pipeline(
     use_gemini: bool = False,
     gemini_api_key: str | None = None,
     gemini_max_leads: int = 5,
+    enable_gmaps: bool | None = None,
     progress_callback: Callable[[str, str], None] | None = None,
 ) -> tuple[list[CanonicalLead], GeocodedLocation]:
     """Execute end-to-end lead scanning, auditing, scoring, and hook generation pipeline."""
@@ -57,23 +113,48 @@ async def run_scan_pipeline(
     industry_codes = country_conf.pkd if country == "PL" else country_conf.wz
     industry_code = industry_codes[0] if industry_codes else None
 
-    # 3. Overpass query
+    # 3. Google Maps Scraping (gosom/google-maps-scraper with Webshare proxies)
+    gmaps_leads: list[CanonicalLead] = []
+    # If enable_gmaps is not explicitly set, enable it in live runs (when overpass_client is not mocked)
+    run_gmaps = (overpass_client is None) if enable_gmaps is None else enable_gmaps
+    if run_gmaps and is_gmaps_scraper_available():
+        gmaps_q = f"{country_conf.query or industry_label} {location.city or city}".strip()
+        notify("gmaps", f"Wyszukiwanie w Google Maps przez 250 proxy Webshare ({gmaps_q})...")
+        try:
+            gmaps_leads = await scrape_google_maps(
+                query=gmaps_q,
+                lat=location.lat,
+                lon=location.lon,
+                country=country,
+                city=location.city or city,
+                radius_km=radius_km,
+                lang=lang,
+                max_depth=1,
+            )
+            notify("gmaps", f"Pobrano {len(gmaps_leads)} zweryfikowanych firm z Google Maps.")
+        except Exception as e:
+            logger.warning("Google Maps scraping error: %s", e)
+
+    # 4. Overpass query
     notify("overpass", f"Querying OpenStreetMap within {radius_km} km...")
     query = build_overpass_query(osm_tags, location.lat, location.lon, radius_km)
     op = overpass_client or OverpassClient()
     elements = await op.execute_query(query)
 
-    # 4. Parse & deduplicate
-    leads = op.parse_elements_to_leads(
+    osm_leads = op.parse_elements_to_leads(
         elements=elements,
         country=country,
         default_city=location.city or city,
         industry_label=industry_label,
         industry_code=industry_code,
     )
-    notify("parse", f"Found {len(leads)} matching businesses in OpenStreetMap.")
+    notify("parse", f"Pobrano {len(osm_leads)} punktów z OpenStreetMap.")
 
-    # 5. Classify website kinds
+    # 5. Merge & Deduplicate (Google Maps ground truth + OSM)
+    leads = _merge_and_deduplicate_leads(gmaps_leads, osm_leads, default_city=location.city or city)
+    notify("parse", f"Łącznie zebrano {len(leads)} unikalnych firm po scaleniu Google Maps i OSM.")
+
+    # 5a. Classify website kinds
     for lead in leads:
         if not lead.website_kind or lead.website_kind in ("none", "other"):
             lead.website_kind = classify_website_kind(lead.website)

@@ -221,12 +221,12 @@ async def start_scan(
                 headers={"Retry-After": str(int(retry_after_gemini))},
             )
 
-    # 2. Enforce scan start rate limit (1 scan per minute per IP)
+    # 2. Enforce scan start rate limit (1 full scan session per 5 minutes per IP)
     allowed_scan, retry_after_scan = scan_rate_limiter.check(client_ip)
     if not allowed_scan:
         raise HTTPException(
             status_code=429,
-            detail=f"Przekroczono limit uruchamiania skanowania (maksymalnie 1 na minutę na adres IP). Spróbuj ponownie za {int(retry_after_scan)} s.",
+            detail=f"Limit sesji skanera: Możesz uruchomić pełne pobieranie leadów i OSINT raz na 5 minut na dany adres IP. Pozostało: {int(retry_after_scan)} s.",
             headers={"Retry-After": str(int(retry_after_scan))},
         )
 

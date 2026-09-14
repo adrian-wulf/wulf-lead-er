@@ -133,7 +133,15 @@ def generate_pitch_hooks(lead: CanonicalLead, lang: str = "pl") -> list[str]:
             if hook_tpl:
                 results.append(hook_tpl.format(generator=lead.audit.generator))
 
-    # 7. Hot prospect summary hook
+    # 7. Google Maps rating reputation hook
+    if lead.rating and lead.rating >= 4.0:
+        rev_text = f" ({lead.reviews_count} opinii)" if lead.reviews_count else ""
+        if lead.country == "DE":
+            results.append(f"⭐ Hohe Google Maps-Bewertung: {lead.rating:.1f}/5.0{rev_text} — starkes Kundenvertrauen als Hebel nutzen.")
+        else:
+            results.append(f"⭐ Wysoka ocena w Google Maps: {lead.rating:.1f}/5.0{rev_text} — świetna lokalna reputacja, idealna baza pod nową stronę WWW.")
+
+    # 8. Hot prospect summary hook
     if lead.score >= 70 and lead.phone:
         hook = hooks_dict.get("hot_prospect")
         if hook and hook not in results:

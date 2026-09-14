@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field, HttpUrl
 
 
 WebsiteKind = Literal["none", "own", "facebook", "instagram", "directory", "other"]
-LeadSource = Literal["osm", "ceidg", "offeneregister", "manual"]
+LeadSource = Literal["osm", "ceidg", "offeneregister", "manual", "google_maps"]
 RegistryStatus = Literal["active", "unknown", "inactive"]
 Verdict = Literal["hot", "warm", "skip"]
 CountryCode = Literal["PL", "DE"]
@@ -72,20 +72,23 @@ class CanonicalLead(BaseModel):
     email: str | None = None
     website: str | None = None
     website_kind: WebsiteKind = "none"
-    website_source: Literal["osm_website", "email_domain", "candidate_discovery", "wikipedia_discovery", "google_osint", "none"] = "none"
+    website_source: Literal["osm_website", "email_domain", "candidate_discovery", "wikipedia_discovery", "google_osint", "google_maps", "none"] = "none"
     opportunity_type: OpportunityType = "no_website"
     primary_issue: str | None = None
     confidence: Literal["high", "medium", "low"] = "high"
     qa_status: Literal["verified", "placeholder", "mismatch", "unverified"] = "unverified"
     qa_notes: str | None = None
     source: LeadSource = "osm"
-    source_id: str
+    source_id: str = ""
     industry_code: str | None = None  # PKD or WZ
     industry_label: str
     registry_status: RegistryStatus = "unknown"
     score: int = Field(default=0, ge=0, le=100)
     verdict: Verdict = "skip"
     hooks: list[str] = Field(default_factory=list)
+    rating: float | None = None
+    reviews_count: int | None = None
+    raw_tags: dict[str, Any] = Field(default_factory=dict)
     status_kontaktu: str | None = None
     notatki: str | None = None
     data_kontaktu: str | None = None

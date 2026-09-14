@@ -878,6 +878,17 @@
     .compact-toggle.gold:hover {
       color: var(--gold);
     }
+    .pipeline-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      background: rgba(212, 168, 67, 0.08);
+      border: 1px solid rgba(212, 168, 67, 0.25);
+      border-radius: var(--radius-full);
+      user-select: none;
+      white-space: nowrap;
+    }
     .compact-toggle input {
       accent-color: var(--gold);
       cursor: pointer;
@@ -2856,20 +2867,16 @@
             </div>
           </div>
 
-          <!-- Right: Advanced Toggles (Audit, Gemini OSINT, Phone filter, Lang) -->
+          <!-- Right: Unified Auto-OSINT Pipeline Status & Language -->
           <div class="criteria-options-group">
-            <label class="compact-toggle" title="Audyt techniczny: SSL, responsywność RWD, CMS">
-              <input type="checkbox" id="scan-do-audit" checked>
-              <span>🌐 Audyt WWW</span>
-            </label>
-            <label class="compact-toggle gold" title="Weryfikacja w rejestrach i Google przez Gemini AI">
-              <input type="checkbox" id="scan-use-gemini" checked>
-              <span>🤖 Google OSINT</span>
-            </label>
-            <label class="compact-toggle" title="Filtruj tylko firmy posiadające numer telefonu">
-              <input type="checkbox" id="scan-has-phone">
-              <span>📞 Tylko tel.</span>
-            </label>
+            <div class="pipeline-badge-pill" title="Kompleksowy potok: Google Maps (250 Proxy) + OSM + Audyt WWW + Automatyczny OSINT (Wikipedia & DuckDuckGo). Limit: 1 skan na 5 min.">
+              <span class="pulse-dot scanning" style="width: 8px; height: 8px;"></span>
+              <span style="font-size: 11px; font-weight: 700; color: var(--gold); letter-spacing: 0.3px;">⚡ AUTO-PIPELINE (Maps + OSM + OSINT)</span>
+              <span style="font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);">(1 sesja / 5 min)</span>
+            </div>
+            <input type="hidden" id="scan-do-audit" value="true">
+            <input type="hidden" id="scan-use-gemini" value="true">
+            <input type="hidden" id="scan-has-phone" value="false">
             <select class="compact-lang-select" id="scan-lang">
               <option value="pl" selected>🇵🇱 PL</option>
               <option value="de">🇩🇪 DE</option>
@@ -3893,9 +3900,10 @@
       const vertical = document.getElementById('scan-vertical').value.trim();
       const radius = parseFloat(document.getElementById('scan-radius').value);
       const lang = document.getElementById('scan-lang').value;
-      const hasPhone = document.getElementById('scan-has-phone').checked;
-      const doAudit = document.getElementById('scan-do-audit').checked;
-      const useGemini = document.getElementById('scan-use-gemini').checked;
+      const hasPhoneElem = document.getElementById('scan-has-phone');
+      const hasPhone = hasPhoneElem ? (hasPhoneElem.type === 'checkbox' ? hasPhoneElem.checked : hasPhoneElem.value === 'true') : false;
+      const doAudit = true; // Always audit in unified auto-OSINT pipeline
+      const useGemini = true; // Always enrich with Google Intel & candidate discovery
       const geminiApiKey = getStoredGeminiKey() || null;
 
       if (!city) {
@@ -3932,16 +3940,51 @@
         });
 
         if (!res.ok) {
-          const err = await res.json();
-          showToast('Błąd: ' + (err.detail || 'Niepowodzenie skanu'));
+          const err = await res.json().catch(() => ({}));
+          showToast(err.detail || 'Niepowodzenie skanu');
           stopPolling();
           setScanningUI(false);
+          if (res.status === 429) {
+            const retryHeader = res.headers.get('Retry-After');
+            let secs = retryHeader ? parseInt(retryHeader, 10) : 300;
+            if ((!secs || isNaN(secs)) && err.detail) {
+              const match = err.detail.match(/(\d+)\s*s/);
+              if (match) secs = parseInt(match[1], 10);
+            }
+            startRateLimitCountdown(secs || 300);
+          }
         }
       } catch (err) {
         showToast('Błąd połączenia z serwerem');
         stopPolling();
         setScanningUI(false);
       }
+    }
+
+    let cooldownInterval = null;
+    function startRateLimitCountdown(seconds) {
+      let rem = seconds;
+      const btn = document.getElementById('btn-start-scan');
+      if (!btn) return;
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+      btn.style.cursor = 'not-allowed';
+      clearInterval(cooldownInterval);
+      cooldownInterval = setInterval(() => {
+        if (rem <= 0) {
+          clearInterval(cooldownInterval);
+          btn.disabled = false;
+          btn.style.opacity = '';
+          btn.style.cursor = '';
+          btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>Uruchom skan</span>`;
+        } else {
+          const min = Math.floor(rem / 60);
+          const s = rem % 60;
+          const fmt = min > 0 ? `${min}m ${s}s` : `${s}s`;
+          btn.innerHTML = `<span>⏳ Odczekaj ${fmt}</span>`;
+          rem--;
+        }
+      }, 1000);
     }
 
     async function stopScan() {
