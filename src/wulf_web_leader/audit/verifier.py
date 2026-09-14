@@ -8,7 +8,6 @@ from typing import Any
 import httpx
 
 from wulf_web_leader.models import CanonicalLead, AuditResult
-import wulf_web_leader.audit.fetch as audit_fetch
 
 logger = logging.getLogger(__name__)
 
@@ -553,6 +552,8 @@ async def resolve_and_verify_candidate(
     
     Returns (verified_url, audit_result, method) if verified, or None.
     """
+    import wulf_web_leader.audit.fetch as audit_fetch
+
     # 1. Deterministic candidates via DNS
     domain_candidates = generate_domain_candidates(
         company_name=lead.name,

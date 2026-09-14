@@ -116,6 +116,15 @@ ODPOWIEDZ WYŁĄCZNIE W FORMACIE CZYSTEGO JSON (bez znaczników markdown ```json
         async with httpx.AsyncClient(timeout=timeout) as client:
             resp = await client.post(url, headers=headers, json=payload)
 
+            # Check if search grounding hit quota or tier restriction (RESOURCE_EXHAUSTED / 429 / 403)
+            if (resp.status_code in (429, 403) or "RESOURCE_EXHAUSTED" in resp.text) and "tools" in payload:
+                logger.info("Grounding quota exceeded or blocked; falling back to direct gemini-3.6-flash prompt...")
+                payload_fallback = {
+                    "contents": [{"parts": [{"text": prompt}]}],
+                    "generationConfig": {"temperature": 0.2},
+                }
+                resp = await client.post(url, headers=headers, json=payload_fallback)
+
             if resp.status_code == 429:
                 return GeminiIntel(
                     checked=False,
@@ -211,8 +220,12 @@ ODPOWIEDZ WYŁĄCZNIE W FORMACIE CZYSTEGO JSON (bez znaczników markdown ```json
                     reviews_count = None
 
             discovered_web = parsed_data.get("discovered_website")
-            if discovered_web and not isinstance(discovered_web, str):
-                discovered_web = str(discovered_web)
+            if discovered_web:
+                discovered_web = str(discovered_web).strip()
+                if discovered_web.lower() in ("brak", "null", "none", "-", ""):
+                    discovered_web = None
+                elif not discovered_web.startswith(("http://", "https://")) and "." in discovered_web:
+                    discovered_web = f"https://{discovered_web}"
 
             socials = parsed_data.get("social_profiles", [])
             if not isinstance(socials, list):

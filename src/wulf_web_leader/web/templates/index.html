@@ -2929,6 +2929,12 @@
           <button class="filter-btn" onclick="setFilter('skip', this)"><span>🚫 Pomiń</span><span class="filter-badge-pill" id="count-filter-skip">0</span></button>
         </div>
 
+        <!-- Dynamic background queue indicator -->
+        <div id="osint-queue-pill" style="display: none; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 20px; font-size: 11px; font-weight: 600; color: #38bdf8;">
+          <span class="pulse-dot" style="background: #38bdf8; width: 6px; height: 6px;"></span>
+          <span id="osint-queue-text">Auto-weryfikacja stron...</span>
+        </div>
+
         <div class="view-switch">
           <button class="view-btn active" id="btn-view-cards" onclick="setViewMode('cards')">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -3669,6 +3675,45 @@
       }
     }
 
+    function updateQueueBadge(current, total) {
+      const pill = document.getElementById('osint-queue-pill');
+      const txt = document.getElementById('osint-queue-text');
+      if (!pill || !txt) return;
+      if (current >= total || total === 0) {
+        pill.style.display = 'none';
+      } else {
+        pill.style.display = 'inline-flex';
+        txt.innerText = `Auto-weryfikacja stron (${current}/${total})...`;
+      }
+    }
+
+    function hideQueueBadge() {
+      const pill = document.getElementById('osint-queue-pill');
+      if (pill) pill.style.display = 'none';
+    }
+
+    async function fetchLeadsSilently() {
+      try {
+        const queryParams = new URLSearchParams();
+        if (currentFilter !== 'all') queryParams.append('verdict', currentFilter);
+        const searchInput = document.getElementById('table-search');
+        if (searchInput && searchInput.value.trim()) queryParams.append('query', searchInput.value.trim());
+
+        const res = await apiFetch('/api/leads?' + queryParams.toString());
+        if (res.ok) {
+          const leads = await res.json();
+          allLeads = leads;
+          renderDataView();
+          if (selectedLeadIndex !== null && allLeads[selectedLeadIndex]) {
+            const cur = allLeads[selectedLeadIndex];
+            renderDrawerOverviewTab(cur);
+            renderDrawerAuditTab(cur);
+            renderDrawerGeminiTab(cur);
+          }
+        }
+      } catch (e) {}
+    }
+
     async function fetchPollStatus() {
       try {
         const res = await apiFetch('/api/scan/status');
@@ -3678,6 +3723,16 @@
           if (data.counts) updateTelemetry(data.counts);
           if (data.logs) renderPollLogs(data.logs);
 
+          // Check for post-scan background OSINT queue
+          if (data.osint_queue) {
+            if (!data.osint_queue.done && data.osint_queue.total > 0) {
+              updateQueueBadge(data.osint_queue.current, data.osint_queue.total);
+              fetchLeadsSilently();
+            } else {
+              hideQueueBadge();
+            }
+          }
+
           if (data.status === 'completed') {
             stopPolling();
             setScanningUI(false);
@@ -3686,11 +3741,13 @@
           } else if (data.status === 'stopped') {
             stopPolling();
             setScanningUI(false);
+            hideQueueBadge();
             showToast('Skanowanie zatrzymane.');
             fetchLeads();
           } else if (data.status === 'error') {
             stopPolling();
             setScanningUI(false);
+            hideQueueBadge();
             showToast('Błąd: ' + (data.message || 'Niepowodzenie skanowania'));
             fetchLeads();
           }
@@ -3709,6 +3766,30 @@
         allLeads.unshift(event.lead);
         renderDataView();
         if (event.counts) updateTelemetry(event.counts);
+      } else if (event.type === 'lead_updated') {
+        const updated = event.lead;
+        if (!updated) return;
+        const idx = allLeads.findIndex(l => l.source_id === updated.source_id);
+        if (idx !== -1) {
+          allLeads[idx] = updated;
+          if (selectedLeadIndex === idx) {
+            renderDrawerOverviewTab(updated);
+            renderDrawerAuditTab(updated);
+            renderDrawerGeminiTab(updated);
+          }
+          renderDataView();
+        } else {
+          allLeads.push(updated);
+          renderDataView();
+        }
+        if (event.counts) updateTelemetry(event.counts);
+        if (event.queue) {
+          updateQueueBadge(event.queue.current, event.queue.total);
+        }
+      } else if (event.type === 'queue_completed') {
+        hideQueueBadge();
+        showToast(`Auto-weryfikacja witryn w tle ukończona (${event.total || ''} firm).`);
+        fetchLeadsSilently();
       } else if (event.type === 'done') {
         stopPolling();
         setScanningUI(false);
@@ -3717,6 +3798,7 @@
       } else if (event.type === 'error') {
         stopPolling();
         setScanningUI(false);
+        hideQueueBadge();
         showToast('Wystąpił błąd: ' + (event.message || 'Błąd skanowania'));
         fetchLeads();
       }
@@ -4231,19 +4313,20 @@
       try {
         const resp = await fetch('/api/speed?url=' + encodeURIComponent(lead.website));
         const res = await resp.json();
-        if (res.success && res.data) {
-          const d = res.data;
+        const d = res.data || res.speed || res;
+        if (d && (d.performance_score !== undefined || d.mobile_score !== undefined || d.score !== undefined)) {
+          const score = d.performance_score ?? d.mobile_score ?? d.score;
           lead.speed_audit = d;
-          document.getElementById('speed-score-val').innerText = d.performance_score + '/100';
-          document.getElementById('speed-score-val').style.color = d.performance_score >= 80 ? 'var(--status-live)' : (d.performance_score >= 50 ? 'var(--gold)' : 'var(--status-hot)');
-          document.getElementById('speed-lcp-val').innerText = d.lcp_seconds + ' s';
-          document.getElementById('speed-ttfb-val').innerText = d.ttfb_ms + ' ms';
-          document.getElementById('speed-bytes-val').innerText = d.page_weight_kb + ' KB';
-          showToast('Audyt prędkości ukończony!');
+          document.getElementById('speed-score-val').innerText = score + '/100';
+          document.getElementById('speed-score-val').style.color = score >= 80 ? 'var(--status-live)' : (score >= 50 ? 'var(--gold)' : 'var(--status-hot)');
+          document.getElementById('speed-lcp-val').innerText = (d.lcp_seconds || 0) + ' s';
+          document.getElementById('speed-ttfb-val').innerText = (d.ttfb_ms || 0) + ' ms';
+          document.getElementById('speed-bytes-val').innerText = (d.page_weight_kb || 0) + ' KB';
+          showToast('Audyt prędkości ukończony! Wynik: ' + score + '/100');
           
           loadRevenueLossForSelected(lead);
         } else {
-          showToast('Nie udało się przeprowadzić audytu prędkości: ' + (res.message || 'Błąd'));
+          showToast('Nie udało się przeprowadzić audytu prędkości: ' + (res.message || 'Błąd odpowiedzi serwera'));
         }
       } catch (err) {
         showToast('Błąd połączenia z modułem audytu.');
@@ -4265,12 +4348,23 @@
         const url = `/api/revenue-loss?vert=${encodeURIComponent(vert)}&country=${country}&https=${hasHttps}&rwd=${hasRwd}&load_time=${loadTime}&has_site=${hasSite}`;
         const resp = await fetch(url);
         const res = await resp.json();
-        if (res.success && res.data) {
-          lead.revenue_loss = res.data;
-          document.getElementById('rev-monthly-loss').innerText = res.data.monthly_loss_formatted;
-          document.getElementById('rev-lost-clients').innerText = `~${res.data.estimated_lost_clients_monthly} klientów / mies.`;
-          document.getElementById('rev-annual-loss').innerText = res.data.annual_loss_formatted;
-          document.getElementById('rev-pitch-copy').innerText = `„${res.data.sales_pitch_hook}”`;
+        const rdata = res.data || res.revenue_loss || res;
+        if (rdata) {
+          lead.revenue_loss = rdata;
+          const curr = rdata.currency || 'PLN';
+          const monthlyLoss = rdata.monthly_loss_formatted || (rdata.lost_revenue_monthly ? `${rdata.lost_revenue_monthly.toLocaleString()} ${curr}` : '0 PLN');
+          const annualLoss = rdata.annual_loss_formatted || (rdata.lost_revenue_annual ? `${rdata.lost_revenue_annual.toLocaleString()} ${curr}` : '0 PLN');
+          const lostClients = rdata.estimated_lost_clients_monthly ?? rdata.lost_clients_monthly ?? 0;
+          const pitchHook = rdata.sales_pitch_hook || rdata.pitch || '';
+
+          const elMonth = document.getElementById('rev-monthly-loss');
+          if (elMonth) elMonth.innerText = monthlyLoss;
+          const elClients = document.getElementById('rev-lost-clients');
+          if (elClients) elClients.innerText = `~${lostClients} klientów / mies.`;
+          const elAnnual = document.getElementById('rev-annual-loss');
+          if (elAnnual) elAnnual.innerText = annualLoss;
+          const elPitch = document.getElementById('rev-pitch-copy');
+          if (elPitch) elPitch.innerText = `„${pitchHook}”`;
         }
       } catch (e) {}
     }

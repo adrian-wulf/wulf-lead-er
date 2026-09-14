@@ -69,6 +69,131 @@ def compute_counts(leads: list[CanonicalLead]) -> dict[str, int]:
     return {"total": total, "hot": hot, "warm": warm, "skip": skip}
 
 
+async def run_post_scan_osint_queue(
+    leads: list[CanonicalLead],
+    workspace_dir: Path,
+    state: dict[str, Any],
+    append_log: Any,
+    use_gemini: bool = False,
+    gemini_api_key: str | None = None,
+) -> None:
+    """
+    Background queue running immediately after initial search completes.
+    Verifies leads lacking websites against DNS candidates, online presence, and Gemini/Google OSINT.
+    """
+    from wulf_web_leader.audit.verifier import resolve_and_verify_candidate
+    from wulf_web_leader.score.engine import calculate_lead_score
+    from wulf_web_leader.score.hooks import generate_pitch_hooks
+    import wulf_web_leader.audit.fetch as audit_fetch
+
+    leads_file = workspace_dir / "leads.json"
+    state_file = workspace_dir / ".scan_state.json"
+
+    missing_site_leads = [l for l in leads if not l.website or l.website_kind == "none"]
+    if not missing_site_leads:
+        return
+
+    append_log(
+        "osint_queue",
+        f"⚡ Kolejka OSINT: Uruchomiono weryfikację stron w tle dla {len(missing_site_leads)} firm...",
+    )
+    state["osint_queue"] = {
+        "current": 0,
+        "total": len(missing_site_leads),
+        "done": False,
+    }
+    atomic_persist_state(workspace_dir, state)
+
+    for i, lead in enumerate(missing_site_leads, start=1):
+        if state_file.is_file():
+            try:
+                with open(state_file, "r", encoding="utf-8") as f:
+                    disk_state = json.load(f)
+                if disk_state.get("status") == "stopped":
+                    break
+            except Exception:
+                pass
+
+        append_log("osint_queue", f"Weryfikacja ({i}/{len(missing_site_leads)}): {lead.name} ({lead.city or ''})...")
+
+        found_site = False
+        try:
+            cand = await resolve_and_verify_candidate(lead)
+            if cand:
+                cand_url, cand_audit, method = cand
+                lead.website = cand_url
+                lead.website_kind = "own"
+                lead.website_source = "candidate_discovery"
+                lead.audit = cand_audit
+                lead.qa_status = "verified"
+                lead.confidence = "high"
+                if not lead.phone and cand_audit.extracted_phones:
+                    lead.phone = cand_audit.extracted_phones[0]
+                if not lead.email and cand_audit.extracted_emails:
+                    lead.email = cand_audit.extracted_emails[0]
+                lead.score, lead.verdict = calculate_lead_score(lead)
+                lead.hooks = generate_pitch_hooks(lead)
+                found_site = True
+                append_log("osint_queue", f"✅ Znaleziono domenę {cand_url} dla firmy {lead.name}!")
+        except Exception as e:
+            logger.debug("Candidate resolution error for %s: %s", lead.name, e)
+
+        # Gemini / Google Intel check
+        key_to_use = gemini_api_key or os.environ.get("GEMINI_API_KEY")
+        if use_gemini or key_to_use:
+            try:
+                from wulf_web_leader.audit.gemini_verifier import verify_lead_with_gemini
+                intel = await verify_lead_with_gemini(lead, api_key=key_to_use)
+                if intel and intel.checked:
+                    lead.gemini_intel = intel
+                    if not lead.website and intel.discovered_website:
+                        lead.website = intel.discovered_website
+                        lead.website_kind = "own"
+                        lead.website_source = "google_osint"
+                        audit_res = await audit_fetch.audit_website(
+                            intel.discovered_website,
+                            lead_name=lead.name,
+                            city=lead.city,
+                            phone=lead.phone,
+                            address=lead.address or lead.street,
+                        )
+                        lead.audit = audit_res
+                        lead.qa_status = "verified"
+                        lead.confidence = "high"
+                        if not lead.phone and audit_res.extracted_phones:
+                            lead.phone = audit_res.extracted_phones[0]
+                        if not lead.email and audit_res.extracted_emails:
+                            lead.email = audit_res.extracted_emails[0]
+                        lead.score, lead.verdict = calculate_lead_score(lead)
+                        lead.hooks = generate_pitch_hooks(lead)
+                        found_site = True
+                    if intel.ai_pitch and intel.ai_pitch not in lead.hooks:
+                        lead.hooks.insert(0, f"✨ [AI Google Pitch]: {intel.ai_pitch}")
+            except Exception as e:
+                logger.debug("Gemini OSINT verification error for %s: %s", lead.name, e)
+
+        export_leads_to_json(leads, leads_file)
+        state["counts"] = compute_counts(leads)
+        state["osint_queue"] = {
+            "current": i,
+            "total": len(missing_site_leads),
+            "done": False,
+            "last_verified": lead.name,
+            "found_site": found_site,
+        }
+        atomic_persist_state(workspace_dir, state)
+        await asyncio.sleep(0.3)
+
+    state["osint_queue"] = {
+        "current": len(missing_site_leads),
+        "total": len(missing_site_leads),
+        "done": True,
+    }
+    append_log("osint_queue", f"Zakończono weryfikację OSINT w tle ({len(missing_site_leads)} firm sprawdzonych).")
+    atomic_persist_state(workspace_dir, state)
+    export_leads_to_json(leads, leads_file)
+
+
 async def main() -> None:
     parser = argparse.ArgumentParser(description="Wulf Web Leader Background Scan Runner")
     parser.add_argument("--workspace", required=True, help="Workspace directory for leads and state")
@@ -214,6 +339,16 @@ async def main() -> None:
         append_log("done", state["message"])
         atomic_persist_state(workspace_dir, state)
         logger.info("Scan completed successfully: %d leads saved to %s", len(leads), leads_file)
+
+        # Automatic post-scan OSINT verification queue for missing websites
+        await run_post_scan_osint_queue(
+            leads=leads,
+            workspace_dir=workspace_dir,
+            state=state,
+            append_log=append_log,
+            use_gemini=use_gemini,
+            gemini_api_key=gemini_api_key,
+        )
 
     except asyncio.CancelledError:
         state["status"] = "stopped"

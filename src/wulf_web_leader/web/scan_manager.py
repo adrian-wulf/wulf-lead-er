@@ -497,6 +497,14 @@ class ScanManager:
                 "counts": self.counts,
             })
 
+            # Launch post-scan OSINT verification queue
+            asyncio.create_task(
+                self._run_post_scan_osint_queue(
+                    gemini_api_key=gemini_api_key,
+                    use_gemini=use_gemini,
+                )
+            )
+
         except asyncio.CancelledError:
             self.status = "stopped"
             self.stage = "stopped"
@@ -590,27 +598,167 @@ class ScanManager:
         source_id: str,
         api_key: str | None = None,
     ) -> CanonicalLead | None:
-        """Verify an individual lead using Gemini API with live Google Search Grounding."""
+        """Verify an individual lead using candidate DNS discovery and Gemini Google OSINT."""
         lead = self.get_lead_by_source_id(source_id)
         if not lead:
             return None
 
         from wulf_web_leader.audit.gemini_verifier import verify_lead_with_gemini
+        from wulf_web_leader.audit.verifier import resolve_and_verify_candidate
+        from wulf_web_leader.score.engine import calculate_lead_score
+        from wulf_web_leader.score.hooks import generate_pitch_hooks
+        import wulf_web_leader.audit.fetch as audit_fetch
+
         intel = await verify_lead_with_gemini(lead, api_key=api_key)
         lead.gemini_intel = intel
 
-        # If Gemini found an official website and the lead previously had none
+        # If lead has no website, check DNS candidate resolution first
+        if not lead.website:
+            try:
+                cand = await resolve_and_verify_candidate(lead)
+                if cand:
+                    cand_url, cand_audit, method = cand
+                    lead.website = cand_url
+                    lead.website_kind = "own"
+                    lead.website_source = "candidate_discovery"
+                    lead.audit = cand_audit
+                    lead.qa_status = "verified"
+                    lead.confidence = "high"
+                    if not lead.phone and cand_audit.extracted_phones:
+                        lead.phone = cand_audit.extracted_phones[0]
+                    if not lead.email and cand_audit.extracted_emails:
+                        lead.email = cand_audit.extracted_emails[0]
+                    lead.score, lead.verdict = calculate_lead_score(lead)
+                    lead.hooks = generate_pitch_hooks(lead)
+            except Exception as e:
+                logger.debug("Candidate resolution in verify_lead_gemini: %s", e)
+
+        # If still no website, check if Gemini discovered an official website
         if not lead.website and intel.discovered_website:
-            lead.website = intel.discovered_website
-            lead.website_kind = "own"
-            lead.website_source = "candidate_discovery"
+            try:
+                lead.website = intel.discovered_website
+                lead.website_kind = "own"
+                lead.website_source = "google_osint"
+                audit_res = await audit_fetch.audit_website(
+                    intel.discovered_website,
+                    lead_name=lead.name,
+                    city=lead.city,
+                    phone=lead.phone,
+                    address=lead.address or lead.street,
+                )
+                lead.audit = audit_res
+                lead.qa_status = "verified"
+                lead.confidence = "high"
+                if not lead.phone and audit_res.extracted_phones:
+                    lead.phone = audit_res.extracted_phones[0]
+                if not lead.email and audit_res.extracted_emails:
+                    lead.email = audit_res.extracted_emails[0]
+                lead.score, lead.verdict = calculate_lead_score(lead)
+                lead.hooks = generate_pitch_hooks(lead)
+            except Exception as e:
+                logger.debug("Gemini discovered website audit: %s", e)
 
         # If Gemini generated an AI pitch, make it the top primary hook
         if intel.ai_pitch and intel.ai_pitch not in lead.hooks:
             lead.hooks.insert(0, f"✨ [AI Google Pitch]: {intel.ai_pitch}")
 
         self._persist_current_leads()
+        await self.broadcast({
+            "type": "lead_updated",
+            "lead": lead.model_dump(mode="json"),
+            "counts": self.counts,
+        })
         return lead
+
+    async def _run_post_scan_osint_queue(
+        self,
+        gemini_api_key: str | None = None,
+        use_gemini: bool = False,
+    ) -> None:
+        """Background queue running immediately after in-process scan completes."""
+        missing = [l for l in self.leads if not l.website or l.website_kind == "none"]
+        if not missing:
+            return
+
+        total = len(missing)
+        log_entry = self._append_log("osint_queue", f"⚡ Kolejka OSINT: Uruchomiono automatyczną weryfikację witryn w tle dla {total} firm...")
+        await self.broadcast({"type": "log", **log_entry})
+        self._persist_state()
+
+        from wulf_web_leader.audit.verifier import resolve_and_verify_candidate
+        from wulf_web_leader.score.engine import calculate_lead_score
+        from wulf_web_leader.score.hooks import generate_pitch_hooks
+        import wulf_web_leader.audit.fetch as audit_fetch
+
+        for i, lead in enumerate(missing, start=1):
+            if self.status == "stopped":
+                break
+
+            try:
+                cand = await resolve_and_verify_candidate(lead)
+                if cand:
+                    cand_url, cand_audit, method = cand
+                    lead.website = cand_url
+                    lead.website_kind = "own"
+                    lead.website_source = "candidate_discovery"
+                    lead.audit = cand_audit
+                    lead.qa_status = "verified"
+                    lead.confidence = "high"
+                    if not lead.phone and cand_audit.extracted_phones:
+                        lead.phone = cand_audit.extracted_phones[0]
+                    if not lead.email and cand_audit.extracted_emails:
+                        lead.email = cand_audit.extracted_emails[0]
+                    lead.score, lead.verdict = calculate_lead_score(lead)
+                    lead.hooks = generate_pitch_hooks(lead)
+                    log_entry = self._append_log("osint_queue", f"✅ Znaleziono domenę {cand_url} dla firmy {lead.name}!")
+                    await self.broadcast({"type": "log", **log_entry})
+            except Exception as e:
+                logger.debug("Candidate resolution in queue for %s: %s", lead.name, e)
+
+            key_to_use = gemini_api_key or os.environ.get("GEMINI_API_KEY")
+            if use_gemini or key_to_use:
+                try:
+                    from wulf_web_leader.audit.gemini_verifier import verify_lead_with_gemini
+                    intel = await verify_lead_with_gemini(lead, api_key=key_to_use)
+                    if intel and intel.checked:
+                        lead.gemini_intel = intel
+                        if not lead.website and intel.discovered_website:
+                            lead.website = intel.discovered_website
+                            lead.website_kind = "own"
+                            lead.website_source = "google_osint"
+                            audit_res = await audit_fetch.audit_website(
+                                intel.discovered_website,
+                                lead_name=lead.name,
+                                city=lead.city,
+                                phone=lead.phone,
+                                address=lead.address or lead.street,
+                            )
+                            lead.audit = audit_res
+                            lead.qa_status = "verified"
+                            lead.confidence = "high"
+                            if not lead.phone and audit_res.extracted_phones:
+                                lead.phone = audit_res.extracted_phones[0]
+                            if not lead.email and audit_res.extracted_emails:
+                                lead.email = audit_res.extracted_emails[0]
+                            lead.score, lead.verdict = calculate_lead_score(lead)
+                            lead.hooks = generate_pitch_hooks(lead)
+                        if intel.ai_pitch and intel.ai_pitch not in lead.hooks:
+                            lead.hooks.insert(0, f"✨ [AI Google Pitch]: {intel.ai_pitch}")
+                except Exception as e:
+                    logger.debug("Gemini OSINT verification error in queue for %s: %s", lead.name, e)
+
+            self._persist_current_leads()
+            await self.broadcast({
+                "type": "lead_updated",
+                "lead": lead.model_dump(mode="json"),
+                "counts": self.counts,
+                "queue": {"current": i, "total": total},
+            })
+            await asyncio.sleep(0.3)
+
+        log_entry = self._append_log("osint_queue", f"Zakończono weryfikację OSINT w tle ({total} firm sprawdzonych).")
+        await self.broadcast({"type": "log", **log_entry})
+        await self.broadcast({"type": "queue_completed", "total": total})
 
     def _persist_current_leads(self) -> None:
         """Persist in-memory leads to workspace leads.json if leads are present."""

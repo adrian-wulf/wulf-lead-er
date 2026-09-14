@@ -423,29 +423,64 @@ async def get_speed_audit(url: str = Query(...)):
     """Run real-time speed and Core Web Vitals probe on website."""
     from wulf_web_leader.audit.speed import audit_website_speed
     result = audit_website_speed(url)
-    return {"status": "ok", "speed": result}
+    return {
+        "success": True,
+        "status": "ok",
+        "data": result,
+        "speed": result,
+    }
 
 
 @app.get("/api/revenue-loss")
 async def get_revenue_loss(
     vertical: Optional[str] = Query(None),
+    vert: Optional[str] = Query(None),
     country: str = Query("PL"),
-    has_website: bool = Query(True),
-    is_https: bool = Query(True),
-    has_viewport: bool = Query(True),
+    has_website: Optional[bool] = Query(None),
+    has_site: Optional[str] = Query(None),
+    is_https: Optional[bool] = Query(None),
+    https: Optional[str] = Query(None),
+    has_viewport: Optional[bool] = Query(None),
+    rwd: Optional[str] = Query(None),
     load_time_seconds: Optional[float] = Query(None),
+    load_time: Optional[float] = Query(None),
     http_error: bool = Query(False),
 ):
     """Calculate estimated business loss and lost customers from website defects."""
+    # Resolve parameter aliases
+    v = vertical or vert
+    hw = has_website if has_website is not None else (has_site in ("1", "true", "True") if has_site is not None else True)
+    h_https = is_https if is_https is not None else (https in ("1", "true", "True") if https is not None else True)
+    h_rwd = has_viewport if has_viewport is not None else (rwd in ("1", "true", "True") if rwd is not None else True)
+    lt = load_time_seconds if load_time_seconds is not None else load_time
+
     from wulf_web_leader.score.revenue_calc import calculate_lost_revenue
     result = calculate_lost_revenue(
-        vertical=vertical,
+        vertical=v,
         country=country,
-        has_website=has_website,
-        is_https=is_https,
-        has_viewport=has_viewport,
-        load_time_seconds=load_time_seconds,
+        has_website=hw,
+        is_https=h_https,
+        has_viewport=h_rwd,
+        load_time_seconds=lt,
         http_error=http_error,
     )
-    return {"status": "ok", "revenue_loss": result}
+
+    # Enrich with formatted fields expected by frontend
+    curr = result.get("currency", "PLN")
+    monthly = result.get("lost_revenue_monthly", 0)
+    annual = result.get("lost_revenue_annual", 0)
+    clients = result.get("lost_clients_monthly", 0)
+    pitch = result.get("pitch", "")
+
+    result["monthly_loss_formatted"] = f"{monthly:,.0f} {curr}".replace(",", " ")
+    result["annual_loss_formatted"] = f"{annual:,.0f} {curr}".replace(",", " ")
+    result["estimated_lost_clients_monthly"] = clients
+    result["sales_pitch_hook"] = pitch
+
+    return {
+        "success": True,
+        "status": "ok",
+        "data": result,
+        "revenue_loss": result,
+    }
 

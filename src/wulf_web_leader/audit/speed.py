@@ -16,10 +16,12 @@ def audit_website_speed(url: str, google_api_key: Optional[str] = None) -> Dict[
     Sprawdza prędkość i kondycję techniczną strony mobilnej.
     Zwraca ustandaryzowany słownik ze statystykami i oceną wydajności.
     """
-    if not url or not url.startswith("http"):
+    if not url or not isinstance(url, str) or not url.strip():
         return {
             "source": "none",
+            "score": 0,
             "mobile_score": 0,
+            "performance_score": 0,
             "lcp_seconds": 0.0,
             "ttfb_ms": 0,
             "total_time_ms": 0,
@@ -28,12 +30,16 @@ def audit_website_speed(url: str, google_api_key: Optional[str] = None) -> Dict[
             "status_color": "red",
         }
 
+    clean_url = url.strip()
+    if not clean_url.startswith(("http://", "https://")):
+        clean_url = f"https://{clean_url}"
+
     key = google_api_key or os.environ.get("GOOGLE_PAGESPEED_API_KEY")
 
     # 1. Próba z oficjalnym Google PageSpeed Insights API (jeśli skonfigurowany)
     if key:
         try:
-            api_url = f"https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url={url}&category=PERFORMANCE&strategy=MOBILE&key={key}"
+            api_url = f"https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url={clean_url}&category=PERFORMANCE&strategy=MOBILE&key={key}"
             with httpx.Client(timeout=15.0, verify=False) as client:
                 r = client.get(api_url)
                 if r.status_code == 200:
@@ -49,7 +55,9 @@ def audit_website_speed(url: str, google_api_key: Optional[str] = None) -> Dict[
 
                     return {
                         "source": "google_api",
+                        "score": score,
                         "mobile_score": score,
+                        "performance_score": score,
                         "lcp_seconds": round(lcp_sec, 2),
                         "ttfb_ms": round(lh.get("audits", {}).get("server-response-time", {}).get("numericValue", 0)),
                         "total_time_ms": round(lcp_sec * 1000),
@@ -74,7 +82,7 @@ def audit_website_speed(url: str, google_api_key: Optional[str] = None) -> Dict[
         }
         with httpx.Client(timeout=8.0, follow_redirects=True, verify=False) as client:
             req_start = time.perf_counter()
-            resp = client.get(url, headers=headers)
+            resp = client.get(clean_url, headers=headers)
             ttfb_ms = round((time.perf_counter() - req_start) * 1000)
             total_time_ms = round((time.perf_counter() - start_time) * 1000)
             page_weight_kb = round(len(resp.content) / 1024.0, 1)
@@ -97,7 +105,9 @@ def audit_website_speed(url: str, google_api_key: Optional[str] = None) -> Dict[
 
             return {
                 "source": "network_probe",
+                "score": score,
                 "mobile_score": score,
+                "performance_score": score,
                 "lcp_seconds": lcp_seconds,
                 "ttfb_ms": ttfb_ms,
                 "total_time_ms": total_time_ms,
@@ -108,7 +118,9 @@ def audit_website_speed(url: str, google_api_key: Optional[str] = None) -> Dict[
     except Exception:
         return {
             "source": "network_probe_fail",
+            "score": 15,
             "mobile_score": 15,
+            "performance_score": 15,
             "lcp_seconds": 9.9,
             "ttfb_ms": 0,
             "total_time_ms": 0,
