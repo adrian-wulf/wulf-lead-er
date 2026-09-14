@@ -233,6 +233,7 @@ async def run_scan_pipeline(
                                 city=lead.city,
                                 phone=lead.phone,
                                 address=lead.address or lead.street,
+                                country=lead.country,
                             )
                             cache.set(lead.website, audit_res)
 
@@ -241,6 +242,8 @@ async def run_scan_pipeline(
                             lead.phone = audit_res.extracted_phones[0]
                         if not lead.email and audit_res.extracted_emails:
                             lead.email = audit_res.extracted_emails[0]
+                        if not lead.owner_name and audit_res.representative_name:
+                            lead.owner_name = audit_res.representative_name
 
                         # QA Verification Gate on audited website
                         if audit_res.reachable:
@@ -265,6 +268,8 @@ async def run_scan_pipeline(
                                         lead.phone = cand_audit.extracted_phones[0]
                                     if not lead.email and cand_audit.extracted_emails:
                                         lead.email = cand_audit.extracted_emails[0]
+                                    if not lead.owner_name and cand_audit.representative_name:
+                                        lead.owner_name = cand_audit.representative_name
                                     lead.qa_status = "verified"
                                     lead.qa_notes = f"Wykryto i zweryfikowano rzeczywistą witrynę (zastąpiono {old_url})"
                                     lead.confidence = "high"

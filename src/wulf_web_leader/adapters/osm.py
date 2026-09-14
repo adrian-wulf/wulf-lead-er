@@ -2,7 +2,7 @@ import asyncio
 import logging
 import random
 import re
-from typing import Any
+from typing import Any, Literal
 import httpx
 
 from wulf_web_leader.models import CanonicalLead, CountryCode
@@ -75,6 +75,122 @@ def normalize_phone_number(raw_phone: str | None, country: CountryCode) -> str |
                 cleaned = "+" + cleaned
 
     return cleaned
+
+
+PL_MOBILE_PREFIXES = {
+    "45", "50", "51", "53", "57", "60", "66", "69", "72", "73", "78", "79", "88",
+}
+
+PL_LANDLINE_AREA_CODES = {
+    "12", "13", "14", "15", "16", "17", "18",
+    "22", "23", "24", "25", "29",
+    "32", "33", "34",
+    "41", "42", "43", "44", "46", "48",
+    "52", "54", "55", "56", "58", "59",
+    "61", "62", "63", "65", "67", "68",
+    "71", "74", "75", "76", "77",
+    "81", "82", "83", "84", "85", "86", "87", "89",
+    "91", "94", "95",
+}
+
+
+def classify_phone_type(
+    phone: str | None,
+    country: CountryCode = "PL",
+) -> Literal["mobile", "landline", "unknown"]:
+    """Classify phone number as mobile, landline, or unknown for PL and DE."""
+    if not phone:
+        return "unknown"
+
+    cleaned = re.sub(r"[\s\-\(\)\/\.]", "", phone.strip())
+    if not cleaned:
+        return "unknown"
+
+    if cleaned.startswith("00"):
+        cleaned = "+" + cleaned[2:]
+
+    effective_country = country
+    if cleaned.startswith("+48"):
+        effective_country = "PL"
+    elif cleaned.startswith("+49"):
+        effective_country = "DE"
+
+    if effective_country == "PL":
+        num = None
+        if cleaned.startswith("+48"):
+            num = cleaned[3:]
+        elif cleaned.startswith("48") and len(cleaned) == 11:
+            num = cleaned[2:]
+        elif len(cleaned) == 9 and not cleaned.startswith("+"):
+            num = cleaned
+        elif not cleaned.startswith("+"):
+            digits = re.sub(r"\D", "", cleaned)
+            if len(digits) == 9:
+                num = digits
+            elif len(digits) == 11 and digits.startswith("48"):
+                num = digits[2:]
+
+        if num and len(num) == 9 and num.isdigit():
+            prefix = num[:2]
+            if prefix in PL_MOBILE_PREFIXES:
+                return "mobile"
+            if prefix in PL_LANDLINE_AREA_CODES:
+                return "landline"
+
+    elif effective_country == "DE":
+        num = None
+        if cleaned.startswith("+49"):
+            num = cleaned[3:]
+        elif cleaned.startswith("49") and len(cleaned) >= 10:
+            num = cleaned[2:]
+        elif cleaned.startswith("0"):
+            num = cleaned[1:]
+        elif not cleaned.startswith("+"):
+            num = cleaned
+
+        if num and num.isdigit():
+            if num.startswith(("15", "16", "17")) or num.startswith(("015", "016", "017")):
+                return "mobile"
+            if num[0] in "23456789":
+                return "landline"
+
+    # Fallback with phonenumbers if installed
+    try:
+        import phonenumbers
+        from phonenumbers import PhoneNumberType
+
+        parsed = phonenumbers.parse(phone, effective_country)
+        if phonenumbers.is_valid_number(parsed):
+            t = phonenumbers.number_type(parsed)
+            if t in (PhoneNumberType.MOBILE, PhoneNumberType.FIXED_LINE_OR_MOBILE):
+                return "mobile"
+            elif t == PhoneNumberType.FIXED_LINE:
+                return "landline"
+    except Exception:
+        pass
+
+    return "unknown"
+
+
+def get_whatsapp_url(phone: str | None, phone_type: str) -> str | None:
+    """Generate WhatsApp direct link (wa.me) for mobile numbers."""
+    if phone_type != "mobile" or not phone:
+        return None
+
+    digits = re.sub(r"\D", "", phone)
+    if not digits:
+        return None
+
+    if digits.startswith("00"):
+        digits = digits[2:]
+
+    # If 9 digits, default to PL (+48)
+    if len(digits) == 9 and digits[:2] in PL_MOBILE_PREFIXES:
+        digits = f"48{digits}"
+    elif digits.startswith("0") and len(digits) >= 10 and digits[1:3] in ("15", "16", "17"):
+        digits = f"49{digits[1:]}"
+
+    return f"https://wa.me/{digits}"
 
 
 def is_dead_or_disused_poi(tags: dict[str, str]) -> bool:
@@ -340,6 +456,8 @@ class OverpassClient:
                         existing_lead.postcode = postcode
                     if not existing_lead.phone and phone:
                         existing_lead.phone = phone
+                        existing_lead.phone_type = classify_phone_type(phone, country)
+                        existing_lead.whatsapp_url = get_whatsapp_url(phone, existing_lead.phone_type)
                     if not existing_lead.email and email:
                         existing_lead.email = email
                     if not existing_lead.website and website:
@@ -354,6 +472,9 @@ class OverpassClient:
                 continue
             seen_geo_names.add(geo_key)
 
+            phone_type = classify_phone_type(phone, country)
+            whatsapp_url = get_whatsapp_url(phone, phone_type)
+
             lead = CanonicalLead(
                 country=country,
                 name=name,
@@ -363,6 +484,8 @@ class OverpassClient:
                 city=city,
                 postcode=postcode,
                 phone=phone,
+                phone_type=phone_type,
+                whatsapp_url=whatsapp_url,
                 email=email,
                 website=website,
                 website_kind=website_kind,

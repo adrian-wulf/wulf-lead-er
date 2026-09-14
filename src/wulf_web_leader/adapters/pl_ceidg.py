@@ -9,7 +9,7 @@ import asyncio
 import logging
 import httpx
 from wulf_web_leader.models import CanonicalLead
-from wulf_web_leader.adapters.osm import normalize_phone_number
+from wulf_web_leader.adapters.osm import normalize_phone_number, classify_phone_type, get_whatsapp_url
 
 logger = logging.getLogger(__name__)
 
@@ -85,9 +85,24 @@ class CEIDGAdapter:
                     if pkd and not lead.industry_code:
                         lead.industry_code = str(pkd)
 
+                    wlasciciel = firma.get("wlasciciel")
+                    if isinstance(wlasciciel, dict):
+                        first = (wlasciciel.get("imie") or "").strip()
+                        last = (wlasciciel.get("nazwisko") or "").strip()
+                        if first or last:
+                            lead.owner_name = f"{first} {last}".strip()
+
+                    if firma.get("nip"):
+                        lead.nip = str(firma.get("nip")).strip()
+                    if firma.get("regon"):
+                        lead.regon = str(firma.get("regon")).strip()
+
                     raw_phone = firma.get("telefon")
                     if raw_phone and not lead.phone:
                         lead.phone = normalize_phone_number(raw_phone, "PL")
+                        if lead.phone and lead.phone_type == "unknown":
+                            lead.phone_type = classify_phone_type(lead.phone, "PL")
+                            lead.whatsapp_url = get_whatsapp_url(lead.phone, lead.phone_type)
             elif response.status_code in (429, 503):
                 logger.warning("CEIDG API returned status %s, fallback to OSM data without raising", response.status_code)
             else:

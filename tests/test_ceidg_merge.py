@@ -96,6 +96,53 @@ async def test_active_business_keeps_score():
 
 
 @pytest.mark.asyncio
+async def test_ceidg_enrichment_owner_nip_regon():
+    """Verify owner_name, nip, regon, and phone classification during CEIDG enrichment."""
+    adapter = CEIDGAdapter(api_token="valid-token")
+
+    lead = CanonicalLead(
+        country="PL",
+        name="Instalacje Jan Kowalski",
+        city="Rzeszów",
+        source="osm",
+        source_id="node/3",
+        industry_label="Hydraulik",
+    )
+
+    fake_response = {
+        "firmy": [
+            {
+                "nazwa": "Instalacje Jan Kowalski",
+                "status": "AKTYWNY",
+                "glownyPkd": "43.22.Z",
+                "nip": "1234567890",
+                "regon": "987654321",
+                "wlasciciel": {
+                    "imie": "Jan",
+                    "nazwisko": "Kowalski",
+                },
+                "telefon": "601234567",
+            }
+        ]
+    }
+
+    mock_resp = AsyncMock(spec=httpx.Response)
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = fake_response
+
+    with patch("httpx.AsyncClient.get", new_callable=AsyncMock) as mock_get:
+        mock_get.return_value = mock_resp
+        enriched = await adapter.enrich_lead(lead)
+
+    assert enriched.owner_name == "Jan Kowalski"
+    assert enriched.nip == "1234567890"
+    assert enriched.regon == "987654321"
+    assert enriched.phone == "+48601234567"
+    assert enriched.phone_type == "mobile"
+    assert enriched.whatsapp_url == "https://wa.me/48601234567"
+
+
+@pytest.mark.asyncio
 async def test_pipeline_integrates_ceidg():
     """WD.2: Pełny pipeline z mockowanym adapterem CEIDG poprawnie filtruje lub oznacza zawieszoną firmę."""
     fake_lead_active = CanonicalLead(

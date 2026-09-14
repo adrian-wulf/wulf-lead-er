@@ -38,7 +38,11 @@ def test_export_leads_to_csv_operational_columns(tmp_path: Path):
         reader = csv.DictReader(f)
         fieldnames = reader.fieldnames
         assert fieldnames is not None
-        for col in ["street", "postcode", "phone", "email", "status_kontaktu", "notatki", "data_kontaktu"]:
+        for col in [
+            "street", "postcode", "phone", "email",
+            "status_kontaktu", "notatki", "data_kontaktu",
+            "owner_name", "nip", "regon", "phone_type", "whatsapp_url", "google_maps_url",
+        ]:
             assert col in fieldnames
 
         rows = list(reader)
@@ -51,3 +55,9 @@ def test_export_leads_to_csv_operational_columns(tmp_path: Path):
         assert rows[0]["status_kontaktu"] == ""
         assert rows[0]["notatki"] == ""
         assert rows[0]["data_kontaktu"] == ""
+        assert rows[0]["owner_name"] == ""
+        assert rows[0]["nip"] == ""
+        assert rows[0]["regon"] == ""
+        assert rows[0]["phone_type"] == "unknown"
+        assert rows[0]["whatsapp_url"] == ""
+        assert rows[0]["google_maps_url"] == ""

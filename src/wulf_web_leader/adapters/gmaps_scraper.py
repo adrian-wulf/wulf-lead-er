@@ -19,6 +19,7 @@ from wulf_web_leader.audit.classifier import classify_website_kind
 from wulf_web_leader.audit.lead_filter import is_lead_relevant
 from wulf_web_leader.audit.proxy_pool import get_proxies_file_path
 from wulf_web_leader.models import CanonicalLead, CountryCode
+from wulf_web_leader.adapters.osm import classify_phone_type, get_whatsapp_url
 
 logger = logging.getLogger(__name__)
 
@@ -160,9 +161,29 @@ def parse_ndjson_line(
 
     website_kind = classify_website_kind(website) if website else "none"
 
+    raw_gmaps_url = data.get("link") or data.get("url")
+    google_maps_url = str(raw_gmaps_url).strip() if raw_gmaps_url else None
+
+    open_state: str | None = None
+    if data.get("status"):
+        open_state = str(data["status"]).strip()
+    elif data.get("is_closed") is True:
+        open_state = "closed"
+    elif data.get("is_closed") is False:
+        open_state = "open"
+    elif data.get("open_hours"):
+        oh = data["open_hours"]
+        if isinstance(oh, str) and oh.strip():
+            open_state = oh.strip()
+        elif isinstance(oh, dict):
+            open_state = json.dumps(oh)
+
+    phone_type = classify_phone_type(phone, country) if phone else "unknown"
+    whatsapp_url = get_whatsapp_url(phone, phone_type) if phone else None
+
     return CanonicalLead(
         source="google_maps",
-        external_id=str(data.get("data_id") or data.get("cid") or title),
+        source_id=str(data.get("data_id") or data.get("cid") or title),
         name=title,
         city=city,
         street=street,
@@ -171,6 +192,10 @@ def parse_ndjson_line(
         lat=lat,
         lon=lon,
         phone=phone,
+        phone_type=phone_type,
+        whatsapp_url=whatsapp_url,
+        google_maps_url=google_maps_url,
+        open_state=open_state,
         website=website,
         website_kind=website_kind,
         website_source="google_maps" if website else "none",
@@ -194,7 +219,7 @@ async def scrape_google_maps(
     city: str = "",
     radius_km: float = 15.0,
     lang: str = "pl",
-    max_depth: int = 1,
+    max_depth: int = 2,
     timeout_seconds: float = 45.0,
     vertical_id: str | None = None,
 ) -> list[CanonicalLead]:
@@ -217,6 +242,7 @@ async def scrape_google_maps(
         with open(query_file, "w", encoding="utf-8") as f:
             f.write(f"{query}\n")
 
+        radius_meters = int(radius_km * 1000)
         cmd = [
             str(binary),
             "-input", str(query_file),
@@ -224,6 +250,7 @@ async def scrape_google_maps(
             "-json",
             "-depth", str(max_depth),
             "-geo", f"{lat:.6f},{lon:.6f}",
+            "-radius", str(radius_meters),
             "-fast-mode",
             "-exit-on-inactivity", "15s",
         ]

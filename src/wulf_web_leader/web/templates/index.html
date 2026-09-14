@@ -796,28 +796,25 @@
       background: #B91C1C;
     }
 
-    /* SECONDARY CRITERIA BAR (HORIZONTAL QUICK-CHIPS & TOGGLES) */
     .criteria-secondary-bar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
       gap: 12px;
       margin-top: 4px;
+      width: 100%;
     }
 
     .quick-chips-wrapper {
       flex: 1;
+      width: 100%;
       min-width: 0;
       position: relative;
     }
     .quick-chips-scroll {
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
       gap: 6px;
-      overflow-x: auto;
-      white-space: nowrap;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
       padding: 2px 0;
     }
     .quick-chips-scroll::-webkit-scrollbar {
@@ -836,6 +833,7 @@
       transition: all var(--tr-fast);
       user-select: none;
       flex-shrink: 0;
+      white-space: nowrap;
     }
     .quick-chip:hover {
       background: rgba(255, 255, 255, 0.08);
@@ -851,12 +849,10 @@
     }
 
     .criteria-options-group {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       flex-shrink: 0;
-      padding-left: 8px;
-      border-left: 1px solid rgba(255, 255, 255, 0.06);
     }
     .compact-toggle {
       display: inline-flex;
@@ -2765,6 +2761,21 @@
             <span class="panel-headline-badge">OSM • CEIDG • OffeneRegister</span>
           </div>
           <div class="panel-quick-actions">
+            <div class="criteria-options-group">
+              <div class="pipeline-badge-pill" title="Kompleksowy potok: Google Maps (250 Proxy) + OSM + Audyt WWW + Automatyczny OSINT (Wikipedia & DuckDuckGo). Limit: 1 skan na 5 min.">
+                <span class="pulse-dot scanning" style="width: 8px; height: 8px;"></span>
+                <span style="font-size: 11px; font-weight: 700; color: var(--gold); letter-spacing: 0.3px;">⚡ AUTO-PIPELINE (Maps + OSM + OSINT)</span>
+                <span style="font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);">(1 sesja / 5 min)</span>
+              </div>
+              <input type="hidden" id="scan-do-audit" value="true">
+              <input type="hidden" id="scan-use-gemini" value="true">
+              <input type="hidden" id="scan-has-phone" value="false">
+              <select class="compact-lang-select" id="scan-lang">
+                <option value="pl" selected>🇵🇱 PL</option>
+                <option value="de">🇩🇪 DE</option>
+                <option value="en">🇬🇧 EN</option>
+              </select>
+            </div>
             <span class="shortcut-pill"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> Uruchom</span>
           </div>
         </div>
@@ -2845,9 +2856,8 @@
           </div>
         </div>
 
-        <!-- SECONDARY CRITERIA BAR (HORIZONTAL QUICK-CHIPS & TOGGLES) -->
+        <!-- SECONDARY CRITERIA BAR (POPULAR TRADE CHIPS) -->
         <div class="criteria-secondary-bar">
-          <!-- Left: Popular Trade Chips (Horizontal scroll, no wrapping) -->
           <div class="quick-chips-wrapper">
             <div class="quick-chips-scroll" id="trade-chips-scroll">
               <span class="quick-chip active" onclick="setVerticalPreset('informatyk', this)">💻 Informatyk / IT</span>
@@ -2865,23 +2875,6 @@
               <span class="quick-chip" onclick="setVerticalPreset('restauracja', this)">🍽️ Gastronomia</span>
               <span class="quick-chip" onclick="setVerticalPreset('weterynarz', this)">🐾 Weterynarz</span>
             </div>
-          </div>
-
-          <!-- Right: Unified Auto-OSINT Pipeline Status & Language -->
-          <div class="criteria-options-group">
-            <div class="pipeline-badge-pill" title="Kompleksowy potok: Google Maps (250 Proxy) + OSM + Audyt WWW + Automatyczny OSINT (Wikipedia & DuckDuckGo). Limit: 1 skan na 5 min.">
-              <span class="pulse-dot scanning" style="width: 8px; height: 8px;"></span>
-              <span style="font-size: 11px; font-weight: 700; color: var(--gold); letter-spacing: 0.3px;">⚡ AUTO-PIPELINE (Maps + OSM + OSINT)</span>
-              <span style="font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);">(1 sesja / 5 min)</span>
-            </div>
-            <input type="hidden" id="scan-do-audit" value="true">
-            <input type="hidden" id="scan-use-gemini" value="true">
-            <input type="hidden" id="scan-has-phone" value="false">
-            <select class="compact-lang-select" id="scan-lang">
-              <option value="pl" selected>🇵🇱 PL</option>
-              <option value="de">🇩🇪 DE</option>
-              <option value="en">🇬🇧 EN</option>
-            </select>
           </div>
         </div>
 

@@ -11,7 +11,9 @@
     "missing_impressum": "Brak zakładki z pełnymi danymi firmy (Impressum) — czytelna stopka z danymi podnosi wiarygodność u klientów.",
     "reviews_no_site": "Firma ma dobre opinie klientów, ale brak jej własnej strony do prezentacji oferty.",
     "corporate_enterprise": "Podmiot korporacyjny (S.A. / AG / Holding) — wykluczony z prostego outreachu B2B. Niedziałająca strona najczęściej wynika z fuzji, przejęcia, rebrandingu lub centralizacji domeny.",
-    "hot_prospect": "Idealny kandydat do kontaktu: lokalny biznes z publicznym kontaktem, który pilnie potrzebuje nowoczesnej witryny."
+    "hot_prospect": "Idealny kandydat do kontaktu: lokalny biznes z publicznym kontaktem, który pilnie potrzebuje nowoczesnej witryny.",
+    "no_pixels": "Strona nie posiada zainstalowanego Pixela Meta ani Google Analytics 4 – tracą Państwo 100% danych o odwiedzających i nie prowadzicie remarketingu.",
+    "high_ttfb": "Długi czas odpowiedzi serwera (TTFB: {ttfb_ms} ms) spowalnia ładowanie strony — ponad 50% klientów mobilnych opuszcza wolne witryny."
   },
   "verdicts": {
     "hot": "Gorący",

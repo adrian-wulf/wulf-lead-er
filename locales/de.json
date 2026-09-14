@@ -11,7 +11,9 @@
     "missing_impressum": "Fehlendes Impressum oder unvollständige Kontaktdaten — eine transparente Anbieterkennzeichnung schafft Vertrauen bei Neukunden.",
     "reviews_no_site": "Betrieb hat positive Kundenbewertungen, ale keine eigene Website zur Angebotspräsentation.",
     "corporate_enterprise": "Großunternehmen / Konzern (AG / SE / Holding) — nicht für Kaltakquise von Standard-Websites geeignet. Nicht erreichbare Domains resultieren meist aus Umfirmierung, Fusion oder Konsolidierung.",
-    "hot_prospect": "Top-Kandidat: Lokales Unternehmen mit Kontaktdaten, das sofort von einer modernen Website profitiert."
+    "hot_prospect": "Top-Kandidat: Lokales Unternehmen mit Kontaktdaten, das sofort von einer modernen Website profitiert.",
+    "no_pixels": "Die Website verfügt weder über ein Meta-Pixel noch über Google Analytics 4 — Sie verlieren wertvolle Besucherdaten für Re-Targeting.",
+    "high_ttfb": "Lange Server-Antwortzeit (TTFB: {ttfb_ms} ms) — langsame Ladezeiten führen zum Abbruch mobiler Besucher."
   },
   "verdicts": {
     "hot": "Heiß",

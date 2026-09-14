@@ -133,6 +133,30 @@ def generate_pitch_hooks(lead: CanonicalLead, lang: str = "pl") -> list[str]:
             if hook_tpl:
                 results.append(hook_tpl.format(generator=lead.audit.generator))
 
+        # Marketing intelligence & performance hooks
+        if not lead.audit.detected_pixels:
+            hook = hooks_dict.get("no_pixels")
+            if not hook:
+                hook = (
+                    "Die Website verfügt weder über ein Meta-Pixel noch über Google Analytics 4 — Sie verlieren wertvolle Besucherdaten für Re-Targeting."
+                    if (lang.lower().strip() == "de" or (lead.country == "DE" and lang.lower().strip() != "pl"))
+                    else "Strona nie posiada zainstalowanego Pixela Meta ani Google Analytics 4 – tracą Państwo 100% danych o odwiedzających i nie prowadzicie remarketingu."
+                )
+            results.append(hook)
+
+        if lead.audit.ttfb_ms is not None and lead.audit.ttfb_ms > 1000:
+            ttfb_disp = int(lead.audit.ttfb_ms) if isinstance(lead.audit.ttfb_ms, int) or (isinstance(lead.audit.ttfb_ms, float) and lead.audit.ttfb_ms.is_integer()) else round(lead.audit.ttfb_ms)
+            hook_tpl = hooks_dict.get("high_ttfb")
+            if hook_tpl:
+                results.append(hook_tpl.format(ttfb_ms=ttfb_disp))
+            else:
+                hook = (
+                    f"Lange Server-Antwortzeit (TTFB: {ttfb_disp} ms) — langsame Ladezeiten führen zum Abbruch mobiler Besucher."
+                    if (lang.lower().strip() == "de" or (lead.country == "DE" and lang.lower().strip() != "pl"))
+                    else f"Długi czas odpowiedzi serwera (TTFB: {ttfb_disp} ms) spowalnia ładowanie strony — ponad 50% klientów mobilnych opuszcza wolne witryny."
+                )
+                results.append(hook)
+
     # 7. Google Maps rating reputation hook
     if lead.rating and lead.rating >= 4.0:
         rev_text = f" ({lead.reviews_count} opinii)" if lead.reviews_count else ""
@@ -148,3 +172,52 @@ def generate_pitch_hooks(lead: CanonicalLead, lang: str = "pl") -> list[str]:
             results.append(hook)
 
     return results
+
+
+def generate_greeting(lead: CanonicalLead, lang: str = "pl") -> str:
+    """Generate personalized outreach greeting based on owner name or representative name."""
+    is_de = lang.lower().strip() == "de" or (lead.country == "DE" and lang.lower().strip() != "pl")
+    owner = lead.owner_name or (lead.audit.representative_name if lead.audit else None)
+
+    if not owner:
+        return "Sehr geehrte Damen und Herren," if is_de else "Dzień dobry,"
+
+    if is_de:
+        return f"Sehr geehrte(r) Frau/Herr {owner},"
+    else:
+        first_name = owner.split()[0]
+        return f"Dzień dobry Panie/Pani {first_name},"
+
+
+def generate_salutation(lead: CanonicalLead, lang: str = "pl") -> str:
+    """Alias for generate_greeting."""
+    return generate_greeting(lead, lang)
+
+
+def generate_outreach_email(lead: CanonicalLead, lang: str | None = None) -> tuple[str, str]:
+    """Generate localized cold email subject and body with personalized greeting and primary hook."""
+    target_lang = (lang or (lead.country.lower() if lead.country else "pl")).lower().strip()
+    primary_hook = lead.hooks[0] if lead.hooks else ""
+    owner = lead.owner_name or (lead.audit.representative_name if lead.audit else None)
+
+    if target_lang == "de":
+        subject = f"Anfrage zur Website — {lead.name}"
+        greeting = f"Sehr geehrte(r) Frau/Herr {owner}," if owner else "Sehr geehrte Damen und Herren,"
+        body = (
+            f"{greeting}\n\n"
+            f"ich habe Ihr Unternehmen {lead.name} in {lead.city or ''} bemerkt.\n"
+            f"{primary_hook}\n\n"
+            f"Gerne erstelle ich für Sie einen unverbindlichen Vorschlag bzw. Entwurf für einen zeitgemäßen Webauftritt.\n\n"
+            f"Mit freundlichen Grüßen"
+        )
+    else:
+        subject = f"Zapytanie o stronę internetową — {lead.name}"
+        greeting = f"Dzień dobry Panie/Pani {owner}," if owner else "Dzień dobry,"
+        body = (
+            f"{greeting}\n\n"
+            f"Zauważyłem Państwa firmę {lead.name} w {lead.city or ''}.\n"
+            f"{primary_hook}\n\n"
+            f"Chętnie przygotuję dla Państwa propozycję / bezpłatny projekt strony www.\n\n"
+            f"Pozdrawiam"
+        )
+    return subject, body

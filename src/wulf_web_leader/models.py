@@ -7,6 +7,7 @@ LeadSource = Literal["osm", "ceidg", "offeneregister", "manual", "google_maps"]
 RegistryStatus = Literal["active", "unknown", "inactive"]
 Verdict = Literal["hot", "warm", "skip"]
 CountryCode = Literal["PL", "DE"]
+PhoneType = Literal["mobile", "landline", "unknown"]
 
 
 OpportunityType = Literal[
@@ -34,6 +35,10 @@ class AuditResult(BaseModel):
     has_impressum: bool = False
     extracted_phones: list[str] = Field(default_factory=list)
     extracted_emails: list[str] = Field(default_factory=list)
+    representative_name: str | None = None
+    social_links: dict[str, str] = Field(default_factory=dict)
+    detected_pixels: list[str] = Field(default_factory=list)
+    ttfb_ms: float | None = None
     error_message: str | None = None
     is_placeholder: bool = False
     placeholder_reason: str | None = None
@@ -95,6 +100,13 @@ class CanonicalLead(BaseModel):
     audit: AuditResult | None = None
     gemini_intel: GeminiIntel | None = None
     wikipedia_intel: Any | None = None
+    owner_name: str | None = None
+    nip: str | None = None
+    regon: str | None = None
+    phone_type: Literal["mobile", "landline", "unknown"] = "unknown"
+    whatsapp_url: str | None = None
+    google_maps_url: str | None = None
+    open_state: str | None = None
 
 
 

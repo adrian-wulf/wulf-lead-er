@@ -30,6 +30,12 @@ CSV_COLUMNS = [
     "source",
     "lat",
     "lon",
+    "owner_name",
+    "nip",
+    "regon",
+    "phone_type",
+    "whatsapp_url",
+    "google_maps_url",
 ]
 
 
@@ -71,6 +77,12 @@ def export_leads_to_csv(
                 "source": lead.source,
                 "lat": lead.lat if lead.lat is not None else "",
                 "lon": lead.lon if lead.lon is not None else "",
+                "owner_name": lead.owner_name or "",
+                "nip": lead.nip or "",
+                "regon": lead.regon or "",
+                "phone_type": lead.phone_type,
+                "whatsapp_url": lead.whatsapp_url or "",
+                "google_maps_url": lead.google_maps_url or "",
             }
             writer.writerow(row)
 

@@ -61,17 +61,33 @@ def generate_html_report(
         phone_val = lead.phone or ""
         safe_phone = html.escape(phone_val)
         if phone_val:
-            phone_html = f'<a href="tel:{safe_phone}" class="phone-link">📞 {safe_phone}</a>'
+            phone_badge = ""
+            phone_type = lead.phone_type
+            if phone_type == "mobile":
+                phone_badge = ' <span class="badge badge-phone-mobile">📱 Komórka (SMS/WhatsApp)</span>'
+            elif phone_type == "landline":
+                phone_badge = ' <span class="badge badge-phone-landline">☎️ Stacjonarny</span>'
+
+            wa_html = ""
+            if lead.whatsapp_url:
+                wa_html = f' <a href="{lead.whatsapp_url}" target="_blank" class="btn-whatsapp" title="Czat WhatsApp">💬 WhatsApp</a>'
+
+            phone_html = f'<a href="tel:{safe_phone}" class="phone-link">📞 {safe_phone}</a>{phone_badge}{wa_html}'
         else:
             phone_html = '<span class="text-muted">Brak telefonu</span>'
 
         email_val = lead.email or ""
         safe_email = html.escape(email_val)
         if email_val:
+            owner_for_email = lead.owner_name or (lead.audit.representative_name if lead.audit else None)
             if lead.country == "DE":
                 subject_txt = f"Anfrage zur Website — {lead.name}"
+                if owner_for_email:
+                    salutation = f"Sehr geehrte(r) Frau/Herr {owner_for_email},\n\n"
+                else:
+                    salutation = "Sehr geehrte Damen und Herren,\n\n"
                 body_txt = (
-                    f"Sehr geehrte Damen und Herren,\n\n"
+                    f"{salutation}"
                     f"ich habe Ihr Unternehmen {lead.name} in {lead.city or ''} bemerkt.\n"
                     f"{primary_hook}\n\n"
                     f"Gerne erstelle ich für Sie einen unverbindlichen Vorschlag bzw. Entwurf für einen zeitgemäßen Webauftritt.\n\n"
@@ -79,8 +95,12 @@ def generate_html_report(
                 )
             else:
                 subject_txt = f"Zapytanie o stronę internetową — {lead.name}"
+                if owner_for_email:
+                    salutation = f"Dzień dobry Panie/Pani {owner_for_email},\n\n"
+                else:
+                    salutation = "Dzień dobry,\n\n"
                 body_txt = (
-                    f"Dzień dobry,\n\n"
+                    f"{salutation}"
                     f"Zauważyłem Państwa firmę {lead.name} w {lead.city or ''}.\n"
                     f"{primary_hook}\n\n"
                     f"Chętnie przygotuję dla Państwa propozycję / bezpłatny projekt strony www.\n\n"
@@ -127,6 +147,58 @@ def generate_html_report(
             web_html = f'<a href="{safe_website}" target="_blank" rel="noopener" class="web-link">📁 {safe_website}</a> {opp_badge}'
         else:
             web_html = f'<a href="{safe_website}" target="_blank" rel="noopener" class="web-link">🌐 {safe_website}</a> {opp_badge}'
+
+        # Decision Maker / Owner badges
+        owner_badges = []
+        if lead.owner_name:
+            owner_badges.append(f'<span class="badge badge-owner">👤 Decydent: {html.escape(lead.owner_name)}</span>')
+        if lead.nip:
+            owner_badges.append(f'<span class="badge badge-nip">NIP: {html.escape(lead.nip)}</span>')
+        if lead.regon:
+            owner_badges.append(f'<span class="badge badge-regon">REGON: {html.escape(lead.regon)}</span>')
+        owner_html = f'<div class="card-row owner-row">{" ".join(owner_badges)}</div>' if owner_badges else ""
+
+        # TTFB badge
+        ttfb_html = ""
+        if lead.audit and lead.audit.ttfb_ms is not None:
+            ttfb_val = int(round(lead.audit.ttfb_ms))
+            if ttfb_val < 500:
+                ttfb_class = "ttfb-fast"
+            elif ttfb_val <= 1000:
+                ttfb_class = "ttfb-medium"
+            else:
+                ttfb_class = "ttfb-slow"
+            ttfb_html = f'<span class="badge badge-ttfb {ttfb_class}">⚡ TTFB: {ttfb_val} ms</span>'
+
+        # Social links
+        social_html = ""
+        if lead.audit and lead.audit.social_links:
+            social_items = []
+            icon_map = {
+                "facebook": ("📘", "Facebook"),
+                "instagram": ("📸", "Instagram"),
+                "linkedin": ("💼", "LinkedIn"),
+                "tiktok": ("🎵", "TikTok"),
+                "youtube": ("▶️", "YouTube"),
+            }
+            for platform, s_url in sorted(lead.audit.social_links.items()):
+                p_lower = platform.lower()
+                icon, label = icon_map.get(p_lower, ("🔗", platform.capitalize()))
+                safe_s_url = html.escape(s_url)
+                social_items.append(
+                    f'<a href="{safe_s_url}" target="_blank" rel="noopener" class="social-badge social-{p_lower}">{icon} {label}</a>'
+                )
+            if social_items:
+                social_html = f'<div class="card-row social-row"><span class="social-label">Social Media:</span> {" ".join(social_items)}</div>'
+
+        # Marketing Pixels
+        pixels_html = ""
+        if lead.audit and lead.audit.reachable:
+            if lead.audit.detected_pixels:
+                px_badges = [f'<span class="badge badge-pixel">📊 {html.escape(px)}</span>' for px in sorted(lead.audit.detected_pixels)]
+                pixels_html = f'<div class="card-row pixels-row"><span class="pixels-label">Analityka:</span> {" ".join(px_badges)}</div>'
+            else:
+                pixels_html = '<div class="card-row pixels-row"><span class="badge badge-no-pixel">⚠️ Brak Pixela Meta / GA4 (Brak analityki)</span></div>'
 
         # OSM map link
         if lead.lat is not None and lead.lon is not None:
@@ -197,7 +269,7 @@ def generate_html_report(
                  data-qa="{qa_status}"
                  data-has-phone="{'true' if phone_val else 'false'}"
                  data-has-email="{'true' if email_val else 'false'}"
-                 data-search="{safe_name.lower()} {safe_city.lower()} {safe_street.lower()} {phone_val.lower()} {email_val.lower()}">
+                 data-search="{safe_name.lower()} {safe_city.lower()} {safe_street.lower()} {phone_val.lower()} {email_val.lower()} {html.escape(lead.owner_name or '').lower()} {html.escape(lead.nip or '').lower()}">
             <header class="card-header">
                 <div class="card-title-wrap">
                     <h3 class="card-title">{safe_name}</h3>
@@ -210,11 +282,15 @@ def generate_html_report(
             </header>
 
             <div class="card-body">
+                {owner_html}
                 <div class="card-row contact-row">
                     <div class="contact-item">{phone_html}</div>
                     <div class="contact-item">{email_html}</div>
-                    <div class="contact-item">{web_html}</div>
+                    <div class="contact-item">{web_html} {ttfb_html}</div>
                 </div>
+
+                {social_html}
+                {pixels_html}
 
                 <div class="card-row address-row">
                     <span class="addr-icon">📍</span>
@@ -700,6 +776,145 @@ def generate_html_report(
         .badge-own {{
             background: rgba(16, 185, 129, 0.2);
             color: #6ee7b7;
+        }}
+
+        .badge-phone-mobile {{
+            background: rgba(37, 211, 102, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(37, 211, 102, 0.35);
+        }}
+
+        .badge-phone-landline {{
+            background: rgba(148, 163, 184, 0.15);
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }}
+
+        .btn-whatsapp {{
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: #25d366;
+            color: #ffffff;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.2rem 0.55rem;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-left: 0.4rem;
+            transition: background 0.15s ease;
+            vertical-align: middle;
+        }}
+
+        .btn-whatsapp:hover {{
+            background: #128c7e;
+            text-decoration: none;
+            color: #ffffff;
+        }}
+
+        .badge-owner {{
+            background: rgba(168, 85, 247, 0.2);
+            color: #c084fc;
+            border: 1px solid rgba(168, 85, 247, 0.4);
+        }}
+
+        .badge-nip, .badge-regon {{
+            background: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }}
+
+        .owner-row {{
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }}
+
+        .social-row {{
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }}
+
+        .social-label {{
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }}
+
+        .social-badge {{
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.07);
+            color: #cbd5e1;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.15s ease;
+        }}
+
+        .social-badge:hover {{
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.35);
+        }}
+
+        .social-facebook:hover {{ background: rgba(24, 119, 242, 0.25); border-color: #1877f2; }}
+        .social-instagram:hover {{ background: rgba(225, 48, 108, 0.25); border-color: #e1306c; }}
+        .social-linkedin:hover {{ background: rgba(10, 102, 194, 0.25); border-color: #0a66c2; }}
+        .social-tiktok:hover {{ background: rgba(0, 242, 234, 0.2); border-color: #00f2fe; }}
+        .social-youtube:hover {{ background: rgba(255, 0, 0, 0.2); border-color: #ff0000; }}
+
+        .pixels-row {{
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }}
+
+        .pixels-label {{
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }}
+
+        .badge-pixel {{
+            background: rgba(14, 165, 233, 0.2);
+            color: #38bdf8;
+            border: 1px solid rgba(14, 165, 233, 0.4);
+        }}
+
+        .badge-no-pixel {{
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.35);
+        }}
+
+        .badge-ttfb {{
+            font-weight: 700;
+        }}
+
+        .ttfb-fast {{
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }}
+
+        .ttfb-medium {{
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }}
+
+        .ttfb-slow {{
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.4);
         }}
 
         .issue-tag {{

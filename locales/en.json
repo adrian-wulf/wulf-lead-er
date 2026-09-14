@@ -10,7 +10,9 @@
     "outdated_tech": "Outdated site technology ({generator}) — would benefit from modern redesign.",
     "missing_impressum": "Missing owner details / Impressum — clear company info builds trust with prospective customers.",
     "reviews_no_site": "Has public customer reviews but lacks a dedicated website to showcase offerings.",
-    "hot_prospect": "High-priority lead: local business with contact info needing a modern website."
+    "hot_prospect": "High-priority lead: local business with contact info needing a modern website.",
+    "no_pixels": "The website has neither Meta Pixel nor Google Analytics 4 installed — missing 100% of visitor analytics and retargeting opportunities.",
+    "high_ttfb": "Slow server response time (TTFB: {ttfb_ms} ms) impairs page speed — over 50% of mobile users abandon slow websites."
   },
   "verdicts": {
     "hot": "Hot",
