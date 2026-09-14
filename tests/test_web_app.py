@@ -119,6 +119,8 @@ async def test_api_scan_start_and_conflict(test_client):
         assert res.json()["status"] == "started"
 
     # Simulate conflict (scan already running)
+    from wulf_web_leader.web.rate_limiter import scan_rate_limiter
+    scan_rate_limiter.reset()
     with patch.object(scan_manager, "start_scan", new_callable=AsyncMock) as mock_start_conflict:
         mock_start_conflict.return_value = False
 

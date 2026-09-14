@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+import os
 from pathlib import Path
 from typing import Any, Optional
 
@@ -12,6 +13,11 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
 from wulf_web_leader.verticals import load_all_verticals
+from wulf_web_leader.web.rate_limiter import (
+    gemini_rate_limiter,
+    get_client_ip,
+    scan_rate_limiter,
+)
 from wulf_web_leader.web.scan_manager import ScanManager
 from wulf_web_leader.web.session_manager import (
     COOKIE_MAX_AGE,
@@ -24,6 +30,30 @@ from wulf_web_leader.web.session_manager import (
 )
 
 logger = logging.getLogger(__name__)
+
+# Automatically load .env file if present in workspace root or parents
+def _load_env_file():
+    candidates = [
+        Path.cwd() / ".env",
+        Path(__file__).resolve().parent.parent.parent.parent / ".env",
+        Path(__file__).resolve().parent.parent.parent / ".env",
+    ]
+    for p in candidates:
+        if p.is_file():
+            try:
+                with open(p, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith("#") and "=" in line:
+                            k, v = line.split("=", 1)
+                            k, v = k.strip(), v.strip().strip("'\"")
+                            if k and k not in os.environ:
+                                os.environ[k] = v
+                break
+            except Exception:
+                pass
+
+_load_env_file()
 
 PACKAGE_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = PACKAGE_DIR / "templates"
@@ -173,8 +203,33 @@ async def load_saved_scan(req: LoadScanRequest, mgr: ScanManager = Depends(get_m
 
 
 @app.post("/api/scan/start")
-async def start_scan(req: StartScanRequest, mgr: ScanManager = Depends(get_manager)):
+async def start_scan(
+    req: StartScanRequest,
+    request: Request,
+    mgr: ScanManager = Depends(get_manager),
+):
     """Start an asynchronous lead discovery scan."""
+    client_ip = get_client_ip(request)
+
+    # 1. Enforce Gemini rate limit if use_gemini is requested
+    if req.use_gemini:
+        allowed_gemini, retry_after_gemini = gemini_rate_limiter.check(client_ip)
+        if not allowed_gemini:
+            raise HTTPException(
+                status_code=429,
+                detail=f"Przekroczono limit zapytań Gemini AI (maksymalnie 1 użycie na minutę na adres IP). Spróbuj ponownie za {int(retry_after_gemini)} s.",
+                headers={"Retry-After": str(int(retry_after_gemini))},
+            )
+
+    # 2. Enforce scan start rate limit (1 scan per minute per IP)
+    allowed_scan, retry_after_scan = scan_rate_limiter.check(client_ip)
+    if not allowed_scan:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Przekroczono limit uruchamiania skanowania (maksymalnie 1 na minutę na adres IP). Spróbuj ponownie za {int(retry_after_scan)} s.",
+            headers={"Retry-After": str(int(retry_after_scan))},
+        )
+
     country_norm = req.country.strip().upper()
     if country_norm not in ("PL", "DE"):
         raise HTTPException(status_code=400, detail="Kod kraju musi wynosić 'PL' lub 'DE'.")
@@ -322,11 +377,20 @@ async def get_gemini_status():
 @app.post("/api/leads/{source_id}/gemini-verify")
 async def verify_lead_gemini_endpoint(
     source_id: str,
+    request: Request,
     req: Optional[GeminiVerifyRequest] = None,
-    request: Request = None,
     mgr: ScanManager = Depends(get_manager),
 ):
     """Verify an individual lead in Google via Gemini API with live Search Grounding."""
+    client_ip = get_client_ip(request)
+    allowed, retry_after = gemini_rate_limiter.check(client_ip)
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Przekroczono limit zapytań Gemini AI (maksymalnie 1 użycie na minutę na adres IP). Spróbuj ponownie za {int(retry_after)} s.",
+            headers={"Retry-After": str(int(retry_after))},
+        )
+
     api_key = req.api_key if req else None
     if not api_key and request:
         api_key = request.headers.get("X-Gemini-Api-Key")

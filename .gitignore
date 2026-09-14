@@ -47,3 +47,8 @@ scan_*.html
 sessions/
 .scan_state*
 
+# Environment variables & secrets
+.env
+.env.*
+*.env
+

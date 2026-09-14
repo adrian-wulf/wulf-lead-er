@@ -277,6 +277,9 @@ class ScanManager:
                     env = dict(os.environ)
                     src_dir = str(Path(__file__).resolve().parent.parent.parent)
                     env["PYTHONPATH"] = f"{src_dir}:{env.get('PYTHONPATH', '')}"
+                    env["PYTHONIOENCODING"] = "utf-8"
+                    env["LC_ALL"] = "C.UTF-8"
+                    env["LANG"] = "C.UTF-8"
 
                     proc = subprocess.Popen(
                         cmd,

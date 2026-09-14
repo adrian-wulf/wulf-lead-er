@@ -20,6 +20,21 @@ for path in [SRC_DIR, CURRENT_DIR]:
     if path not in sys.path:
         sys.path.insert(0, path)
 
+# Automatically load .env file if present in project directory
+env_file = os.path.join(CURRENT_DIR, ".env")
+if os.path.isfile(env_file):
+    try:
+        with open(env_file, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    k, v = k.strip(), v.strip().strip("'\"")
+                    if k and k not in os.environ:
+                        os.environ[k] = v
+    except Exception:
+        pass
+
 # Optional: activate virtualenv if running in cPanel virtualenv folder
 # If VIRTUAL_ENV environment variable is set or standard .venv exists
 venv_path = os.environ.get("VIRTUAL_ENV") or os.path.join(CURRENT_DIR, ".venv")
