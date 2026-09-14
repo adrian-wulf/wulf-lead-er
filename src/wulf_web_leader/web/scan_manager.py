@@ -604,18 +604,38 @@ class ScanManager:
             return None
 
         from wulf_web_leader.audit.gemini_verifier import verify_lead_with_gemini
+        from wulf_web_leader.audit.wikipedia_resolver import lookup_company_wikipedia
         from wulf_web_leader.audit.verifier import resolve_and_verify_candidate
         from wulf_web_leader.score.engine import calculate_lead_score
         from wulf_web_leader.score.hooks import generate_pitch_hooks
         import wulf_web_leader.audit.fetch as audit_fetch
 
+        # 0. Wikipedia OSINT Lookup (PL & DE)
+        try:
+            wiki_intel = await lookup_company_wikipedia(lead)
+            if wiki_intel and wiki_intel.found:
+                lead.wikipedia_intel = wiki_intel.model_dump()
+                if wiki_intel.notes:
+                    lead.qa_notes = (lead.qa_notes + " | " if lead.qa_notes else "") + wiki_intel.notes
+                lead.score, lead.verdict = calculate_lead_score(lead)
+                lead.hooks = generate_pitch_hooks(lead)
+        except Exception as e:
+            logger.debug("Wikipedia lookup in verify_lead_gemini: %s", e)
+
         intel = await verify_lead_with_gemini(lead, api_key=api_key)
         lead.gemini_intel = intel
 
-        # If lead has no website, check DNS candidate resolution first
-        if not lead.website:
+        # If lead has no website or website is unreachable, check DNS candidate resolution
+        if not lead.website or (lead.audit and not lead.audit.reachable):
             try:
                 cand = await resolve_and_verify_candidate(lead)
+                if not cand and lead.wikipedia_intel and isinstance(lead.wikipedia_intel, dict):
+                    new_brand = lead.wikipedia_intel.get("new_brand_name")
+                    if new_brand:
+                        alt_lead = lead.model_copy()
+                        alt_lead.name = new_brand
+                        cand = await resolve_and_verify_candidate(alt_lead)
+
                 if cand:
                     cand_url, cand_audit, method = cand
                     lead.website = cand_url
@@ -633,10 +653,11 @@ class ScanManager:
             except Exception as e:
                 logger.debug("Candidate resolution in verify_lead_gemini: %s", e)
 
-        # If still no website, check if Gemini discovered an official website
-        if not lead.website and intel.discovered_website:
+        # If still no website or unreachable, check if Gemini discovered an official website
+        if (not lead.website or (lead.audit and not lead.audit.reachable)) and intel.discovered_website:
             try:
                 lead.website = intel.discovered_website
+
                 lead.website_kind = "own"
                 lead.website_source = "google_osint"
                 audit_res = await audit_fetch.audit_website(

@@ -89,22 +89,30 @@ async def run_post_scan_osint_queue(
     leads_file = workspace_dir / "leads.json"
     state_file = workspace_dir / ".scan_state.json"
 
-    missing_site_leads = [l for l in leads if not l.website or l.website_kind == "none"]
-    if not missing_site_leads:
+    target_leads = [
+        l for l in leads
+        if not l.website
+        or l.website_kind == "none"
+        or (l.audit and not l.audit.reachable)
+        or l.opportunity_type == "corporate_enterprise"
+    ]
+    if not target_leads:
         return
 
     append_log(
         "osint_queue",
-        f"⚡ Kolejka OSINT: Uruchomiono weryfikację stron w tle dla {len(missing_site_leads)} firm...",
+        f"⚡ Kolejka OSINT: Uruchomiono weryfikację stron i podmiotów w tle dla {len(target_leads)} firm...",
     )
     state["osint_queue"] = {
         "current": 0,
-        "total": len(missing_site_leads),
+        "total": len(target_leads),
         "done": False,
     }
     atomic_persist_state(workspace_dir, state)
 
-    for i, lead in enumerate(missing_site_leads, start=1):
+    from wulf_web_leader.audit.wikipedia_resolver import lookup_company_wikipedia
+
+    for i, lead in enumerate(target_leads, start=1):
         if state_file.is_file():
             try:
                 with open(state_file, "r", encoding="utf-8") as f:
@@ -114,29 +122,52 @@ async def run_post_scan_osint_queue(
             except Exception:
                 pass
 
-        append_log("osint_queue", f"Weryfikacja ({i}/{len(missing_site_leads)}): {lead.name} ({lead.city or ''})...")
+        append_log("osint_queue", f"Weryfikacja ({i}/{len(target_leads)}): {lead.name} ({lead.city or ''})...")
 
-        found_site = False
+        # 1. Wikipedia & Wikidata Knowledge Lookup (PL & DE)
         try:
-            cand = await resolve_and_verify_candidate(lead)
-            if cand:
-                cand_url, cand_audit, method = cand
-                lead.website = cand_url
-                lead.website_kind = "own"
-                lead.website_source = "candidate_discovery"
-                lead.audit = cand_audit
-                lead.qa_status = "verified"
-                lead.confidence = "high"
-                if not lead.phone and cand_audit.extracted_phones:
-                    lead.phone = cand_audit.extracted_phones[0]
-                if not lead.email and cand_audit.extracted_emails:
-                    lead.email = cand_audit.extracted_emails[0]
+            wiki_intel = await lookup_company_wikipedia(lead)
+            if wiki_intel and wiki_intel.found:
+                lead.wikipedia_intel = wiki_intel.model_dump()
+                if wiki_intel.notes:
+                    lead.qa_notes = (lead.qa_notes + " | " if lead.qa_notes else "") + wiki_intel.notes
                 lead.score, lead.verdict = calculate_lead_score(lead)
                 lead.hooks = generate_pitch_hooks(lead)
-                found_site = True
-                append_log("osint_queue", f"✅ Znaleziono domenę {cand_url} dla firmy {lead.name}!")
+                append_log("osint_queue", f"📚 Wikipedia: Rozpoznano {lead.name} jako podmiot encyklopedyczny ({wiki_intel.title})")
         except Exception as e:
-            logger.debug("Candidate resolution error for %s: %s", lead.name, e)
+            logger.debug("Wikipedia lookup in runner error for %s: %s", lead.name, e)
+
+        # 2. DNS Candidate Discovery (for missing or broken sites)
+        found_site = False
+        if not lead.website or (lead.audit and not lead.audit.reachable):
+            try:
+                cand = await resolve_and_verify_candidate(lead)
+                if not cand and lead.wikipedia_intel and isinstance(lead.wikipedia_intel, dict):
+                    new_brand = lead.wikipedia_intel.get("new_brand_name")
+                    if new_brand:
+                        alt_lead = lead.model_copy()
+                        alt_lead.name = new_brand
+                        cand = await resolve_and_verify_candidate(alt_lead)
+
+                if cand:
+                    cand_url, cand_audit, method = cand
+                    lead.website = cand_url
+                    lead.website_kind = "own"
+                    lead.website_source = "candidate_discovery"
+                    lead.audit = cand_audit
+                    lead.qa_status = "verified"
+                    lead.confidence = "high"
+                    if not lead.phone and cand_audit.extracted_phones:
+                        lead.phone = cand_audit.extracted_phones[0]
+                    if not lead.email and cand_audit.extracted_emails:
+                        lead.email = cand_audit.extracted_emails[0]
+                    lead.score, lead.verdict = calculate_lead_score(lead)
+                    lead.hooks = generate_pitch_hooks(lead)
+                    found_site = True
+                    append_log("osint_queue", f"✅ Znaleziono domenę {cand_url} dla firmy {lead.name}!")
+            except Exception as e:
+                logger.debug("Candidate resolution error for %s: %s", lead.name, e)
+
 
         # Gemini / Google Intel check
         key_to_use = gemini_api_key or os.environ.get("GEMINI_API_KEY")
@@ -146,7 +177,7 @@ async def run_post_scan_osint_queue(
                 intel = await verify_lead_with_gemini(lead, api_key=key_to_use)
                 if intel and intel.checked:
                     lead.gemini_intel = intel
-                    if not lead.website and intel.discovered_website:
+                    if (not lead.website or (lead.audit and not lead.audit.reachable)) and intel.discovered_website:
                         lead.website = intel.discovered_website
                         lead.website_kind = "own"
                         lead.website_source = "google_osint"
@@ -176,7 +207,7 @@ async def run_post_scan_osint_queue(
         state["counts"] = compute_counts(leads)
         state["osint_queue"] = {
             "current": i,
-            "total": len(missing_site_leads),
+            "total": len(target_leads),
             "done": False,
             "last_verified": lead.name,
             "found_site": found_site,
@@ -185,13 +216,14 @@ async def run_post_scan_osint_queue(
         await asyncio.sleep(0.3)
 
     state["osint_queue"] = {
-        "current": len(missing_site_leads),
-        "total": len(missing_site_leads),
+        "current": len(target_leads),
+        "total": len(target_leads),
         "done": True,
     }
-    append_log("osint_queue", f"Zakończono weryfikację OSINT w tle ({len(missing_site_leads)} firm sprawdzonych).")
+    append_log("osint_queue", f"Zakończono weryfikację OSINT w tle ({len(target_leads)} firm sprawdzonych).")
     atomic_persist_state(workspace_dir, state)
     export_leads_to_json(leads, leads_file)
+
 
 
 async def main() -> None:

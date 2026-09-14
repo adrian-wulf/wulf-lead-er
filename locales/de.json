@@ -10,6 +10,7 @@
     "outdated_tech": "Veralteter Webauftritt ({generator}) — ein modernes Redesign stärkt Vertrauen und Neukundengewinnung.",
     "missing_impressum": "Fehlendes Impressum oder unvollständige Kontaktdaten — eine transparente Anbieterkennzeichnung schafft Vertrauen bei Neukunden.",
     "reviews_no_site": "Betrieb hat positive Kundenbewertungen, ale keine eigene Website zur Angebotspräsentation.",
+    "corporate_enterprise": "Großunternehmen / Konzern (AG / SE / Holding) — nicht für Kaltakquise von Standard-Websites geeignet. Nicht erreichbare Domains resultieren meist aus Umfirmierung, Fusion oder Konsolidierung.",
     "hot_prospect": "Top-Kandidat: Lokales Unternehmen mit Kontaktdaten, das sofort von einer modernen Website profitiert."
   },
   "verdicts": {

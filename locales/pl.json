@@ -10,6 +10,7 @@
     "outdated_tech": "Witryna na przestarzałym szablonie ({generator}) — warto odświeżyć wizerunek na nowocześniejszy.",
     "missing_impressum": "Brak zakładki z pełnymi danymi firmy (Impressum) — czytelna stopka z danymi podnosi wiarygodność u klientów.",
     "reviews_no_site": "Firma ma dobre opinie klientów, ale brak jej własnej strony do prezentacji oferty.",
+    "corporate_enterprise": "Podmiot korporacyjny (S.A. / AG / Holding) — wykluczony z prostego outreachu B2B. Niedziałająca strona najczęściej wynika z fuzji, przejęcia, rebrandingu lub centralizacji domeny.",
     "hot_prospect": "Idealny kandydat do kontaktu: lokalny biznes z publicznym kontaktem, który pilnie potrzebuje nowoczesnej witryny."
   },
   "verdicts": {

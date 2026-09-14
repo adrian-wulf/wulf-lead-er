@@ -3074,7 +3074,20 @@
             <div class="hook-text" id="drawer-primary-issue">Strona nie wyświetla się prawidłowo na smartfonach i nie posiada szyfrowania HTTPS.</div>
           </div>
         </div>
+
+        <!-- WIKIPEDIA / CORPORATE OSINT INTELLIGENCE -->
+        <div id="drawer-wiki-container" style="display: none; margin-top: 14px; background: rgba(30, 41, 59, 0.7); border: 1px solid var(--border-gold); border-radius: 6px; padding: 12px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <span style="font-size: 11px; font-weight: 700; color: var(--gold); text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+              📚 Rejestr Korporacyjny & Wikipedia OSINT
+            </span>
+            <a id="drawer-wiki-link" href="#" target="_blank" style="font-size: 11px; color: var(--blue-accent); text-decoration: underline;">Zobacz artykuł ↗</a>
+          </div>
+          <div id="drawer-wiki-summary" style="font-size: 12px; color: var(--text-primary); line-height: 1.4; margin-bottom: 6px;"></div>
+          <div id="drawer-wiki-notes" style="font-size: 11px; color: var(--gold-soft); font-family: var(--font-mono);"></div>
+        </div>
       </div>
+
 
       <!-- TAB: SZYBKOŚĆ & STRATY FINANSOWE -->
       <div class="drawer-tab-content" id="tab-content-speed" style="display: none;">
@@ -4503,6 +4516,12 @@
             techBadges += `<span class="tech-tag" style="border-color: rgba(212, 164, 24, 0.4); color: var(--gold-soft);">Google OSINT</span>`;
           }
         }
+        if (lead.opportunity_type === 'corporate_enterprise') {
+          techBadges += `<span class="tech-tag" style="border-color: rgba(168, 85, 247, 0.5); color: #c084fc; background: rgba(168, 85, 247, 0.1);">🏢 Korporacja (S.A./AG)</span>`;
+        }
+        if (lead.wikipedia_intel && (lead.wikipedia_intel.found || lead.wikipedia_intel.title)) {
+          techBadges += `<span class="tech-tag" style="border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; background: rgba(56, 189, 248, 0.1);">📚 Wikipedia</span>`;
+        }
         if (lead.audit) {
           techBadges += lead.audit.is_https ? '<span class="tech-tag good">HTTPS</span>' : '<span class="tech-tag bad">Brak SSL</span>';
           techBadges += lead.audit.has_viewport ? '<span class="tech-tag good">RWD OK</span>' : '<span class="tech-tag bad">Brak RWD</span>';
@@ -4512,6 +4531,7 @@
         } else {
           techBadges += '<span class="tech-tag bad">Brak strony www</span>';
         }
+
 
         const rawHook = (lead.hooks && lead.hooks[0]) ? lead.hooks[0] : (lead.primary_issue || 'Brak zidentyfikowanych problemów technicznych');
         const hook = cleanHookText(rawHook);
@@ -4603,10 +4623,17 @@
         }
 
         let nameHtml = `<div style="font-weight: 700;">${escapeHtml(lead.name)}</div>`;
+        if (lead.opportunity_type === 'corporate_enterprise') {
+          nameHtml += `<div style="font-size: 10px; color: #c084fc; font-family: var(--font-mono); margin-top: 2px;">🏢 Korporacja (S.A./AG)</div>`;
+        }
+        if (lead.wikipedia_intel && (lead.wikipedia_intel.found || lead.wikipedia_intel.title)) {
+          nameHtml += `<div style="font-size: 10px; color: #38bdf8; font-family: var(--font-mono); margin-top: 2px;">📚 Wikipedia: ${escapeHtml(lead.wikipedia_intel.title)}</div>`;
+        }
         if (lead.gemini_intel && lead.gemini_intel.checked) {
           const ratingStr = lead.gemini_intel.google_rating ? `⭐ ${lead.gemini_intel.google_rating.toFixed(1)} (${lead.gemini_intel.google_reviews_count || 0})` : 'Google OSINT';
           nameHtml += `<div style="font-size: 10px; color: var(--gold); font-family: var(--font-mono); margin-top: 2px;">${ratingStr}</div>`;
         }
+
 
         const crmStatus = getLeadCrmStatus(lead);
         const cleanPhone = (lead.phone || '').replace(/[^0-9+]/g, '');
@@ -4689,8 +4716,34 @@
 
       document.getElementById('drawer-primary-issue').innerText = lead.primary_issue || 'Brak zidentyfikowanych krytycznych wad';
 
+      // Wikipedia / Corporate OSINT
+      const wikiContainer = document.getElementById('drawer-wiki-container');
+      if (wikiContainer) {
+        if (lead.wikipedia_intel && (lead.wikipedia_intel.found || lead.wikipedia_intel.title)) {
+          wikiContainer.style.display = 'block';
+          const w = lead.wikipedia_intel;
+          document.getElementById('drawer-wiki-summary').innerText = w.summary || 'Brak streszczenia.';
+          document.getElementById('drawer-wiki-notes').innerText = w.notes || '';
+          const wLink = document.getElementById('drawer-wiki-link');
+          if (w.wiki_url) {
+            wLink.href = w.wiki_url;
+            wLink.style.display = 'inline';
+          } else {
+            wLink.style.display = 'none';
+          }
+        } else if (lead.opportunity_type === 'corporate_enterprise') {
+          wikiContainer.style.display = 'block';
+          document.getElementById('drawer-wiki-summary').innerText = 'Podmiot korporacyjny (S.A. / AG / Holding) — wykluczony ze standardowego outreachu stron WWW.';
+          document.getElementById('drawer-wiki-notes').innerText = lead.qa_notes || 'Potencjalna fuzja, rebranding lub centralizacja domeny.';
+          document.getElementById('drawer-wiki-link').style.display = 'none';
+        } else {
+          wikiContainer.style.display = 'none';
+        }
+      }
+
       // Pitch & Hooks Tab
       const primaryHook = (lead.hooks && lead.hooks[0]) ? lead.hooks[0] : (lead.primary_issue || 'Brak dedykowanego hooka.');
+
       document.getElementById('drawer-main-hook').innerText = primaryHook;
 
       const hooksList = document.getElementById('drawer-all-hooks-list');

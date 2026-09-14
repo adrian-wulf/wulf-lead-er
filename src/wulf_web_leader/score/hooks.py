@@ -72,6 +72,13 @@ def generate_pitch_hooks(lead: CanonicalLead, lang: str = "pl") -> list[str]:
     hooks_dict = locale.get("hooks", {})
     results: list[str] = []
 
+    # 0. Corporate Enterprise / Holding
+    if lead.opportunity_type == "corporate_enterprise":
+        hook = hooks_dict.get("corporate_enterprise")
+        if hook:
+            results.append(hook)
+        return results
+
     # 1. Broken website
     if lead.opportunity_type == "broken_website":
         hook_tpl = hooks_dict.get("broken_website", "")
@@ -79,6 +86,7 @@ def generate_pitch_hooks(lead: CanonicalLead, lang: str = "pl") -> list[str]:
         issue = lead.primary_issue or "błąd serwera"
         if hook_tpl:
             results.append(hook_tpl.format(url=url, issue=issue))
+
 
     # 2. Corporate suspect (unverified)
     elif lead.opportunity_type == "suspect_unverified":

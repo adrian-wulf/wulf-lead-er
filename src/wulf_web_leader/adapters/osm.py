@@ -111,6 +111,11 @@ CORPORATE_ENTITY_REGEX = re.compile(
     re.IGNORECASE,
 )
 
+ENTERPRISE_ENTITY_REGEX = re.compile(
+    r"(?:^|[\s,.\-(])(s\.a\.|spółka\s*akcyjna|\bsa\b|ag|aktiengesellschaft|\bse\b|kgaa|holding|konzern|grupa\s*kapitałowa)(?:$|[\s,.\-)])",
+    re.IGNORECASE,
+)
+
 
 def extract_domain_from_email(raw_email: str | None) -> str | None:
     """Extract custom business domain from email, ignoring freemail providers."""
@@ -136,6 +141,13 @@ def is_corporate_entity(name: str | None) -> bool:
     if not name:
         return False
     return bool(CORPORATE_ENTITY_REGEX.search(name))
+
+
+def is_joint_stock_or_enterprise(name: str | None) -> bool:
+    """Determine if company is a joint-stock corporation (S.A., AG, SE), holding, or enterprise."""
+    if not name:
+        return False
+    return bool(ENTERPRISE_ENTITY_REGEX.search(name))
 
 
 class OverpassClient:

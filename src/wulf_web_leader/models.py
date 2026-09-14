@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 from pydantic import BaseModel, Field, HttpUrl
 
 
@@ -17,7 +17,9 @@ OpportunityType = Literal[
     "no_website",          # Prawdopodobny brak strony w rejestrach/OSM
     "suspect_unverified",  # Spółka kapitałowa (GmbH/Sp. z o.o.) bez strony w OSM (wymaga weryfikacji)
     "modern_active",       # Posiada działającą, nowoczesną stronę
+    "corporate_enterprise", # Spółka akcyjna / korporacja / rebranding / fuzja (wykluczona z prostego outreachu)
 ]
+
 
 class AuditResult(BaseModel):
     """Result of auditing a website URL."""
@@ -70,7 +72,7 @@ class CanonicalLead(BaseModel):
     email: str | None = None
     website: str | None = None
     website_kind: WebsiteKind = "none"
-    website_source: Literal["osm_website", "email_domain", "candidate_discovery", "none"] = "none"
+    website_source: Literal["osm_website", "email_domain", "candidate_discovery", "wikipedia_discovery", "google_osint", "none"] = "none"
     opportunity_type: OpportunityType = "no_website"
     primary_issue: str | None = None
     confidence: Literal["high", "medium", "low"] = "high"
@@ -89,6 +91,8 @@ class CanonicalLead(BaseModel):
     data_kontaktu: str | None = None
     audit: AuditResult | None = None
     gemini_intel: GeminiIntel | None = None
+    wikipedia_intel: Any | None = None
+
 
 
 class CountryVerticalConfig(BaseModel):

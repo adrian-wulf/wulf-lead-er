@@ -1,29 +1,10 @@
 from wulf_web_leader.models import CanonicalLead, Verdict
-from wulf_web_leader.adapters.osm import is_corporate_entity
+from wulf_web_leader.adapters.osm import is_corporate_entity, is_joint_stock_or_enterprise
 
 
 def calculate_lead_score(lead: CanonicalLead) -> tuple[int, Verdict]:
     """Deterministically calculate a lead score (0-100), verdict ('hot' | 'warm' | 'skip'),
     and assign opportunity_type, primary_issue, and confidence.
-
-    Scoring Archetypes:
-    1. Broken Website (broken_website):
-       - Server 4xx/5xx, timeout, DNS error, SSL failure: +65 pts (+20 phone -> 85 HOT)
-    2. Critical Redesign Needed (critical_redesign):
-       - No viewport / not mobile-friendly: +35 pts
-       - No HTTPS (insecure HTTP): +15 pts
-       - Outdated CMS/generator (frontpage, joomla, drupal 7, typo3, html editor): +15 pts
-       - Missing Impressum (DE market): +10 pts
-       - Compound flaws (>=50 pts) + phone (+20) -> 70-85 HOT
-    3. Social Media Only (social_only):
-       - Facebook / Instagram only: +50 pts (+20 phone -> 70 HOT)
-    4. Directory Listing Only (directory_only):
-       - Portal / directory listing: +45 pts (+20 phone -> 65 WARM)
-    5. No Website in OSM (no_website vs suspect_unverified):
-       - Corporate entity (GmbH, Sp. z o.o., AG): +30 pts (+20 phone -> 50 WARM, suspect_unverified)
-       - Small business / craftsman (JDG / Handwerker): +50 pts (+20 phone -> 70 HOT, no_website)
-    6. Modern Active Website (modern_active):
-       - Reachable with HTTPS, responsive, modern tech: 0 pts (skip)
     """
     if lead.registry_status == "inactive":
         lead.score = 0
@@ -31,6 +12,26 @@ def calculate_lead_score(lead: CanonicalLead) -> tuple[int, Verdict]:
         lead.opportunity_type = "no_website"
         lead.primary_issue = "Podmiot wyrejestrowany / nieaktywny"
         lead.confidence = "high"
+        return 0, "skip"
+
+    # Enterprise & Corporate Gate (S.A., AG, SE, KGaA, large holding / Wikipedia enterprise)
+    is_enterprise = is_joint_stock_or_enterprise(lead.name)
+    if hasattr(lead, "wikipedia_intel") and lead.wikipedia_intel:
+        if isinstance(lead.wikipedia_intel, dict) and lead.wikipedia_intel.get("is_enterprise"):
+            is_enterprise = True
+        elif getattr(lead.wikipedia_intel, "is_enterprise", False):
+            is_enterprise = True
+
+    if is_enterprise:
+        lead.score = 0
+        lead.verdict = "skip"
+        lead.confidence = "high"
+        if lead.website_kind == "own" and lead.audit and lead.audit.reachable:
+            lead.opportunity_type = "modern_active"
+            lead.primary_issue = "Podmiot korporacyjny (S.A. / AG) — posiada działającą stronę"
+        else:
+            lead.opportunity_type = "corporate_enterprise"
+            lead.primary_issue = "Podmiot korporacyjny (S.A. / AG) — potencjalny rebranding, fuzja lub domena archiwalna"
         return 0, "skip"
 
     score = 0
@@ -54,11 +55,31 @@ def calculate_lead_score(lead: CanonicalLead) -> tuple[int, Verdict]:
 
     # 1. Broken / Unreachable website
     elif lead.website_kind == "own" and lead.audit and not lead.audit.reachable:
-        score = 65 + phone_bonus
-        lead.opportunity_type = "broken_website"
         err = lead.audit.error_message or (f"kod {lead.audit.status_code}" if lead.audit.status_code else "brak odpowiedzi")
-        lead.primary_issue = f"Awaria strony ({err})"
-        lead.confidence = "high"
+        err_lower = err.lower()
+        # Differentiate network deadness / timeout / DNS resolution error from active server errors
+        is_network_dead = any(
+            term in err_lower
+            for term in ("connecttimeout", "timed out", "timeout", "nameresolutionerror", "connection refused", "nxdomain", "gaierror")
+        )
+        if is_network_dead:
+            if is_corporate_entity(lead.name):
+                score = 25 + (15 if has_phone else 0)
+                lead.opportunity_type = "suspect_unverified"
+                lead.primary_issue = f"Domena nie odpowiada ({err}) — spółka kapitałowa, prawdopodobnie wygaszona lub nieaktualna"
+                lead.confidence = "low"
+            else:
+                score = 40 + (15 if has_phone else 0)
+                lead.opportunity_type = "suspect_unverified"
+                lead.primary_issue = f"Domena nie odpowiada ({err}) — podejrzenie wygaszenia lub błąd DNS"
+                lead.confidence = "medium"
+        else:
+            # Active web server application error (500, 502, 503, 404, SSL failure)
+            score = 65 + phone_bonus
+            lead.opportunity_type = "broken_website"
+            lead.primary_issue = f"Awaria strony ({err})"
+            lead.confidence = "high"
+
 
     # 2. Reachable website with technical / mobile / security flaws
     elif lead.website_kind == "own" and lead.audit and lead.audit.reachable:
