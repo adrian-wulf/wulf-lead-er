@@ -9,11 +9,9 @@ pl:
   pkd: ["43.21.Z"]
   osm:
     - "craft=electrician"
-    - "shop=electrical"
 de:
   query: "Elektriker"
   label: "Elektriker / Elektroinstallation"
   wz: ["43.21"]
   osm:
     - "craft=electrician"
-    - "shop=electrical"

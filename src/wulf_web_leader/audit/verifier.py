@@ -217,6 +217,14 @@ def check_is_placeholder(html_text: str, title: str | None = None) -> tuple[bool
     return False, None
 
 
+GENERIC_DICTIONARY_WORDS = {
+    "espresso", "kawa", "kaffee", "auto", "car", "moto", "meble", "dentysta", "lekarz",
+    "sklep", "serwis", "naprawa", "firma", "biuro", "apteki", "apteka", "moda", "styl",
+    "beauty", "salon", "studio", "hotel", "taxi", "pomoc", "laweta", "druk", "foto",
+    "klimatyzacja", "hydraulik", "elektryk", "remont", "budownictwo", "cleaning", "reinigung",
+}
+
+
 def extract_key_name_tokens(name: str) -> list[str]:
     """Extract distinctive search/matching tokens from business name."""
     cleaned = re.sub(r"[^\w\s-]", " ", name.lower())
@@ -240,16 +248,28 @@ def verify_entity_match(
     matched_signals: list[str] = []
     score = 0
 
-    # 1. Distinctive name tokens (weight: up to 45 pts)
+    # 1. Distinctive name tokens & exact phrase check
     tokens = extract_key_name_tokens(lead_name)
+    clean_lead = re.sub(r"[^\w\s]", " ", lead_name.lower())
+    clean_lead_words = [w for w in clean_lead.split() if w not in NAME_STOP_WORDS and len(w) >= 3]
+    exact_phrase = " ".join(clean_lead_words[:2]) if len(clean_lead_words) >= 2 else (clean_lead_words[0] if clean_lead_words else "")
+
     matched_tokens = [t for t in tokens if t in html_lower]
-    if matched_tokens:
+    has_exact_phrase = bool(exact_phrase and exact_phrase in html_lower)
+
+    if has_exact_phrase:
+        score += 45
+        matched_signals.append("exact_name_phrase")
+        if matched_tokens:
+            matched_signals.append(f"name_tokens:{','.join(matched_tokens)}")
+    elif matched_tokens:
         token_ratio = len(matched_tokens) / len(tokens)
-        token_pts = int(45 * token_ratio)
+        token_pts = int(25 * token_ratio)
         score += token_pts
         matched_signals.append(f"name_tokens:{','.join(matched_tokens)}")
 
     # 2. Phone match (weight: 35 pts)
+    has_phone_match = False
     if phone:
         digits_only = re.sub(r"\D", "", phone)
         # Check last 6-8 digits (local number part)
@@ -257,27 +277,32 @@ def verify_entity_match(
             local_phone = digits_only[-6:]
             if local_phone in re.sub(r"\D", "", html_text):
                 score += 35
+                has_phone_match = True
                 matched_signals.append(f"phone:{local_phone}")
 
-    # 3. City / Postcode / Street match (weight: 20 pts)
+    # 3. Street / Postcode / City match (weight: 20 pts)
+    has_street_match = False
     loc_signals = []
-    if city and len(city) >= 3 and city.lower() in html_lower:
-        loc_signals.append(f"city:{city}")
     if address:
         street_match = re.search(r"^[^\d,]+", address)
         if street_match:
             street_name = street_match.group(0).strip().lower()
             if len(street_name) >= 4 and street_name in html_lower:
                 loc_signals.append(f"street:{street_name}")
+                has_street_match = True
+
+    if city and len(city) >= 3 and city.lower() in html_lower:
+        if has_phone_match or has_street_match or has_exact_phrase or len(city) >= 6:
+            loc_signals.append(f"city:{city}")
 
     if loc_signals:
         score += 20
         matched_signals.extend(loc_signals)
 
     # Determine confidence level
-    if score >= 55:
+    if score >= 55 and (has_exact_phrase or has_phone_match or has_street_match):
         confidence = "high"
-    elif score >= 35:
+    elif score >= 40:
         confidence = "medium"
     elif score > 0:
         confidence = "low"
@@ -332,10 +357,14 @@ def generate_domain_candidates(
     multi_token = "-".join(tokens[:2]) if len(tokens) >= 2 else None
 
     # 1. Base tokens
+    # Never generate generic dictionary single-word domains (e.g. espresso.pl, auto.pl)
     for t in tokens[:2]:
-        add_domain(t)
+        if t not in GENERIC_DICTIONARY_WORDS:
+            add_domain(t)
+
     if multi_token:
         add_domain(multi_token)
+        add_domain("".join(tokens[:2]))
 
     # 2. City combinations
     if city:
@@ -582,7 +611,7 @@ async def resolve_and_verify_candidate(
                 phone=lead.phone,
                 address=lead.address or lead.street,
             )
-            if audit_res.reachable and not audit_res.is_placeholder and audit_res.entity_match_score >= 35:
+            if audit_res.reachable and not audit_res.is_placeholder and audit_res.entity_match_score >= 50:
                 if audit_res.entity_match_score > highest_score:
                     highest_score = audit_res.entity_match_score
                     best_candidate = (audit_res.final_url or cand_url, audit_res, "dns_candidate")
@@ -608,7 +637,7 @@ async def resolve_and_verify_candidate(
                 phone=lead.phone,
                 address=lead.address or lead.street,
             )
-            if audit_res.reachable and not audit_res.is_placeholder and audit_res.entity_match_score >= 35:
+            if audit_res.reachable and not audit_res.is_placeholder and audit_res.entity_match_score >= 50:
                 return (audit_res.final_url or google_cand, audit_res, "google_search_api")
     except Exception:
         pass
@@ -624,7 +653,7 @@ async def resolve_and_verify_candidate(
                 phone=lead.phone,
                 address=lead.address or lead.street,
             )
-            if audit_res.reachable and not audit_res.is_placeholder and audit_res.entity_match_score >= 35:
+            if audit_res.reachable and not audit_res.is_placeholder and audit_res.entity_match_score >= 50:
                 return (audit_res.final_url or search_cand, audit_res, "web_search")
     except Exception:
         pass

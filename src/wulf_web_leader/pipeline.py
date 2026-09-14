@@ -11,6 +11,7 @@ from wulf_web_leader.adapters.de_offeneregister import OffeneRegisterAdapter
 from wulf_web_leader.audit.cache import AuditCache
 from wulf_web_leader.audit.classifier import classify_website_kind
 from wulf_web_leader.audit.fetch import audit_website
+from wulf_web_leader.audit.lead_filter import is_lead_relevant
 from wulf_web_leader.audit.verifier import resolve_and_verify_candidate
 from wulf_web_leader.score.engine import calculate_lead_score
 from wulf_web_leader.score.hooks import generate_pitch_hooks
@@ -130,6 +131,7 @@ async def run_scan_pipeline(
                 radius_km=radius_km,
                 lang=lang,
                 max_depth=1,
+                vertical_id=vertical.id,
             )
             notify("gmaps", f"Pobrano {len(gmaps_leads)} zweryfikowanych firm z Google Maps.")
         except Exception as e:
@@ -147,11 +149,19 @@ async def run_scan_pipeline(
         default_city=location.city or city,
         industry_label=industry_label,
         industry_code=industry_code,
+        vertical_id=vertical.id,
     )
     notify("parse", f"Pobrano {len(osm_leads)} punktów z OpenStreetMap.")
 
     # 5. Merge & Deduplicate (Google Maps ground truth + OSM)
-    leads = _merge_and_deduplicate_leads(gmaps_leads, osm_leads, default_city=location.city or city)
+    raw_merged = _merge_and_deduplicate_leads(gmaps_leads, osm_leads, default_city=location.city or city)
+    leads = []
+    for lead in raw_merged:
+        rel, reason = is_lead_relevant(lead.name, vertical_id=vertical.id)
+        if rel:
+            leads.append(lead)
+        else:
+            logger.debug("Filtered out non-relevant merged lead '%s': %s", lead.name, reason)
     notify("parse", f"Łącznie zebrano {len(leads)} unikalnych firm po scaleniu Google Maps i OSM.")
 
     # 5a. Classify website kinds
@@ -270,9 +280,13 @@ async def run_scan_pipeline(
                                         lead.opportunity_type = "suspect_unverified"
                                         lead.confidence = "low"
                             else:
-                                lead.qa_status = "verified"
-                                sigs = f", {', '.join(audit_res.matched_signals)}" if audit_res.matched_signals else ""
-                                lead.qa_notes = f"Zweryfikowano tożsamość ({audit_res.entity_match_score}%{sigs})"
+                                if audit_res.entity_match_score >= 35 or audit_res.entity_match:
+                                    lead.qa_status = "verified"
+                                    sigs = f", {', '.join(audit_res.matched_signals)}" if audit_res.matched_signals else ""
+                                    lead.qa_notes = f"Zweryfikowano tożsamość ({audit_res.entity_match_score}%{sigs})"
+                                else:
+                                    lead.qa_status = "unverified"
+                                    lead.qa_notes = f"Niski wskaźnik dopasowania tożsamości witryny ({audit_res.entity_match_score}%)"
                         else:
                             # Website not reachable (4xx, 5xx, SSL, timeout)
                             candidate = await resolve_and_verify_candidate(

@@ -7,6 +7,7 @@ import httpx
 
 from wulf_web_leader.models import CanonicalLead, CountryCode
 from wulf_web_leader.audit.classifier import classify_website_kind
+from wulf_web_leader.audit.lead_filter import is_lead_relevant
 
 logger = logging.getLogger(__name__)
 
@@ -204,8 +205,9 @@ class OverpassClient:
         default_city: str,
         industry_label: str,
         industry_code: str | None = None,
+        vertical_id: str | None = None,
     ) -> list[CanonicalLead]:
-        """Convert raw OSM elements into CanonicalLead objects with deduplication."""
+        """Convert raw OSM elements into CanonicalLead objects with deduplication and relevance filtering."""
         leads: list[CanonicalLead] = []
         seen_osm_ids: set[str] = set()
         seen_geo_names: set[tuple[str, float, float]] = set()
@@ -230,6 +232,13 @@ class OverpassClient:
                 # POI without name is not actionable for lead outreach
                 continue
             name = name.strip()
+
+            # Relevance & anti-junk filter: eliminate public institutions, chains, and negative keywords
+            if vertical_id:
+                relevant, reason = is_lead_relevant(name, vertical_id=vertical_id, tags=tags)
+                if not relevant:
+                    logger.debug("Filtered out non-relevant OSM POI '%s': %s", name, reason)
+                    continue
 
             # Coordinates
             if el_type == "node":

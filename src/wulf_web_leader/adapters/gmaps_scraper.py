@@ -8,6 +8,7 @@ official websites, phone numbers, ratings, and review counts.
 import asyncio
 import json
 import logging
+import math
 import os
 from pathlib import Path
 import shutil
@@ -15,10 +16,22 @@ import tempfile
 from typing import Any
 
 from wulf_web_leader.audit.classifier import classify_website_kind
+from wulf_web_leader.audit.lead_filter import is_lead_relevant
 from wulf_web_leader.audit.proxy_pool import get_proxies_file_path
 from wulf_web_leader.models import CanonicalLead, CountryCode
 
 logger = logging.getLogger(__name__)
+
+
+def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Calculate the great-circle distance between two points on the Earth in kilometers."""
+    r = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (math.sin(dlat / 2) ** 2 +
+         math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return r * c
 
 
 def _find_project_root() -> Path:
@@ -71,11 +84,32 @@ def _clean_url(url: str | None) -> str | None:
     return url
 
 
-def parse_ndjson_line(data: dict[str, Any], country: CountryCode, default_city: str) -> CanonicalLead | None:
+def parse_ndjson_line(
+    data: dict[str, Any],
+    country: CountryCode,
+    default_city: str,
+    vertical_id: str | None = None,
+    center_lat: float | None = None,
+    center_lon: float | None = None,
+    radius_km: float | None = None,
+) -> CanonicalLead | None:
     """Parse a single JSON record from google-maps-scraper output into CanonicalLead."""
     title = (data.get("title") or "").strip()
     if not title:
         return None
+
+    category = (data.get("category") or "").strip()
+    if not category:
+        categories = data.get("categories") or []
+        if categories and isinstance(categories, list):
+            category = str(categories[0]).strip()
+
+    # Relevance & Anti-junk filter (chains, public institutions, negative keywords)
+    if vertical_id:
+        relevant, reason = is_lead_relevant(title, vertical_id=vertical_id, category=category)
+        if not relevant:
+            logger.debug("Filtered out non-relevant Google Maps lead '%s' (%s): %s", title, category, reason)
+            return None
 
     website = _clean_url(data.get("web_site"))
     phone = (data.get("phone") or "").strip() or None
@@ -112,16 +146,17 @@ def parse_ndjson_line(data: dict[str, Any], country: CountryCode, default_city: 
         except (ValueError, TypeError):
             pass
 
+    # Geofence distance check (reject leads far outside search radius)
+    if lat is not None and lon is not None and center_lat is not None and center_lon is not None and radius_km is not None:
+        dist = haversine_km(center_lat, center_lon, lat, lon)
+        if dist > radius_km * 1.3:
+            logger.debug("Filtered out Google Maps lead '%s' outside radius (%.1f km > %.1f km)", title, dist, radius_km)
+            return None
+
     # Extract street and city from address or complete_address
     comp_addr = data.get("complete_address") or {}
     city = comp_addr.get("city") or default_city
     street = comp_addr.get("street") or None
-
-    category = (data.get("category") or "").strip()
-    if not category:
-        categories = data.get("categories") or []
-        if categories and isinstance(categories, list):
-            category = str(categories[0]).strip()
 
     website_kind = classify_website_kind(website) if website else "none"
 
@@ -161,6 +196,7 @@ async def scrape_google_maps(
     lang: str = "pl",
     max_depth: int = 1,
     timeout_seconds: float = 45.0,
+    vertical_id: str | None = None,
 ) -> list[CanonicalLead]:
     """
     Execute google-maps-scraper for the given query & coordinates.
@@ -231,7 +267,15 @@ async def scrape_google_maps(
                     try:
                         items = json.loads(content)
                         for item in items:
-                            lead = parse_ndjson_line(item, country=country, default_city=city)
+                            lead = parse_ndjson_line(
+                                item,
+                                country=country,
+                                default_city=city,
+                                vertical_id=vertical_id,
+                                center_lat=lat,
+                                center_lon=lon,
+                                radius_km=radius_km,
+                            )
                             if lead:
                                 leads.append(lead)
                     except Exception as e:
@@ -243,7 +287,15 @@ async def scrape_google_maps(
                             continue
                         try:
                             item = json.loads(line)
-                            lead = parse_ndjson_line(item, country=country, default_city=city)
+                            lead = parse_ndjson_line(
+                                item,
+                                country=country,
+                                default_city=city,
+                                vertical_id=vertical_id,
+                                center_lat=lat,
+                                center_lon=lon,
+                                radius_km=radius_km,
+                            )
                             if lead:
                                 leads.append(lead)
                         except Exception as e:

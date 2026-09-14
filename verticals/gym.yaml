@@ -9,11 +9,9 @@ pl:
   pkd: ["93.13.Z"]
   osm:
     - "leisure=fitness_centre"
-    - "leisure=sports_centre"
 de:
   query: "Fitnessstudio"
   label: "Fitnessstudio / Sportstudio"
   wz: ["93.13"]
   osm:
     - "leisure=fitness_centre"
-    - "leisure=sports_centre"
