@@ -211,7 +211,16 @@ async def start_scan(
     """Start an asynchronous lead discovery scan."""
     client_ip = get_client_ip(request)
 
-    # 1. Enforce Gemini rate limit if use_gemini is requested
+    # 1. Enforce scan start rate limit (1 full scan session per 5 minutes per IP)
+    allowed_scan, retry_after_scan = scan_rate_limiter.check(client_ip)
+    if not allowed_scan:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Limit sesji skanera: Możesz uruchomić pełne pobieranie leadów i OSINT raz na 5 minut na dany adres IP. Pozostało: {int(retry_after_scan)} s.",
+            headers={"Retry-After": str(int(retry_after_scan))},
+        )
+
+    # 2. Enforce Gemini rate limit if use_gemini is requested
     if req.use_gemini:
         allowed_gemini, retry_after_gemini = gemini_rate_limiter.check(client_ip)
         if not allowed_gemini:
@@ -220,15 +229,6 @@ async def start_scan(
                 detail=f"Przekroczono limit zapytań Gemini AI (maksymalnie 1 użycie na minutę na adres IP). Spróbuj ponownie za {int(retry_after_gemini)} s.",
                 headers={"Retry-After": str(int(retry_after_gemini))},
             )
-
-    # 2. Enforce scan start rate limit (1 full scan session per 5 minutes per IP)
-    allowed_scan, retry_after_scan = scan_rate_limiter.check(client_ip)
-    if not allowed_scan:
-        raise HTTPException(
-            status_code=429,
-            detail=f"Limit sesji skanera: Możesz uruchomić pełne pobieranie leadów i OSINT raz na 5 minut na dany adres IP. Pozostało: {int(retry_after_scan)} s.",
-            headers={"Retry-After": str(int(retry_after_scan))},
-        )
 
     country_norm = req.country.strip().upper()
     if country_norm not in ("PL", "DE"):
