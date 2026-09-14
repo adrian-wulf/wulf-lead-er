@@ -46,8 +46,9 @@ class IPRateLimiter:
         self._last_access: dict[str, float] = {}
 
     def is_disabled(self) -> bool:
-        """Allow disabling via environment variable for automated testing."""
-        return os.environ.get("DISABLE_RATE_LIMIT", "").lower() in ("1", "true", "yes")
+        """Disabled by default to allow uninterrupted OSINT and multiple scans."""
+        # Only enable if explicitly requested via ENABLE_RATE_LIMIT=1
+        return os.environ.get("ENABLE_RATE_LIMIT", "0").lower() not in ("1", "true", "yes")
 
     def check(self, ip: str) -> tuple[bool, float]:
         """
@@ -55,7 +56,7 @@ class IPRateLimiter:
         Returns:
             (is_allowed: bool, retry_after_seconds: float)
         """
-        if self.is_disabled():
+        if self.is_disabled() or self.cooldown_seconds <= 0:
             return True, 0.0
 
         now = time.time()
@@ -83,6 +84,6 @@ class IPRateLimiter:
             self._last_access.clear()
 
 
-# Default rate limiters: 1 request per 60 seconds (1 minute) per IP
-gemini_rate_limiter = IPRateLimiter(cooldown_seconds=60.0)
-scan_rate_limiter = IPRateLimiter(cooldown_seconds=60.0)
+# Default rate limiters: rate limiting lifted (cooldown 0s) to allow seamless OSINT
+gemini_rate_limiter = IPRateLimiter(cooldown_seconds=0.0)
+scan_rate_limiter = IPRateLimiter(cooldown_seconds=0.0)

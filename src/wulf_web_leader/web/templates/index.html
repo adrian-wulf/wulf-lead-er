@@ -568,30 +568,31 @@
       color: var(--text-muted);
     }
 
-    /* CONTROL PANEL (CRITERIA CONSOLE) */
+    /* CONTROL PANEL (MODERN UNIFIED CRITERIA CONSOLE) */
     .console-panel {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-default);
-      border-radius: 8px;
-      padding: 20px;
+      background: linear-gradient(180deg, #15161b 0%, #111215 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 14px 18px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
     }
 
     .panel-top-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid var(--border-subtle);
-      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 8px;
     }
 
     .panel-headline {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.06em;
@@ -600,237 +601,356 @@
     .panel-headline svg {
       color: var(--gold);
     }
-
-    .criteria-layout-grid {
-      display: grid;
-      grid-template-columns: 1.4fr 1.6fr 1.2fr auto;
-      gap: 18px;
-      align-items: start;
-    }
-
-    .field-block {
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-    }
-
-    .field-label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+    .panel-headline-badge {
+      font-size: 10px;
+      font-family: var(--font-mono);
       color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0;
+      text-transform: none;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .panel-quick-actions {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 8px;
+    }
+    .shortcut-pill {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.04);
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .shortcut-pill kbd {
+      color: var(--gold);
+      font-weight: 700;
     }
 
-    /* SEGMENTED BUTTONS */
-    .segmented-control {
+    /* PRIMARY CRITERIA BAR (SINGLE SLEEK ROW) */
+    .criteria-primary-bar {
       display: flex;
-      background: var(--bg-input);
-      border: 1px solid var(--border-default);
-      border-radius: 6px;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .control-segment-wrapper {
+      flex-shrink: 0;
+    }
+    .segmented-control.compact {
+      display: flex;
+      background: #0d0e12;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
       padding: 2px;
       gap: 2px;
+      height: 42px;
+      box-sizing: border-box;
+      align-items: center;
     }
-    .segmented-btn {
-      flex: 1;
+    .segmented-control.compact .segmented-btn {
       background: transparent;
       border: none;
       color: var(--text-muted);
-      font-size: 12px;
-      font-weight: 600;
-      padding: 7px 10px;
-      border-radius: 4px;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 0 10px;
+      height: 36px;
+      border-radius: 6px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 5px;
+      transition: all var(--tr-fast);
+      white-space: nowrap;
+    }
+    .segmented-control.compact .segmented-btn.active {
+      background: rgba(212, 164, 24, 0.18);
+      color: var(--gold);
+      border: 1px solid rgba(212, 164, 24, 0.4);
+    }
+
+    .search-field-pill-group {
+      display: flex;
+      align-items: center;
+      background: #0d0e12;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 0 12px;
+      height: 42px;
+      box-sizing: border-box;
+      transition: all var(--tr-fast);
+    }
+    .search-field-pill-group:focus-within {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 1px var(--gold), 0 0 12px rgba(212, 164, 24, 0.15);
+      background: #111217;
+    }
+    .search-field-pill-group .field-icon {
+      font-size: 14px;
+      margin-right: 8px;
+      opacity: 0.8;
+      flex-shrink: 0;
+    }
+    .search-field-pill-group .input-pill {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-white);
+      font-size: 13px;
+      font-weight: 500;
+      width: 100%;
+      font-family: var(--font-sans);
+    }
+    .search-field-pill-group .input-pill::placeholder {
+      color: #64748B;
+      font-size: 12.5px;
+    }
+
+    .search-field-pill-group.field-city {
+      flex: 1.2;
+      min-width: 160px;
+    }
+    .search-field-pill-group.field-vertical {
+      flex: 2.2;
+      min-width: 220px;
+    }
+    .search-field-pill-group.field-radius {
+      flex: 0.8;
+      min-width: 105px;
+      padding: 0 8px;
+    }
+    .search-field-pill-group .select-pill {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-white);
+      font-size: 12.5px;
+      font-weight: 600;
+      width: 100%;
+      cursor: pointer;
+      font-family: var(--font-mono);
+    }
+    .search-field-pill-group .select-pill option {
+      background: #15161b;
+      color: #fff;
+    }
+
+    .search-action-group {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-run-scan-pill {
+      height: 42px;
+      padding: 0 20px;
+      background: linear-gradient(135deg, #E5B422 0%, #B88B09 100%);
+      border: 1px solid #F3C63F;
+      color: #0b0c0e;
+      font-size: 13px;
+      font-weight: 800;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all var(--tr-smooth);
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(212, 164, 24, 0.35);
+      font-family: var(--font-sans);
+    }
+    .btn-run-scan-pill:hover {
+      background: linear-gradient(135deg, #F3C63F 0%, #C99A0F 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(212, 164, 24, 0.5);
+    }
+    .btn-run-scan-pill:active {
+      transform: translateY(0);
+    }
+    .btn-stop-scan-pill {
+      height: 42px;
+      padding: 0 16px;
+      background: #DC2626;
+      border: 1px solid #EF4444;
+      color: #FFFFFF;
+      font-size: 12.5px;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
       gap: 6px;
       transition: all var(--tr-fast);
+      white-space: nowrap;
       font-family: var(--font-sans);
     }
-    .segmented-btn.active {
-      background: var(--bg-card);
-      color: var(--gold-soft);
-      border: 1px solid var(--border-default);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    .btn-stop-scan-pill:hover {
+      background: #B91C1C;
     }
 
-    .input-field {
-      background: var(--bg-input);
-      border: 1px solid var(--border-default);
-      color: var(--text-white);
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-family: var(--font-sans);
-      outline: none;
-      transition: border-color var(--tr-fast), box-shadow var(--tr-fast);
-      width: 100%;
-    }
-    .input-field:focus {
-      border-color: var(--gold);
-      box-shadow: 0 0 0 1px var(--gold);
-    }
-
-    select.input-field {
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A8F96' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 10px center;
-      padding-right: 28px;
-      cursor: pointer;
-    }
-
-    .chip-cloud {
+    /* SECONDARY CRITERIA BAR (HORIZONTAL QUICK-CHIPS & TOGGLES) */
+    .criteria-secondary-bar {
       display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
       margin-top: 4px;
     }
-    .chip {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-muted);
+
+    .quick-chips-wrapper {
+      flex: 1;
+      min-width: 0;
+      position: relative;
+    }
+    .quick-chips-scroll {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding: 2px 0;
+    }
+    .quick-chips-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .quick-chip {
       font-size: 11px;
-      font-weight: 500;
-      padding: 3px 8px;
-      border-radius: 4px;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      color: #94A3B8;
       cursor: pointer;
       transition: all var(--tr-fast);
       user-select: none;
+      flex-shrink: 0;
     }
-    .chip:hover {
-      background: var(--bg-card-hover);
-      border-color: var(--border-default);
-      color: var(--text-white);
+    .quick-chip:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #FFFFFF;
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-1px);
     }
-    .chip.active {
-      background: var(--gold-subtle);
+    .quick-chip.active {
+      background: rgba(212, 164, 24, 0.15);
       border-color: var(--gold);
-      color: var(--gold-soft);
+      color: #FBBF24;
+      font-weight: 700;
     }
 
-    /* SLIDER & TOGGLES */
-    .slider-container {
+    .criteria-options-group {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      flex-shrink: 0;
+      padding-left: 8px;
+      border-left: 1px solid rgba(255, 255, 255, 0.06);
     }
-    .range-slider {
-      flex: 1;
-      height: 4px;
-      border-radius: 2px;
-      background: var(--border-default);
-      outline: none;
-      -webkit-appearance: none;
-      cursor: pointer;
-    }
-    .range-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: var(--gold);
-      box-shadow: 0 0 8px var(--gold-glow);
-      cursor: pointer;
-      transition: transform var(--tr-fast);
-    }
-    .range-slider::-webkit-slider-thumb:hover {
-      transform: scale(1.2);
-    }
-
-    .toggle-row {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 4px;
-    }
-    .checkbox-label {
-      display: flex;
+    .compact-toggle {
+      display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       font-size: 11px;
-      color: var(--text-muted);
+      font-weight: 600;
+      color: #94A3B8;
       cursor: pointer;
       user-select: none;
+      transition: color var(--tr-fast);
     }
-    .checkbox-label input {
+    .compact-toggle:hover {
+      color: #FFFFFF;
+    }
+    .compact-toggle.gold {
+      color: var(--gold-soft);
+    }
+    .compact-toggle.gold:hover {
+      color: var(--gold);
+    }
+    .compact-toggle input {
       accent-color: var(--gold);
       cursor: pointer;
       width: 14px;
       height: 14px;
+      margin: 0;
     }
-
-    /* ACTION BUTTONS */
-    .action-cell {
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      gap: 8px;
-    }
-
-    .btn-run-scan {
-      background: var(--gold);
-      border: 1px solid var(--gold-soft);
-      color: var(--bg-root);
-      font-size: 13px;
-      font-weight: 700;
-      padding: 10px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all var(--tr-smooth);
-      font-family: var(--font-sans);
-      box-shadow: 0 4px 14px var(--gold-glow);
-      white-space: nowrap;
-    }
-    .btn-run-scan:hover {
-      background: var(--gold-soft);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(212, 164, 24, 0.35);
-    }
-    .btn-run-scan:active {
-      transform: translateY(0);
-    }
-    .btn-run-scan svg {
-      width: 16px;
-      height: 16px;
-      fill: var(--bg-root);
-    }
-
-    .btn-stop-scan {
-      display: none;
-      background: var(--red-alert);
-      border: 1px solid #c92a2a;
+    .compact-lang-select {
+      background: #0d0e12;
+      border: 1px solid rgba(255, 255, 255, 0.1);
       color: var(--text-white);
-      font-size: 13px;
-      font-weight: 700;
-      padding: 10px 20px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
       border-radius: 6px;
       cursor: pointer;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all var(--tr-fast);
-      font-family: var(--font-sans);
+      outline: none;
     }
-    .btn-stop-scan:hover {
-      background: #b02020;
+    .compact-lang-select:focus {
+      border-color: var(--gold);
     }
 
-    .shortcut-hint {
+    /* CITY CHIPS BAR */
+    .city-chips-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .city-chips-label {
       font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #64748B;
+      letter-spacing: 0.06em;
+      flex-shrink: 0;
+    }
+    .quick-cities-scroll {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .quick-cities-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .quick-cities-scroll .chip {
+      font-size: 10.5px;
       font-family: var(--font-mono);
-      background: rgba(0,0,0,0.25);
-      padding: 2px 5px;
-      border-radius: 3px;
-      margin-left: 4px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: #94A3B8;
+      cursor: pointer;
+      transition: all var(--tr-fast);
+      flex-shrink: 0;
+    }
+    .quick-cities-scroll .chip:hover {
+      background: rgba(255, 255, 255, 0.07);
+      color: #FFFFFF;
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+    .quick-cities-scroll .chip.active {
+      background: rgba(212, 164, 24, 0.15);
+      border-color: var(--gold);
+      color: #FBBF24;
+      font-weight: 700;
     }
 
     /* LIVE SCAN TICKER (EXPANDABLE) */
@@ -1081,26 +1201,29 @@
     }
 
     .lead-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-default);
-      border-radius: 8px;
+      background: linear-gradient(180deg, #17181f 0%, #111216 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
       padding: 16px;
       display: flex;
       flex-direction: column;
+      justify-content: space-between;
       gap: 12px;
       cursor: pointer;
       position: relative;
       transition: all var(--tr-smooth);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+      min-height: 310px;
     }
     .lead-card:hover {
-      background: var(--bg-card);
-      border-color: var(--gold);
+      background: linear-gradient(180deg, #1b1d25 0%, #131419 100%);
+      border-color: rgba(212, 164, 24, 0.5);
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55), 0 0 16px rgba(212, 164, 24, 0.1);
     }
     .lead-card.selected {
       border-color: var(--gold);
-      box-shadow: 0 0 0 1px var(--gold), 0 8px 24px rgba(212, 164, 24, 0.15);
+      box-shadow: 0 0 0 1px var(--gold), 0 8px 26px rgba(212, 164, 24, 0.2);
     }
 
     .card-top {
@@ -1110,53 +1233,73 @@
       gap: 10px;
     }
     .card-name {
-      font-size: 14px;
+      font-size: 14.5px;
       font-weight: 700;
-      color: var(--text-white);
-      line-height: 1.3;
+      color: #FFFFFF;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .status-badge {
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      padding: 3px 8px;
-      border-radius: 4px;
+      padding: 4px 9px;
+      border-radius: 5px;
       font-size: 11px;
       font-family: var(--font-mono);
       font-weight: 700;
       white-space: nowrap;
       flex-shrink: 0;
+      letter-spacing: 0.02em;
     }
     .status-badge.hot {
-      background: var(--status-hot-bg);
-      border: 1px solid var(--status-hot-border);
-      color: var(--status-hot);
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #FF6B6B;
     }
     .status-badge.warm {
-      background: var(--status-warm-bg);
-      border: 1px solid var(--status-warm-border);
-      color: var(--gold);
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #FBBF24;
     }
     .status-badge.skip {
-      background: var(--status-skip-bg);
-      border: 1px solid var(--status-skip-border);
-      color: var(--text-muted);
+      background: rgba(148, 163, 184, 0.1);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      color: #94A3B8;
     }
 
     .card-meta-line {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      color: var(--text-muted);
+      gap: 7px;
+      font-size: 11.5px;
+      color: #94A3B8;
       flex-wrap: wrap;
     }
     .meta-tag {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      padding: 2px 6px;
-      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 2px 7px;
+      border-radius: 4px;
+      color: #CBD5E1;
+      font-weight: 500;
+    }
+    .meta-sep {
+      color: #475569;
+      font-size: 10px;
+    }
+    .meta-city {
+      color: #E2E8F0;
+    }
+    .meta-phone {
+      font-family: var(--font-mono);
+      color: var(--gold);
+      font-weight: 600;
     }
 
     .tech-pill-row {
@@ -1165,47 +1308,96 @@
       gap: 5px;
     }
     .tech-tag {
-      font-size: 10px;
+      font-size: 10.5px;
       font-family: var(--font-mono);
-      padding: 2px 6px;
-      border-radius: 3px;
-      border: 1px solid var(--border-subtle);
-      background: var(--bg-card);
-      color: var(--text-muted);
+      font-weight: 600;
+      padding: 3px 7px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+      color: #94A3B8;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
     .tech-tag.bad {
-      border-color: var(--status-hot-border);
-      background: var(--status-hot-bg);
-      color: var(--status-hot);
+      border-color: rgba(239, 68, 68, 0.35);
+      background: rgba(239, 68, 68, 0.1);
+      color: #F87171;
     }
     .tech-tag.good {
-      border-color: var(--status-live-border);
-      background: var(--status-live-bg);
-      color: var(--status-live);
+      border-color: rgba(16, 185, 129, 0.35);
+      background: rgba(16, 185, 129, 0.1);
+      color: #34D399;
     }
 
     .pitch-hook-preview {
-      background: var(--bg-root);
-      border: 1px solid var(--border-subtle);
-      border-left: 2px solid var(--gold);
-      border-radius: 4px;
-      padding: 8px 10px;
-      font-size: 11px;
-      color: var(--text-white);
-      line-height: 1.4;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-left: 3px solid var(--gold);
+      border-radius: 6px;
+      padding: 9px 12px;
+      font-size: 11.5px;
+      color: #E2E8F0;
+      line-height: 1.45;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      font-style: normal;
+    }
+    .hook-icon {
+      margin-right: 4px;
+      font-size: 12px;
     }
 
     .card-footer {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-top: 1px solid var(--border-subtle);
-      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 8px;
       margin-top: auto;
+    }
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: 500;
+    }
+    .status-indicator.online {
+      color: #94A3B8;
+    }
+    .status-indicator.offline {
+      color: #EF4444;
+    }
+    .dot-beacon {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-beacon.green {
+      background: #10B981;
+      box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+    }
+    .dot-beacon.red {
+      background: #EF4444;
+      box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+    }
+    .card-details-cta {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--gold);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: gap var(--tr-fast);
+    }
+    .lead-card:hover .card-details-cta {
+      gap: 7px;
     }
 
     /* TABLE VIEW (HIGH DENSITY) */
@@ -1358,81 +1550,160 @@
       background: var(--gold-soft);
     }
 
-    /* CARD CRM ROW & FAST ACTION BUTTONS */
-    .card-crm-row {
+    /* CARD CONTROLS (BALANCED 2-ROW INTERFACE) */
+    .card-controls {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      margin-top: 4px;
-      padding-top: 8px;
-      border-top: 1px dashed var(--border-subtle);
+      flex-direction: column;
+      gap: 6px;
+      padding-top: 4px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
-    .crm-select {
-      background: var(--bg-root);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-white);
+    .card-row-top {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+    .crm-select-wrapper {
+      flex: 1.2;
+      min-width: 0;
+    }
+    .crm-select-pill {
+      width: 100%;
+      background: #0d0e12;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #FFFFFF;
       font-family: var(--font-mono);
-      font-size: 10px;
-      padding: 3px 6px;
-      border-radius: 4px;
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 5px 8px;
+      border-radius: 6px;
       cursor: pointer;
       outline: none;
+      transition: border-color var(--tr-fast);
     }
-    .crm-select:focus {
+    .crm-select-pill:focus {
       border-color: var(--gold);
     }
-    .card-action-btns {
+    .crm-select-pill option {
+      background: #15161b;
+      color: #fff;
+    }
+
+    .card-contact-btns {
       display: flex;
-      gap: 4px;
       align-items: center;
+      gap: 4px;
+      flex: 1;
+      justify-content: flex-end;
     }
     .btn-card-action {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-dim);
-      font-size: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #E2E8F0;
+      font-size: 10.5px;
       font-weight: 600;
-      padding: 4px 7px;
-      border-radius: 4px;
+      padding: 5px 8px;
+      border-radius: 6px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 4px;
       text-decoration: none;
-      transition: all var(--tr-smooth);
+      transition: all var(--tr-fast);
+      white-space: nowrap;
     }
     .btn-card-action:hover {
-      color: var(--text-white);
-      border-color: var(--border-focus);
-      background: var(--bg-panel);
+      color: #FFFFFF;
+      border-color: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.1);
     }
     .btn-card-action.call {
-      color: #2A9D8F;
-      border-color: rgba(42, 157, 143, 0.3);
-      background: rgba(42, 157, 143, 0.08);
+      color: #2DD4BF;
+      border-color: rgba(45, 212, 191, 0.3);
+      background: rgba(45, 212, 191, 0.1);
     }
     .btn-card-action.call:hover {
-      background: rgba(42, 157, 143, 0.2);
-      border-color: #2A9D8F;
+      background: rgba(45, 212, 191, 0.2);
+      border-color: #2DD4BF;
     }
     .btn-card-action.whatsapp {
-      color: #25D366;
-      border-color: rgba(37, 211, 102, 0.3);
-      background: rgba(37, 211, 102, 0.08);
+      color: #4ADE80;
+      border-color: rgba(74, 222, 128, 0.3);
+      background: rgba(74, 222, 128, 0.1);
     }
     .btn-card-action.whatsapp:hover {
-      background: rgba(37, 211, 102, 0.2);
-      border-color: #25D366;
+      background: rgba(74, 222, 128, 0.2);
+      border-color: #4ADE80;
     }
-    .btn-card-action.gold {
-      color: var(--gold-soft);
-      border-color: rgba(212, 164, 24, 0.4);
-      background: rgba(212, 164, 24, 0.08);
+    .btn-card-action.disabled {
+      color: #64748B;
+      border-color: rgba(255, 255, 255, 0.04);
+      background: transparent;
+      cursor: not-allowed;
+      opacity: 0.6;
     }
-    .btn-card-action.gold:hover {
-      background: rgba(212, 164, 24, 0.2);
+
+    .card-row-arsenal {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 4px;
+      width: 100%;
+    }
+    .btn-arsenal {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #CBD5E1;
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 5px 6px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all var(--tr-fast);
+      white-space: nowrap;
+    }
+    .btn-arsenal:hover {
+      background: rgba(255, 255, 255, 0.09);
+      color: #FFFFFF;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .btn-arsenal.gold {
+      color: #FBBF24;
+      border-color: rgba(212, 164, 24, 0.35);
+      background: rgba(212, 164, 24, 0.1);
+    }
+    .btn-arsenal.gold:hover {
+      background: rgba(212, 164, 24, 0.22);
       border-color: var(--gold);
+      color: #F59E0B;
+    }
+
+    /* TERMINAL LOG TOGGLE BUTTON & COLLAPSED STATE */
+    .btn-toggle-terminal {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-family: var(--font-mono);
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all var(--tr-fast);
+    }
+    .btn-toggle-terminal:hover {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .terminal-drawer.collapsed {
+      display: none !important;
     }
 
     /* BATTLECARD & DIALER MODAL SPECIALS */
@@ -1953,9 +2224,37 @@
 
     /* RESPONSIVENESS & MOBILE-FIRST OPTIMIZATION */
     @media (max-width: 1024px) {
-      .criteria-layout-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
+      .criteria-primary-bar {
+        flex-wrap: wrap;
+      }
+      .search-field-pill-group.field-city {
+        flex: 1 1 200px;
+      }
+      .search-field-pill-group.field-vertical {
+        flex: 2 1 280px;
+      }
+      .search-field-pill-group.field-radius {
+        flex: 1 1 120px;
+      }
+      .search-action-group {
+        flex: 1 1 100%;
+      }
+      .btn-run-scan-pill {
+        width: 100%;
+        justify-content: center;
+      }
+      .criteria-secondary-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .criteria-options-group {
+        border-left: none;
+        padding-left: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        padding-top: 8px;
+        flex-wrap: wrap;
+        justify-content: space-between;
       }
       .telemetry-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -2001,8 +2300,8 @@
         font-size: 10px;
       }
       .console-panel {
-        padding: 14px;
-        gap: 12px;
+        padding: 12px;
+        gap: 10px;
         border-radius: 8px;
       }
       .panel-top-row {
@@ -2010,23 +2309,22 @@
         align-items: flex-start;
         gap: 4px;
       }
-      .criteria-layout-grid {
-        grid-template-columns: 1fr;
-        gap: 14px;
+      .criteria-primary-bar {
+        flex-direction: column;
+        align-items: stretch;
       }
-      .action-cell {
-        margin-top: 4px;
-      }
-      .btn-run-scan {
+      .control-segment-wrapper {
         width: 100%;
-        height: 46px;
-        font-size: 13px;
-        justify-content: center;
       }
-      .btn-stop-scan {
+      .search-field-pill-group.field-city,
+      .search-field-pill-group.field-vertical,
+      .search-field-pill-group.field-radius {
         width: 100%;
-        height: 44px;
-        font-size: 13px;
+        min-width: 0;
+      }
+      .btn-run-scan-pill,
+      .btn-stop-scan-pill {
+        width: 100%;
         justify-content: center;
       }
       .pipeline-bar {
@@ -2447,118 +2745,144 @@
         </div>
       </section>
 
-      <!-- CRITERIA CONTROL PANEL (BALANCED 4-COLUMN INTERFACE) -->
+      <!-- CRITERIA CONTROL PANEL (UNIFIED COMMAND BAR) -->
       <section class="console-panel">
         <div class="panel-top-row">
           <div class="panel-headline">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
             <span>Kryteria Skanowania Rynku</span>
+            <span class="panel-headline-badge">OSM • CEIDG • OffeneRegister</span>
           </div>
-          <div style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">
-            OSM • CEIDG (PL) • OffeneRegister (DE)
+          <div class="panel-quick-actions">
+            <span class="shortcut-pill"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> Uruchom</span>
           </div>
         </div>
 
-        <div class="criteria-layout-grid">
-          <!-- RYNEK / KRAJ & MIASTO -->
-          <div class="field-block">
-            <label class="field-label">
-              <span>Rynek & Kraj docelowy</span>
-            </label>
-            <div class="segmented-control">
-              <button class="segmented-btn active" id="btn-country-pl" onclick="selectCountry('PL')">
-                <span>🇵🇱</span> <span>Polska (CEIDG)</span>
+        <!-- PRIMARY CRITERIA BAR (SINGLE SLEEK ROW) -->
+        <div class="criteria-primary-bar">
+          <!-- Country Selector -->
+          <div class="control-segment-wrapper">
+            <div class="segmented-control compact">
+              <button class="segmented-btn active" id="btn-country-pl" onclick="selectCountry('PL')" title="Polska (CEIDG / OSM)">
+                <span>🇵🇱</span> <span>PL</span>
               </button>
-              <button class="segmented-btn" id="btn-country-de" onclick="selectCountry('DE')">
-                <span>🇩🇪</span> <span>Niemcy (OffeneReg)</span>
+              <button class="segmented-btn" id="btn-country-de" onclick="selectCountry('DE')" title="Niemcy (OffeneRegister / OSM)">
+                <span>🇩🇪</span> <span>DE</span>
               </button>
-            </div>
-
-            <label class="field-label" style="margin-top: 6px;">
-              <span>Miasto docelowe</span>
-            </label>
-            <input type="text" class="input-field" id="scan-city" value="Rzeszów" placeholder="np. Rzeszów, Warszawa, Berlin...">
-            <div class="chip-cloud" id="city-chips">
-              <!-- Rendered dynamically depending on country -->
             </div>
           </div>
 
-          <!-- BRANŻA / VERTICAL -->
-          <div class="field-block">
-            <label class="field-label">
-              <span>Branża docelowa</span>
-              <span style="font-size: 10px; color: var(--text-dim);">dowolna lub z listy</span>
-            </label>
-            <input type="text" class="input-field" id="scan-vertical" value="hydraulik" placeholder="Wpisz branżę lub kliknij poniżej...">
-            <div class="chip-cloud">
-              <span class="chip" onclick="setVerticalPreset('informatyk')">💻 Informatyk / IT</span>
-              <span class="chip" onclick="setVerticalPreset('hydraulik')">🚰 Hydraulik</span>
-              <span class="chip" onclick="setVerticalPreset('mechanik samochodowy')">🔧 Mechanik</span>
-              <span class="chip" onclick="setVerticalPreset('budowlanka')">🏗️ Budowlanka</span>
-              <span class="chip" onclick="setVerticalPreset('lekarz')">🩺 Lekarz</span>
-              <span class="chip" onclick="setVerticalPreset('dentysta')">🦷 Dentysta</span>
-              <span class="chip" onclick="setVerticalPreset('prawnik')">⚖️ Prawnik</span>
-              <span class="chip" onclick="setVerticalPreset('księgowość')">💰 Księgowość</span>
-              <span class="chip" onclick="setVerticalPreset('klimatyzacja')">❄️ Klimatyzacja</span>
-              <span class="chip" onclick="setVerticalPreset('kosmetyczka')">💅 Kosmetyczka</span>
-              <span class="chip" onclick="setVerticalPreset('piekarnia')">🥖 Piekarnia</span>
-              <span class="chip" onclick="setVerticalPreset('elektryk')">⚡ Elektryk</span>
-              <span class="chip" onclick="setVerticalPreset('siłownia')">🏋️ Siłownia</span>
-              <span class="chip" onclick="setVerticalPreset('fryzjer')">✂️ Fryzjer</span>
-              <span class="chip" onclick="setVerticalPreset('restauracja')">🍽️ Restauracja</span>
-              <span class="chip" onclick="setVerticalPreset('weterynarz')">🐾 Weterynarz</span>
-            </div>
+          <!-- City Input Group -->
+          <div class="search-field-pill-group field-city">
+            <span class="field-icon">📍</span>
+            <input type="text" class="input-pill" id="scan-city" value="Kraków" placeholder="np. Kraków, Warszawa, Berlin..." autocomplete="off">
           </div>
 
-          <!-- PARAMETRY ZAAWANSOWANE -->
-          <div class="field-block">
-            <label class="field-label">
-              <span>Promień poszukiwań</span>
-              <span id="radius-val" style="color: var(--gold); font-family: var(--font-mono);">15 km</span>
-            </label>
-            <div class="slider-container">
-              <input type="range" class="range-slider" id="scan-radius" min="1" max="60" value="15" oninput="updateRadius(this.value)">
-            </div>
+          <!-- Vertical / Trade Input Group -->
+          <div class="search-field-pill-group field-vertical">
+            <span class="field-icon">🔍</span>
+            <input type="text" class="input-pill" id="scan-vertical" value="informatyk" placeholder="Wpisz branżę lub zawód (np. informatyk, hydraulik, lekarz)..." autocomplete="off" list="popular-trades-datalist">
+            <datalist id="popular-trades-datalist">
+              <option value="informatyk">Informatyk / Usługi IT</option>
+              <option value="programista">Programista / Software</option>
+              <option value="tworzenie stron">Tworzenie stron WWW</option>
+              <option value="serwis komputerowy">Naprawa i serwis PC</option>
+              <option value="hydraulik">Hydraulik / Usługi hydrauliczne</option>
+              <option value="mechanik samochodowy">Mechanik samochodowy</option>
+              <option value="budowlanka">Budowlanka / Wykończenia wnętrz</option>
+              <option value="malarz">Malarz / Tapetowanie</option>
+              <option value="glazurnik">Glazurnik / Płytkarz</option>
+              <option value="lekarz">Lekarz / Gabinet lekarski</option>
+              <option value="dentysta">Dentysta / Stomatolog</option>
+              <option value="fizjoterapeuta">Fizjoterapeuta / Rehabilitacja</option>
+              <option value="prawnik">Prawnik / Adwokat</option>
+              <option value="księgowość">Księgowość / Biuro rachunkowe</option>
+              <option value="klimatyzacja">Klimatyzacja / Pompy ciepła</option>
+              <option value="elektryk">Elektryk / Instalacje elektryczne</option>
+              <option value="kosmetyczka">Kosmetyczka / Salon urody</option>
+              <option value="fryzjer">Fryzjer / Barber</option>
+              <option value="restauracja">Restauracja / Gastronomia</option>
+              <option value="weterynarz">Weterynarz / Przychodnia</option>
+            </datalist>
+          </div>
 
-            <label class="field-label" style="margin-top: 6px;">
-              <span>Język hooków i raportu</span>
-            </label>
-            <select class="input-field" id="scan-lang">
-              <option value="pl" selected>PL — Język Polski</option>
-              <option value="de">DE — Język Niemiecki</option>
-              <option value="en">EN — Język Angielski</option>
+          <!-- Radius Select Group -->
+          <div class="search-field-pill-group field-radius">
+            <span class="field-icon">📏</span>
+            <select class="select-pill" id="scan-radius-select" onchange="updateRadius(this.value)">
+              <option value="5">5 km</option>
+              <option value="10">10 km</option>
+              <option value="15" selected>15 km</option>
+              <option value="25">25 km</option>
+              <option value="40">40 km</option>
+              <option value="60">60 km</option>
             </select>
+            <input type="hidden" id="scan-radius" value="15">
+            <span id="radius-val" style="display:none;">15 km</span>
+          </div>
 
-            <div class="toggle-row">
-              <label class="checkbox-label">
-                <input type="checkbox" id="scan-has-phone">
-                <span>Tylko firmy z telefonem</span>
-              </label>
-              <label class="checkbox-label">
-                <input type="checkbox" id="scan-do-audit" checked>
-                <span>Audyt stron WWW (SSL, RWD, CMS)</span>
-              </label>
-              <label class="checkbox-label" style="color: var(--gold-soft);">
-                <input type="checkbox" id="scan-use-gemini">
-                <span>Google OSINT (Weryfikacja w rejestrach i Google)</span>
-              </label>
+          <!-- Action Buttons -->
+          <div class="search-action-group">
+            <button class="btn-run-scan-pill" id="btn-start-scan" onclick="startScan()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span>Uruchom skan</span>
+            </button>
+            <button class="btn-stop-scan-pill" id="btn-stop-scan" onclick="stopScan()" style="display: none;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+              <span>Zatrzymaj</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SECONDARY CRITERIA BAR (HORIZONTAL QUICK-CHIPS & TOGGLES) -->
+        <div class="criteria-secondary-bar">
+          <!-- Left: Popular Trade Chips (Horizontal scroll, no wrapping) -->
+          <div class="quick-chips-wrapper">
+            <div class="quick-chips-scroll" id="trade-chips-scroll">
+              <span class="quick-chip active" onclick="setVerticalPreset('informatyk', this)">💻 Informatyk / IT</span>
+              <span class="quick-chip" onclick="setVerticalPreset('hydraulik', this)">🚰 Hydraulik</span>
+              <span class="quick-chip" onclick="setVerticalPreset('mechanik samochodowy', this)">🔧 Mechanik</span>
+              <span class="quick-chip" onclick="setVerticalPreset('budowlanka', this)">🏗️ Budowlanka</span>
+              <span class="quick-chip" onclick="setVerticalPreset('lekarz', this)">🩺 Lekarz</span>
+              <span class="quick-chip" onclick="setVerticalPreset('dentysta', this)">🦷 Dentysta</span>
+              <span class="quick-chip" onclick="setVerticalPreset('prawnik', this)">⚖️ Prawnik</span>
+              <span class="quick-chip" onclick="setVerticalPreset('księgowość', this)">💰 Księgowość</span>
+              <span class="quick-chip" onclick="setVerticalPreset('klimatyzacja', this)">❄️ Klimatyzacja</span>
+              <span class="quick-chip" onclick="setVerticalPreset('elektryk', this)">⚡ Elektryk</span>
+              <span class="quick-chip" onclick="setVerticalPreset('kosmetyczka', this)">💅 Kosmetyczka</span>
+              <span class="quick-chip" onclick="setVerticalPreset('fryzjer', this)">✂️ Fryzjer</span>
+              <span class="quick-chip" onclick="setVerticalPreset('restauracja', this)">🍽️ Gastronomia</span>
+              <span class="quick-chip" onclick="setVerticalPreset('weterynarz', this)">🐾 Weterynarz</span>
             </div>
           </div>
 
-          <!-- AKCJA URUCHOMIENIA -->
-          <div class="action-cell">
-            <button class="btn-run-scan" id="btn-start-scan" onclick="startScan()">
-              <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              <span>Uruchom skanowanie</span>
-              <span class="shortcut-hint">Ctrl+Enter</span>
-            </button>
-            <button class="btn-stop-scan" id="btn-stop-scan" onclick="stopScan()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-              <span>Zatrzymaj skan</span>
-            </button>
-            <div style="font-size: 11px; color: var(--text-dim); text-align: center;">
-              Czas skanu: ok. 10–30 sekund
-            </div>
+          <!-- Right: Advanced Toggles (Audit, Gemini OSINT, Phone filter, Lang) -->
+          <div class="criteria-options-group">
+            <label class="compact-toggle" title="Audyt techniczny: SSL, responsywność RWD, CMS">
+              <input type="checkbox" id="scan-do-audit" checked>
+              <span>🌐 Audyt WWW</span>
+            </label>
+            <label class="compact-toggle gold" title="Weryfikacja w rejestrach i Google przez Gemini AI">
+              <input type="checkbox" id="scan-use-gemini" checked>
+              <span>🤖 Google OSINT</span>
+            </label>
+            <label class="compact-toggle" title="Filtruj tylko firmy posiadające numer telefonu">
+              <input type="checkbox" id="scan-has-phone">
+              <span>📞 Tylko tel.</span>
+            </label>
+            <select class="compact-lang-select" id="scan-lang">
+              <option value="pl" selected>🇵🇱 PL</option>
+              <option value="de">🇩🇪 DE</option>
+              <option value="en">🇬🇧 EN</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- City Chips Row (Dynamic for country, compact horizontal strip) -->
+        <div class="city-chips-bar" id="city-chips-bar">
+          <span class="city-chips-label">Popularne miasta:</span>
+          <div class="quick-cities-scroll" id="city-chips">
+            <!-- Injected dynamically via JS -->
           </div>
         </div>
       </section>
@@ -2573,8 +2897,11 @@
             </span>
             <span style="font-size: 12px; color: var(--text-white);" id="current-stage-message">Łączenie z rejestrami...</span>
           </div>
-          <div style="font-size: 13px; font-family: var(--font-mono); font-weight: 700; color: var(--gold);" id="progress-percent-text">
-            0%
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <button class="btn-toggle-terminal" id="btn-toggle-terminal" onclick="toggleTerminalLogs()">📋 Logi diagnostyczne ▾</button>
+            <div style="font-size: 13px; font-family: var(--font-mono); font-weight: 700; color: var(--gold);" id="progress-percent-text">
+              0%
+            </div>
           </div>
         </div>
 
@@ -3182,27 +3509,32 @@
     // CITY & COUNTRY SWITCHING
     function selectCountry(c) {
       currentCountry = c;
-      document.getElementById('btn-country-pl').classList.toggle('active', c === 'PL');
-      document.getElementById('btn-country-de').classList.toggle('active', c === 'DE');
+      const btnPl = document.getElementById('btn-country-pl');
+      const btnDe = document.getElementById('btn-country-de');
+      if (btnPl) btnPl.classList.toggle('active', c === 'PL');
+      if (btnDe) btnDe.classList.toggle('active', c === 'DE');
       
       const cityInput = document.getElementById('scan-city');
-      cityInput.value = c === 'PL' ? 'Rzeszów' : 'Berlin';
+      if (cityInput) cityInput.value = c === 'PL' ? 'Kraków' : 'Berlin';
       
       const langSelect = document.getElementById('scan-lang');
-      langSelect.value = c === 'PL' ? 'pl' : 'de';
+      if (langSelect) langSelect.value = c === 'PL' ? 'pl' : 'de';
 
       renderCityChips(c);
     }
 
     function renderCityChips(c) {
       const container = document.getElementById('city-chips');
+      if (!container) return;
       container.innerHTML = '';
-      topCities[c].forEach(city => {
+      const list = (topCities && topCities[c]) ? topCities[c] : [];
+      list.forEach(city => {
         const chip = document.createElement('span');
         chip.className = 'chip';
         chip.innerText = city;
         chip.onclick = () => {
-          document.getElementById('scan-city').value = city;
+          const input = document.getElementById('scan-city');
+          if (input) input.value = city;
           highlightChip(chip);
         };
         container.appendChild(chip);
@@ -3210,17 +3542,35 @@
     }
 
     function highlightChip(activeChip) {
+      if (!activeChip || !activeChip.parentElement) return;
       const chips = activeChip.parentElement.querySelectorAll('.chip');
       chips.forEach(c => c.classList.remove('active'));
       activeChip.classList.add('active');
     }
 
-    function setVerticalPreset(v) {
-      document.getElementById('scan-vertical').value = v;
+    function setVerticalPreset(v, el) {
+      const input = document.getElementById('scan-vertical');
+      if (input) {
+        input.value = v;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      if (el) {
+        const parent = el.parentElement;
+        if (parent) {
+          const chips = parent.querySelectorAll('.quick-chip, .chip');
+          chips.forEach(c => c.classList.remove('active'));
+        }
+        el.classList.add('active');
+      }
     }
 
     function updateRadius(val) {
-      document.getElementById('radius-val').innerText = val + ' km';
+      const radiusVal = document.getElementById('radius-val');
+      if (radiusVal) radiusVal.innerText = val + ' km';
+      const scanRadius = document.getElementById('scan-radius');
+      if (scanRadius) scanRadius.value = val;
+      const select = document.getElementById('scan-radius-select');
+      if (select && select.value !== String(val)) select.value = String(val);
     }
 
     // TELEMETRY COUNTERS
@@ -3372,24 +3722,40 @@
       }
     }
 
+    function toggleTerminalLogs() {
+      const drawer = document.getElementById('terminal-log-output');
+      const btn = document.getElementById('btn-toggle-terminal');
+      if (!drawer) return;
+      const isCollapsed = drawer.classList.toggle('collapsed');
+      if (btn) {
+        btn.innerText = isCollapsed ? '📋 Pokaż logi ▸' : '📋 Ukryj logi ▾';
+      }
+    }
+
     function setScanningUI(isScanning) {
       const btnStart = document.getElementById('btn-start-scan');
       const btnStop = document.getElementById('btn-stop-scan');
       const livePanel = document.getElementById('live-scan-panel');
       const pulse = document.getElementById('system-pulse');
       const statusText = document.getElementById('system-status-text');
+      const drawer = document.getElementById('terminal-log-output');
+      const btnLog = document.getElementById('btn-toggle-terminal');
 
       if (isScanning) {
-        btnStart.style.display = 'none';
-        btnStop.style.display = 'inline-flex';
-        livePanel.style.display = 'flex';
-        pulse.className = 'pulse-dot scanning';
-        statusText.innerText = 'Skanowanie w toku...';
+        if (btnStart) btnStart.style.display = 'none';
+        if (btnStop) btnStop.style.display = 'inline-flex';
+        if (livePanel) livePanel.style.display = 'flex';
+        if (pulse) pulse.className = 'pulse-dot scanning';
+        if (statusText) statusText.innerText = 'Skanowanie w toku...';
+        if (drawer) drawer.classList.remove('collapsed');
+        if (btnLog) btnLog.innerText = '📋 Ukryj logi ▾';
       } else {
-        btnStart.style.display = 'inline-flex';
-        btnStop.style.display = 'none';
-        pulse.className = 'pulse-dot';
-        statusText.innerText = 'System Gotowy';
+        if (btnStart) btnStart.style.display = 'inline-flex';
+        if (btnStop) btnStop.style.display = 'none';
+        if (pulse) pulse.className = 'pulse-dot';
+        if (statusText) statusText.innerText = 'System Gotowy';
+        if (drawer) drawer.classList.add('collapsed');
+        if (btnLog) btnLog.innerText = '📋 Pokaż logi ▸';
       }
     }
 
@@ -3987,6 +4353,41 @@
       }
     }
 
+    function cleanHookText(text) {
+      if (!text) return 'Brak zidentyfikowanych problemów technicznych';
+      let clean = String(text);
+      if (clean.includes('ConnectTimeout') || clean.includes('connection timed out') || clean.includes('ConnectTimeoutError')) {
+        return 'Serwer strony nie odpowiada (przekroczono limit czasu połączenia) — potencjalni klienci trafiają na błąd.';
+      }
+      if (clean.includes('CERTIFICATE_VERIFY_FAILED') || clean.includes('SSLError')) {
+        return 'Krytyczny problem z certyfikatem SSL — przeglądarki blokują wejście na stronę jako niebezpieczną.';
+      }
+      if (clean.includes('502') || clean.includes('500') || clean.includes('503') || clean.includes('504')) {
+        return 'Awaria serwera WWW (kod błędu 5xx) — witryna jest aktualnie niedostępna dla odwiedzających.';
+      }
+      if (clean.includes('404 Not Found') || clean.includes('status 404')) {
+        return 'Strona nie istnieje (błąd 404) — link z rejestru lub wizytówki prowadzi w próżnię.';
+      }
+      if (clean.includes('HTTP connection failed')) {
+        return 'Błąd połączenia z serwerem witryny — strona nie otwiera się prawidłowo.';
+      }
+      return clean;
+    }
+
+    function formatCompanyName(name) {
+      if (!name) return 'Firma';
+      let str = String(name).trim();
+      if (str.includes(' | ')) {
+        const parts = str.split(' | ').map(p => p.trim()).filter(Boolean);
+        if (parts.length > 2) return parts.slice(0, 2).join(' • ');
+      }
+      if (str.includes(' I ') && str.split(' I ').length >= 3) {
+        const parts = str.split(' I ').map(p => p.trim()).filter(Boolean);
+        return parts.slice(0, 2).join(' • ');
+      }
+      return str;
+    }
+
     function renderCards(leads) {
       const grid = document.getElementById('leads-grid-view');
       grid.innerHTML = '';
@@ -4003,9 +4404,9 @@
         let techBadges = '';
         if (lead.gemini_intel && lead.gemini_intel.checked) {
           if (lead.gemini_intel.google_rating) {
-            techBadges += `<span class="tech-tag" style="border-color: var(--gold); color: var(--gold-soft); background: rgba(212, 164, 24, 0.1);">⭐ ${lead.gemini_intel.google_rating.toFixed(1)} (${lead.gemini_intel.google_reviews_count || 0})</span>`;
+            techBadges += `<span class="tech-tag" style="border-color: rgba(212, 164, 24, 0.4); color: var(--gold-soft); background: rgba(212, 164, 24, 0.1);">⭐ ${lead.gemini_intel.google_rating.toFixed(1)} (${lead.gemini_intel.google_reviews_count || 0})</span>`;
           } else {
-            techBadges += `<span class="tech-tag" style="border-color: var(--gold); color: var(--gold-soft);">Google OSINT</span>`;
+            techBadges += `<span class="tech-tag" style="border-color: rgba(212, 164, 24, 0.4); color: var(--gold-soft);">Google OSINT</span>`;
           }
         }
         if (lead.audit) {
@@ -4018,10 +4419,12 @@
           techBadges += '<span class="tech-tag bad">Brak strony www</span>';
         }
 
-        const hook = (lead.hooks && lead.hooks[0]) ? lead.hooks[0] : (lead.primary_issue || 'Brak zidentyfikowanych problemów');
+        const rawHook = (lead.hooks && lead.hooks[0]) ? lead.hooks[0] : (lead.primary_issue || 'Brak zidentyfikowanych problemów technicznych');
+        const hook = cleanHookText(rawHook);
+        const displayName = formatCompanyName(lead.name);
         const crmStatus = getLeadCrmStatus(lead);
         const cleanPhone = (lead.phone || '').replace(/[^0-9+]/g, '');
-        const phoneBtn = cleanPhone ? `<a href="tel:${cleanPhone}" class="btn-card-action call" onclick="event.stopPropagation()" title="Zadzwoń bezpośrednio">📞 Zadzwoń</a>` : '';
+        const phoneBtn = cleanPhone ? `<a href="tel:${cleanPhone}" class="btn-card-action call" onclick="event.stopPropagation()" title="Zadzwoń: ${escapeHtml(lead.phone)}">📞 Zadzwoń</a>` : '';
 
         let waBtn = '';
         if (cleanPhone) {
@@ -4031,42 +4434,56 @@
           } else {
             intlPhone = intlPhone.slice(1);
           }
-          const defaultMsg = encodeURIComponent(`Dzień dobry! Piszę z Wulf Code w nawiązaniu do Państwa profilu firmy w ${lead.city || 'mieście'}.`);
-          waBtn = `<a href="https://wa.me/${intlPhone}?text=${defaultMsg}" target="_blank" class="btn-card-action whatsapp" onclick="event.stopPropagation()" title="Otwórz czat WhatsApp">💬 WA</a>`;
+          const defaultMsg = encodeURIComponent(`Dzień dobry! Piszę w nawiązaniu do profilu Państwa firmy ${lead.name || ''} w ${lead.city || 'mieście'}.`);
+          waBtn = `<a href="https://wa.me/${intlPhone}?text=${defaultMsg}" target="_blank" class="btn-card-action whatsapp" onclick="event.stopPropagation()" title="Napisz na WhatsApp">💬 WA</a>`;
         }
+
+        const hasSite = Boolean(lead.website);
+        const siteStatusHtml = hasSite
+          ? '<span class="status-indicator online"><span class="dot-beacon green"></span> Witryna aktywna</span>'
+          : '<span class="status-indicator offline"><span class="dot-beacon red"></span> Brak witryny</span>';
 
         card.innerHTML = 
           '<div class="card-top">' +
-            '<div class="card-name">' + escapeHtml(lead.name) + '</div>' +
+            '<div class="card-name" title="' + escapeHtml(lead.name) + '">' + escapeHtml(displayName) + '</div>' +
             '<span class="status-badge ' + v + '">' + vLabel + ' • ' + lead.score + '</span>' +
           '</div>' +
           '<div class="card-meta-line">' +
             '<span class="meta-tag">' + escapeHtml(lead.industry_label || 'Firma') + '</span>' +
-            '<span>•</span>' +
-            '<span>' + escapeHtml(lead.city || '') + '</span>' +
-            (lead.phone ? '<span>•</span><span style="font-family: var(--font-mono); color: var(--gold);">' + escapeHtml(lead.phone) + '</span>' : '') +
+            '<span class="meta-sep">•</span>' +
+            '<span class="meta-city">' + escapeHtml(lead.city || '') + '</span>' +
+            (lead.phone ? '<span class="meta-sep">•</span><span class="meta-phone">' + escapeHtml(lead.phone) + '</span>' : '') +
           '</div>' +
           '<div class="tech-pill-row">' + techBadges + '</div>' +
-          '<div class="pitch-hook-preview">' + escapeHtml(hook) + '</div>' +
-          '<div class="card-crm-row" onclick="event.stopPropagation()">' +
-            '<select class="crm-select" onchange="updateLeadStatus(' + leadIdx + ', this.value, event)">' +
-              '<option value="NOWY"' + (crmStatus === 'NOWY' ? ' selected' : '') + '>📥 Nowy</option>' +
-              '<option value="ZADZWONIONO"' + (crmStatus === 'ZADZWONIONO' ? ' selected' : '') + '>📞 Zadzwoniono</option>' +
-              '<option value="WYSLANO_AUDYT"' + (crmStatus === 'WYSLANO_AUDYT' ? ' selected' : '') + '>📄 Audyt</option>' +
-              '<option value="SPOTKANIE"' + (crmStatus === 'SPOTKANIE' ? ' selected' : '') + '>🤝 Spotkanie</option>' +
-              '<option value="ODRZUCONY"' + (crmStatus === 'ODRZUCONY' ? ' selected' : '') + '>❌ Odrzucony</option>' +
-            '</select>' +
-            '<div class="card-action-btns">' +
-              phoneBtn +
-              waBtn +
-              '<button class="btn-card-action gold" onclick="openBattlecardModal(' + leadIdx + ', event)" title="Skrypt rozmowy & riposty na obiekcje">🎯 Skrypt</button>' +
-              '<button class="btn-card-action" onclick="openClientAuditCard(' + leadIdx + ', event)" title="Karta Audytu A4 dla klienta">📄 Audyt</button>' +
-              '<button class="btn-card-action" onclick="openInstantDemo(' + leadIdx + ', event)" title="Prototyp nowej strony">🚀 Demo</button>' +
+          '<div class="pitch-hook-preview">' +
+            '<span class="hook-icon">💡</span>' +
+            '<span>' + escapeHtml(hook) + '</span>' +
+          '</div>' +
+          '<div class="card-controls" onclick="event.stopPropagation()">' +
+            '<div class="card-row-top">' +
+              '<div class="crm-select-wrapper">' +
+                '<select class="crm-select-pill" onchange="updateLeadStatus(' + leadIdx + ', this.value, event)">' +
+                  '<option value="NOWY"' + (crmStatus === 'NOWY' ? ' selected' : '') + '>📥 Nowy</option>' +
+                  '<option value="ZADZWONIONO"' + (crmStatus === 'ZADZWONIONO' ? ' selected' : '') + '>📞 Zadzwoniono</option>' +
+                  '<option value="WYSLANO_AUDYT"' + (crmStatus === 'WYSLANO_AUDYT' ? ' selected' : '') + '>📄 Wysłano audyt</option>' +
+                  '<option value="SPOTKANIE"' + (crmStatus === 'SPOTKANIE' ? ' selected' : '') + '>🤝 Spotkanie</option>' +
+                  '<option value="ODRZUCONY"' + (crmStatus === 'ODRZUCONY' ? ' selected' : '') + '>❌ Odrzucony</option>' +
+                '</select>' +
+              '</div>' +
+              '<div class="card-contact-btns">' +
+                (phoneBtn || '<span class="btn-card-action disabled" title="Brak numeru telefonu w rejestrze">📞 Brak tel.</span>') +
+                (waBtn || '') +
+              '</div>' +
+            '</div>' +
+            '<div class="card-row-arsenal">' +
+              '<button class="btn-arsenal gold" onclick="openBattlecardModal(' + leadIdx + ', event)" title="Skrypt rozmowy telefonicznej & riposty na obiekcje">🎯 Skrypt</button>' +
+              '<button class="btn-arsenal" onclick="openClientAuditCard(' + leadIdx + ', event)" title="Generuj Raport Audytu A4 dla klienta">📄 Audyt</button>' +
+              '<button class="btn-arsenal" onclick="openInstantDemo(' + leadIdx + ', event)" title="Generuj wireframe nowej strony www">🚀 Demo</button>' +
             '</div>' +
           '</div>' +
           '<div class="card-footer">' +
-            '<span style="font-size: 11px; color: var(--text-dim); font-family: var(--font-mono);">' + (lead.website ? 'Witryna aktywna' : 'Brak witryny') + '</span>' +
-            '<span style="font-size: 11px; font-weight: 700; color: var(--gold);">Szczegóły →</span>' +
+            siteStatusHtml +
+            '<span class="card-details-cta">Szczegóły <span class="arrow">→</span></span>' +
           '</div>';
 
         grid.appendChild(card);

@@ -7,7 +7,8 @@ from wulf_web_leader.web.rate_limiter import IPRateLimiter, gemini_rate_limiter,
 from wulf_web_leader.web.session_manager import get_manager
 
 
-def test_ip_rate_limiter_unit():
+def test_ip_rate_limiter_unit(monkeypatch):
+    monkeypatch.setenv("ENABLE_RATE_LIMIT", "1")
     limiter = IPRateLimiter(cooldown_seconds=60.0)
 
     # 1st request from IP 1.2.3.4 allowed
@@ -30,7 +31,18 @@ def test_ip_rate_limiter_unit():
     assert allowed_again is True
 
 
-def test_rate_limit_scan_start():
+def test_rate_limit_disabled_by_default():
+    # By default, rate limiter is disabled to allow continuous OSINT & multiple scans
+    assert scan_rate_limiter.is_disabled() or scan_rate_limiter.cooldown_seconds <= 0
+    allowed, _ = scan_rate_limiter.check("1.1.1.1")
+    assert allowed is True
+    allowed2, _ = scan_rate_limiter.check("1.1.1.1")
+    assert allowed2 is True
+
+
+def test_rate_limit_scan_start_when_enabled(monkeypatch):
+    monkeypatch.setenv("ENABLE_RATE_LIMIT", "1")
+    scan_rate_limiter.cooldown_seconds = 60.0
     client = TestClient(app)
     scan_rate_limiter.reset()
 
@@ -68,9 +80,12 @@ def test_rate_limit_scan_start():
     finally:
         app.dependency_overrides.clear()
         scan_rate_limiter.reset()
+        scan_rate_limiter.cooldown_seconds = 0.0
 
 
-def test_rate_limit_gemini_verify():
+def test_rate_limit_gemini_verify_when_enabled(monkeypatch):
+    monkeypatch.setenv("ENABLE_RATE_LIMIT", "1")
+    gemini_rate_limiter.cooldown_seconds = 60.0
     client = TestClient(app)
     gemini_rate_limiter.reset()
 
@@ -94,3 +109,4 @@ def test_rate_limit_gemini_verify():
         assert "Retry-After" in res2.headers
 
     gemini_rate_limiter.reset()
+    gemini_rate_limiter.cooldown_seconds = 0.0
