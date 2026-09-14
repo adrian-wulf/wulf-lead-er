@@ -101,6 +101,49 @@ lead.er scan --country de --city Dresden --vertical friseur --radius 15 --lang d
 
 Wyniki automatycznie zapisują się do plików `leads.csv` oraz `leads.json`.
 
+## 🛡️ Konfiguracja Bezpieczeństwa, Proxy & Kluczy API
+
+### 1. Gdzie dodać własne serwery proxy (Google Maps & OSINT)?
+
+Aby uniknąć limitów i blokad antybotowych ze strony Google Maps oraz wyszukiwarek przy automatycznym poszukiwaniu domen firmowych (OSINT candidate discovery), system korzysta z puli serwerów proxy.
+
+* **Domyślna lokalizacja pliku:**  
+  Umieść swoje proxy w pliku: `data/proxies.txt`  
+  *(Alternatywnie możesz wskazać własną ścieżkę w zmiennej środowiskowej `PROXIES_FILE=/sciezka/do/pliku.txt`).*
+
+* **Obsługiwane formaty (1 proxy na linię):**  
+  System automatycznie wykrywa i parsuje oba najpopularniejsze formaty:
+  1. Standardowy format URL HTTP/HTTPS:
+     ```text
+     http://uzytkownik:haslo@1.2.3.4:8080
+     ```
+  2. Format eksportu z paneli dostawców proxy (np. Webshare / proxy list):
+     ```text
+     1.2.3.4:8080:uzytkownik:haslo
+     ```
+  Wzorzec demonstracyjny znajdziesz w pliku `data/proxies.txt.example`.
+
+### 2. Gdzie dodać klucze API?
+
+* **Opcja A — Plik `.env` (konfiguracja systemowa):**  
+  Skopiuj szablon `.env.example` do `.env` w głównym katalogu projektu:
+  ```bash
+  cp .env.example .env
+  ```
+  Zdefiniuj klucze według potrzeb:
+  ```env
+  GEMINI_API_KEY=twoj_klucz_z_google_ai_studio
+  CEIDG_API_TOKEN=twoj_token_z_rejestru_dane_biznes_gov_pl
+  ```
+
+* **Opcja B — Interfejs graficzny Web GUI:**  
+  Klucz Google AI Studio możesz wkleić bezpośrednio w przeglądarce, klikając przycisk `✨ Gemini AI` w górnym pasku aplikacji. Klucz zostanie zapisany wyłącznie w Twojej sesji przeglądarki.
+
+### 3. Gwarancja prywatności i bezpieczeństwa (Zero wycieków)
+
+> [!IMPORTANT]
+> Pliki z prywatnymi danymi (`.env`, `.env.*`, `data/proxies.txt`, `*proxies*.txt`) są na stałe wpisane do reguł [`.gitignore`](.gitignore). Twoje hasła do proxy oraz klucze API **nigdy nie trafią do repozytorium GitHub**.
+
 ---
 
 ## 🧠 Integracja z Google AI Studio (Gemini 3.6 Flash)
