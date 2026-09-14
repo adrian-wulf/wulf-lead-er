@@ -281,8 +281,9 @@ class ScanManager:
                     env["LC_ALL"] = "C.UTF-8"
                     env["LANG"] = "C.UTF-8"
 
+                    cmd_bytes = [a.encode("utf-8") if isinstance(a, str) else a for a in cmd]
                     proc = subprocess.Popen(
-                        cmd,
+                        cmd_bytes,
                         cwd=str(self.workspace_dir),
                         env=env,
                         stdout=subprocess.DEVNULL,

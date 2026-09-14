@@ -10,6 +10,18 @@ with complete streaming and async event loop support.
 
 import sys
 import os
+import locale
+
+# Enforce UTF-8 encoding in Passenger / CloudLinux shared hosting
+os.environ.setdefault("LANG", "C.UTF-8")
+os.environ.setdefault("LC_ALL", "C.UTF-8")
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+for loc in ("C.UTF-8", "en_US.UTF-8", "pl_PL.UTF-8"):
+    try:
+        locale.setlocale(locale.LC_ALL, loc)
+        break
+    except Exception:
+        pass
 
 # Determine project directories
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
