@@ -1,0 +1,15 @@
+services:
+  wulf-lead-er:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wulf-lead-er
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - HOST=0.0.0.0
+      - PORT=8000
+    volumes:
+      - ./sessions:/app/sessions

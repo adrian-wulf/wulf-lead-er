@@ -1,0 +1,21 @@
+id: restaurant
+name: "Restaurants & Cafes"
+aliases:
+  pl: ["restauracja", "gastronomia", "kawiarnia", "bistro", "pizzeria"]
+  de: ["restaurant", "gastronomie", "cafe", "bistro", "pizzeria"]
+pl:
+  query: "restauracja"
+  label: "Restauracja / Kawiarnia / Gastronomia"
+  pkd: ["56.10.A"]
+  osm:
+    - "amenity=restaurant"
+    - "amenity=cafe"
+    - "amenity=fast_food"
+de:
+  query: "Restaurant"
+  label: "Restaurant / Café / Gastronomie"
+  wz: ["56.10"]
+  osm:
+    - "amenity=restaurant"
+    - "amenity=cafe"
+    - "amenity=fast_food"

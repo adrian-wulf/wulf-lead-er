@@ -1,0 +1,23 @@
+id: plumbers
+name: "Plumbers"
+aliases:
+  pl: ["hydraulik", "hydraulicy", "instalator", "wodno-kanalizacyjny"]
+  de: ["klempner", "sanitär", "installateur", "klempnerei"]
+pl:
+  query: "hydraulik"
+  label: "Hydraulik / Usługi hydrauliczne"
+  pkd: ["43.22.Z"]
+  osm:
+    - "craft=plumber"
+    - "trade=plumber"
+    - "trade=plumbing"
+    - "shop=plumber"
+de:
+  query: "Klempner"
+  label: "Klempner / Sanitärinstallation"
+  wz: ["43.22"]
+  osm:
+    - "craft=plumber"
+    - "trade=plumber"
+    - "trade=plumbing"
+    - "shop=plumber"

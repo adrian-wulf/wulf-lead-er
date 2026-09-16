@@ -1,0 +1,17 @@
+id: gym
+name: "Gyms & Fitness"
+aliases:
+  pl: ["siłownia", "fitness", "klub fitness", "trener personalny"]
+  de: ["fitnessstudio", "gym", "fitness", "sportstudio"]
+pl:
+  query: "siłownia"
+  label: "Klub fitness / Siłownia"
+  pkd: ["93.13.Z"]
+  osm:
+    - "leisure=fitness_centre"
+de:
+  query: "Fitnessstudio"
+  label: "Fitnessstudio / Sportstudio"
+  wz: ["93.13"]
+  osm:
+    - "leisure=fitness_centre"

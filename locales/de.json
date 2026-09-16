@@ -1,0 +1,31 @@
+{
+  "hooks": {
+    "no_website": "Kein aktiver Webauftritt in Kartendiensten — Sondierungsfrage: Basiert Ihr Geschäft nur auf Empfehlungen oder möchten Sie gezielt Kunden aus der Region gewinnen?",
+    "suspect_corporate": "Kapitalgesellschaft ohne Website in OSM — Website existiert wahrscheinlich außerhalb der OSM-Daten (vorab Google-Check empfohlen).",
+    "broken_website": "Website der Firma ({url}) ist nicht erreichbar ({issue}) — Interessenten aus der Region können Sie online nicht kontaktieren.",
+    "social_only": "Ausschließlich {platform}-Präsenz — Kunden ohne Social-Media-Konto oder über lokale Suchmaschinen erreichen Sie nur schwer.",
+    "directory_only": "Nur Verzeichniseintrag ({platform}) — kein unabhängiger, professioneller Internetauftritt.",
+    "http_only": "Website ohne SSL-Verschlüsselung (HTTP) — moderne Browser warnen Besucher vor unsicherer Verbindung.",
+    "no_viewport": "Website ist nicht für Mobilgeräte optimiert (kein Viewport) — mobile Besucher springen schnell ab.",
+    "outdated_tech": "Veralteter Webauftritt ({generator}) — ein modernes Redesign stärkt Vertrauen und Neukundengewinnung.",
+    "missing_impressum": "Fehlendes Impressum oder unvollständige Kontaktdaten — eine transparente Anbieterkennzeichnung schafft Vertrauen bei Neukunden.",
+    "reviews_no_site": "Betrieb hat positive Kundenbewertungen, ale keine eigene Website zur Angebotspräsentation.",
+    "corporate_enterprise": "Großunternehmen / Konzern (AG / SE / Holding) — nicht für Kaltakquise von Standard-Websites geeignet. Nicht erreichbare Domains resultieren meist aus Umfirmierung, Fusion oder Konsolidierung.",
+    "hot_prospect": "Top-Kandidat: Lokales Unternehmen mit Kontaktdaten, das sofort von einer modernen Website profitiert.",
+    "no_pixels": "Die Website verfügt weder über ein Meta-Pixel noch über Google Analytics 4 — Sie verlieren wertvolle Besucherdaten für Re-Targeting.",
+    "high_ttfb": "Lange Server-Antwortzeit (TTFB: {ttfb_ms} ms) — langsame Ladezeiten führen zum Abbruch mobiler Besucher."
+  },
+  "verdicts": {
+    "hot": "Heiß",
+    "warm": "Warm",
+    "skip": "Überspringen"
+  },
+  "messages": {
+    "scanning": "Scanne {city} ({country}) im Umkreis von {radius} km für Branche: {vertical}...",
+    "found_pois": "{count} potenzielle Unternehmen in OpenStreetMap gefunden.",
+    "auditing": "Überprüfe Unternehmens-Websites ({count} URLs)...",
+    "done": "Fertig! Ergebnisse gespeichert in {csv_path} und {json_path}.",
+    "no_leads": "Keine passenden Unternehmen im angegebenen Umkreis gefunden.",
+    "no_leads_tip": "Tipps: 1) Radius vergrößern (--radius 25), 2) Andere Branche prüfen (keinweb list-verticals), 3) Schreibweise der Stadt prüfen."
+  }
+}

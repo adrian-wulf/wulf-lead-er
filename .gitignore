@@ -1,0 +1,68 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv/
+env/
+venv/
+ENV/
+
+# Testing & Cache
+.pytest_cache/
+.coverage
+htmlcov/
+.cache/
+.wulf-cache/
+*cache*.json
+*_cache.json
+audit_cache.json
+geocache.json
+
+# Lead exports & sessions (keep user data out of repo)
+leads*.csv
+leads*.json
+report*.html
+scan_*.csv
+scan_*.json
+scan_*.html
+sessions/
+.scan_state*
+
+# Environment variables & secrets
+.env
+.env.*
+*.env
+!.env.example
+*proxies*.txt
+!data/proxies.txt.example
+bin/google_maps_scraper
+
+# Internal development and verification documents
+*_PLAN.md
+*VERIFICATION*
+*CHECKLIST*
+*TODO*
+*DOD_AUDIT*
+*false_positives*
+*pilot_w01*
+STATUS.md
+

@@ -1,0 +1,17 @@
+id: hair
+name: "Hair Salons & Barbers"
+aliases:
+  pl: ["fryzjer", "fryzjerstwo", "salon fryzjerski", "barber"]
+  de: ["friseur", "friseursalon", "barbier", "hairstylist"]
+pl:
+  query: "fryzjer"
+  label: "Salon fryzjerski / Barber"
+  pkd: ["96.02.Z"]
+  osm:
+    - "shop=hairdresser"
+de:
+  query: "Friseur"
+  label: "Friseursalon / Barbier"
+  wz: ["96.02"]
+  osm:
+    - "shop=hairdresser"

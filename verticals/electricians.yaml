@@ -1,0 +1,17 @@
+id: electricians
+name: "Electricians"
+aliases:
+  pl: ["elektryk", "elektrycy", "usługi elektryczne"]
+  de: ["elektriker", "elektroinstallation", "elektroniker"]
+pl:
+  query: "elektryk"
+  label: "Elektryk / Instalacje elektryczne"
+  pkd: ["43.21.Z"]
+  osm:
+    - "craft=electrician"
+de:
+  query: "Elektriker"
+  label: "Elektriker / Elektroinstallation"
+  wz: ["43.21"]
+  osm:
+    - "craft=electrician"

@@ -1,0 +1,21 @@
+id: bakery
+name: "Bakeries"
+aliases:
+  pl: ["piekarnia", "cukiernia", "piekarz"]
+  de: ["bäckerei", "baeckerei", "konditorei", "baecker", "bäcker"]
+pl:
+  query: "piekarnia"
+  label: "Piekarnia / Cukiernia"
+  pkd: ["10.71.Z", "47.24.Z"]
+  osm:
+    - "shop=bakery"
+    - "craft=bakery"
+    - "shop=pastry"
+de:
+  query: "Bäckerei"
+  label: "Bäckerei / Konditorei"
+  wz: ["10.71", "47.24"]
+  osm:
+    - "shop=bakery"
+    - "craft=bakery"
+    - "shop=pastry"

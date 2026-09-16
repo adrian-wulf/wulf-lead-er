@@ -1,0 +1,30 @@
+{
+  "hooks": {
+    "no_website": "No active website listed in map directories — exploratory query: does the business rely on word-of-mouth or seek new local clients?",
+    "suspect_corporate": "Corporate entity without website in OSM — website likely exists outside map directory (verify online prior to calling).",
+    "broken_website": "Company website ({url}) is unreachable or returning an error ({issue}) — prospective local customers cannot reach them.",
+    "social_only": "Only relies on a {platform} page — customers without an account or via Google search struggle to reach them.",
+    "directory_only": "Only listed in a directory ({platform}) — lacks a dedicated online presence.",
+    "http_only": "Website lacks HTTPS — modern browsers flag the site as insecure.",
+    "no_viewport": "Website is not mobile-responsive (missing viewport) — unreadable on modern phones.",
+    "outdated_tech": "Outdated site technology ({generator}) — would benefit from modern redesign.",
+    "missing_impressum": "Missing owner details / Impressum — clear company info builds trust with prospective customers.",
+    "reviews_no_site": "Has public customer reviews but lacks a dedicated website to showcase offerings.",
+    "hot_prospect": "High-priority lead: local business with contact info needing a modern website.",
+    "no_pixels": "The website has neither Meta Pixel nor Google Analytics 4 installed — missing 100% of visitor analytics and retargeting opportunities.",
+    "high_ttfb": "Slow server response time (TTFB: {ttfb_ms} ms) impairs page speed — over 50% of mobile users abandon slow websites."
+  },
+  "verdicts": {
+    "hot": "Hot",
+    "warm": "Warm",
+    "skip": "Skip"
+  },
+  "messages": {
+    "scanning": "Scanning {city} ({country}) within {radius} km for vertical: {vertical}...",
+    "found_pois": "Found {count} potential businesses in OpenStreetMap.",
+    "auditing": "Auditing websites ({count} URLs to check)...",
+    "done": "Done! Results saved to {csv_path} and {json_path}.",
+    "no_leads": "No businesses found matching criteria within selected radius.",
+    "no_leads_tip": "Tips: 1) Increase radius (--radius 25), 2) Check another vertical (brakstrony list-verticals), 3) Verify city spelling."
+  }
+}
