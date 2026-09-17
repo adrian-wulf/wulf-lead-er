@@ -118,7 +118,7 @@ ODPOWIEDZ WYŁĄCZNIE W FORMACIE CZYSTEGO JSON (bez znaczników markdown ```json
 
             # Check if search grounding hit quota or tier restriction (RESOURCE_EXHAUSTED / 429 / 403)
             if (resp.status_code in (429, 403) or "RESOURCE_EXHAUSTED" in resp.text) and "tools" in payload:
-                logger.info("Grounding quota exceeded or blocked; falling back to direct gemini-3.6-flash prompt...")
+                logger.info("Grounding quota exceeded or blocked; falling back to direct gemini-3.8-flash prompt...")
                 payload_fallback = {
                     "contents": [{"parts": [{"text": prompt}]}],
                     "generationConfig": {"temperature": 0.2},

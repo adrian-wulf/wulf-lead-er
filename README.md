@@ -8,8 +8,8 @@
 <p align="center">
   <a href="https://lead.social-wulf.eu"><img src="https://img.shields.io/badge/Aplikacja_Chmurowa-lead.social--wulf.eu-D4A418?style=for-the-badge&logo=fastapi&logoColor=white" alt="Aplikacja Chmurowa Live"></a>
   <a href="https://social-wulf.eu"><img src="https://img.shields.io/badge/Centralny_Hub-social--wulf.eu-141414?style=for-the-badge" alt="Centralny Hub"></a>
-  <a href="https://wulf-code.it"><img src="https://img.shields.io/badge/Software_House-wulf--code.it-9B1B1B?style=for-the-badge" alt="Wulf Code"></a>
-  <a href="https://buycoffee.to/adrianwulf"><img src="https://img.shields.io/badge/☕_Postaw_Kawę-BuyCoffee.to-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Postaw kawę"></a>
+  <a href="https://buymeacoffee.com/adrianwulf"><img src="https://img.shields.io/badge/☕_Buy_Me_a_Coffee-adrianwulf-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me A Coffee"></a>
+  <a href="https://github.com/sponsors/adrian-wulf"><img src="https://img.shields.io/badge/GitHub_Sponsors-Wspieraj_Twórcę-EA4AAA?style=for-the-badge&logo=github-sponsors" alt="GitHub Sponsors"></a>
 </p>
 
 <p align="center">
@@ -35,7 +35,7 @@
 7. [🛠️ Dostępne Branże (Verticals)](#️-dostępne-branże-verticals)
 8. [🖥️ Komendy Konsolowe (CLI Reference)](#️-komendy-konsolowe-cli-reference)
 9. [🌐 Wdrożenie na Hosting Współdzielony](#-wdrożenie-na-hosting-współdzielony-np-hostido--litespeed--cpanel)
-10. [☕ Buy Me a Coffee / Wesprzyj projekt (Filozofia RobinHood AI)](#-buy-me-a-coffee--wesprzyj-projekt)
+10. [☕ Buy Me a Coffee / Wesprzyj projekt (Filozofia RobinHood dev)](#-buy-me-a-coffee--wesprzyj-projekt)
 11. [🔒 Prywatność, Licencja MIT & OpenStreetMap](#-prywatność-i-bezpieczeństwo)
 
 ---
@@ -58,13 +58,13 @@ Większość polskich twórców stron internetowych i agencji marnuje setki godz
 
 ## 🌐 Ekosystem Adriana Wulfa
 
-WULF LEAD.ER jest integralną częścią rodziny niezależnych, wydajnych narzędzi tworzonych w duchu **RobinHood AI** — bez abonamentów i korporacyjnego narzutu:
+WULF LEAD.ER jest integralną częścią rodziny niezależnych, wydajnych narzędzi tworzonych w duchu **RobinHood dev** — bez abonamentów i korporacyjnego narzutu:
 
 | Usługa / Projekt | Adres URL | Przeznaczenie |
 | :--- | :---: | :--- |
 | 🚀 **Wulf Lead.er Chmura** | [lead.social-wulf.eu](https://lead.social-wulf.eu) | **Wersja Cloud / SaaS:** Błyskawiczny dostęp do panelu w przeglądarce bez potrzeby instalowania Pythona czy Dockera. |
 | 🌐 **Centralny Wulf Hub** | [social-wulf.eu](https://social-wulf.eu) | **Główny Hub Ekosystemu:** Wizytówka projektów, narzędzia biznesowe i centrum serwisowe Adriana Wulfa. |
-| 🛡️ **Nachtwache** | [github.com/adrian-wulf/nachtwache](https://github.com/adrian-wulf/nachtwache) | **Strażnik Awarji & Zamiennik Sentry:** Pojedyncza binarka w Rust (~15 MB RAM) z automatycznym AI Auto-Fixem i diffem poprawek. |
+| 🛡️ **Nachtwache (Sentry Alt)** | [sentry.social-wulf.eu](https://sentry.social-wulf.eu) | **Strażnik Awarii & Zamiennik Sentry:** Lekka instancja w chmurze (~15 MB RAM) z automatycznym AI Auto-Fixem ([GitHub](https://github.com/adrian-wulf/nachtwache)). |
 | 💼 **Wulf Code** | [wulf-code.it](https://wulf-code.it) | **Software House & Consulting:** Dedykowane wdrożenia, audyty bezpieczeństwa i tworzenie oprogramowania na zamówienie. |
 
 ---
@@ -247,15 +247,18 @@ Aplikacja posiada gotową architekturę do uruchomienia na tanim hostingu wspó�
 
 ---
 
-## ☕ Buy Me a Coffee / Wesprzyj projekt
+## ☕ Wesprzyj projekt (Buy Me a Coffee & GitHub Sponsors)
 
 <p align="center">
-  <a href="https://buycoffee.to/adrianwulf"><img src="https://img.shields.io/badge/☕_Postaw_kawę-buycoffee.to%2Fadrianwulf-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Postaw kawę na BuyCoffee.to"></a>
+  <a href="https://buymeacoffee.com/adrianwulf"><img src="https://img.shields.io/badge/☕_Buy_Me_a_Coffee-buymeacoffee.com%2Fadrianwulf-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me a Coffee"></a>
   <a href="https://github.com/sponsors/adrian-wulf"><img src="https://img.shields.io/badge/GitHub_Sponsors-Wspieraj_Twórcę-EA4AAA?style=for-the-badge&logo=github-sponsors" alt="GitHub Sponsors"></a>
 </p>
 
-### Filozofia RobinHood AI w pozyskiwaniu zleceń
-> **„Polski freelancer i mała agencja nie powinni płacić korporacyjnych haraczy za narzędzia, które decydują o ich być albo nie być.”**
+* ☕ **Buy Me a Coffee:** [buymeacoffee.com/adrianwulf](https://buymeacoffee.com/adrianwulf)
+* 💖 **GitHub Sponsors:** [github.com/sponsors/adrian-wulf](https://github.com/sponsors/adrian-wulf)
+
+### Filozofia RobinHood dev w pozyskiwaniu zleceń
+> **„Programiści, web developerzy i małe agencje nie powinni płacić korporacyjnych haraczy za narzędzia inżynierskie i biznesowe, które decydują o ich być albo nie być na rynku.”**
 
 Za oceanem rynek sprzedaży zdominowały platformy subskrypcyjne żądające od 50 do kilkuset dolarów miesięcznie za dostęp do podstawowych baz kontaktowych i scraperów. Dla początkującego twórcy stron lub małej agencji to bariera nie do przejścia.
 
@@ -264,7 +267,7 @@ Za oceanem rynek sprzedaży zdominowały platformy subskrypcyjne żądające od 
 * Zamiast wysyłać bezużyteczny spam, dajesz klientom realną wartość od pierwszej minuty rozmowy — konkretną diagnozę ich zepsutej strony, wyliczenie utraconych pieniędzy i gotowy szkic nowej witryny.
 
 ### Jeśli narzędzie przyniosło Ci klienta lub zaoszczędziło czas:
-* ☕ **Postaw wirtualną kawę:** [buycoffee.to/adrianwulf](https://buycoffee.to/adrianwulf)
+* ☕ **Postaw wirtualną kawę:** [buymeacoffee.com/adrianwulf](https://buymeacoffee.com/adrianwulf)
 * ⭐ **Daj gwiazdkę na GitHubie:** Pomóż projektowi rosnąć w polskiej społeczności deweloperów.
 * 📢 **Poleć projekt znajomym web designerom:** Niech każdy ma równe szanse na rynku zleceń.
 
@@ -285,7 +288,7 @@ Za oceanem rynek sprzedaży zdominowały platformy subskrypcyjne żądające od 
 * **Centralny Hub:** [social-wulf.eu](https://social-wulf.eu)
 * **Wersja Chmurowa:** [lead.social-wulf.eu](https://lead.social-wulf.eu)
 * **Agencja / Software House:** [Wulf Code](https://wulf-code.it)
-* **Siostrzany projekt (Monitoring & Sentry alt):** [Nachtwache](https://github.com/adrian-wulf/nachtwache)
+* **Siostrzany projekt (Monitoring & Sentry alt):** [Nachtwache Live Demo](https://sentry.social-wulf.eu) • [Repozytorium GitHub](https://github.com/adrian-wulf/nachtwache)
 
 ---
 
